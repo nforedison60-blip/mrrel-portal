@@ -50,10 +50,22 @@ Route::get('/provider/dashboard', function () {
     return view('provider.dashboard');
 })->name('provider.dashboard');
 
-// NEW ROUTE FOR SEND QUOTE
 Route::get('/provider/send-quote', function () {
     return view('provider.send-quote');
 })->name('provider.send');
+
+// NEW PROVIDER PAGES
+Route::get('/provider/requests', function () {
+    return view('provider.requests');
+})->name('provider.requests');
+
+Route::get('/provider/bookings', function () {
+    return view('provider.pbook');
+})->name('provider.pbook');
+
+Route::get('/provider/rate-card', function () {
+    return view('provider.rate');
+})->name('provider.rate');
 
 // ADMIN ROUTES
 Route::get('/admin/map', function () {

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\ServiceRequest;
+use App\Models\Quote;
 use Illuminate\Http\Request;
 
 // CUSTOMER ROUTES
@@ -24,8 +25,10 @@ Route::post('/requests/new', function (Request $request) {
     return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
 })->name('customer.requests.store');
 
+// UPDATED: Fetch real quotes from database
 Route::get('/quotes', function () {
-    return view('customer.quotes');
+    $quotes = Quote::latest()->get();
+    return view('customer.quotes', ['quotes' => $quotes]);
 })->name('customer.quotes');
 
 Route::get('/bookings', function () {
@@ -54,7 +57,20 @@ Route::get('/provider/send-quote', function () {
     return view('provider.send-quote');
 })->name('provider.send');
 
-// NEW PROVIDER PAGES
+// NEW: Save the quote to the DB
+Route::post('/provider/send-quote', function (Request $request) {
+    Quote::create([
+        'provider_name' => 'Pieter', // Hardcoded for now
+        'total_price' => $request->total_price,
+        'price_type' => $request->price_type,
+        'included' => implode(', ', $request->input('included', [])),
+        'not_included' => implode(', ', $request->input('not_included', [])),
+        'validity' => $request->validity,
+        'note' => $request->note,
+    ]);
+    return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully!');
+})->name('provider.send.store');
+
 Route::get('/provider/requests', function () {
     return view('provider.requests');
 })->name('provider.requests');

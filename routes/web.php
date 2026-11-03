@@ -50,6 +50,11 @@ Route::get('/provider/dashboard', function () {
     return view('provider.dashboard');
 })->name('provider.dashboard');
 
+// NEW ROUTE FOR SEND QUOTE
+Route::get('/provider/send-quote', function () {
+    return view('provider.send-quote');
+})->name('provider.send');
+
 // ADMIN ROUTES
 Route::get('/admin/map', function () {
     return view('admin.map');

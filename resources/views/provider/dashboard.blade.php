@@ -22,12 +22,12 @@
             <tr>
                 <td>1 bed, Parklands to Bellville · 18 km</td>
                 <td>Sat 31 Oct</td>
-                <td><button type="button" class="btn" style="padding: 6px 14px; font-size: 13px;">Send quote</button></td>
+                <td><a href="{{ route('provider.send') }}" class="btn" style="padding: 6px 14px; font-size: 13px; text-decoration:none;">Send quote</a></td>
             </tr>
             <tr>
                 <td>2-bedroom flat, Sea Point to Rondebosch</td>
                 <td>Sun 1 Nov</td>
-                <td><button type="button" class="btn" style="padding: 6px 14px; font-size: 13px;">Send quote</button></td>
+                <td><a href="{{ route('provider.send') }}" class="btn" style="padding: 6px 14px; font-size: 13px; text-decoration:none;">Send quote</a></td>
             </tr>
             <tr>
                 <td>Small items, Claremont to Wynberg</td>

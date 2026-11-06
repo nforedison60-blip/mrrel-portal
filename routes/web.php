@@ -5,12 +5,18 @@ use App\Models\ServiceRequest;
 use App\Models\Quote;
 use App\Models\Booking;
 use App\Models\Property;
+use App\Models\ViewingRequest;
 use Illuminate\Http\Request;
 
 // CUSTOMER ROUTES
 Route::get('/', function () {
-    $requests = ServiceRequest::latest()->get();
-    return view('customer.dashboard', ['requests' => $requests]);
+    return view('customer.dashboard', [
+        'requestsCount' => ServiceRequest::count(),
+        'quotesCount' => Quote::count(),
+        'bookingsCount' => Booking::count(),
+        'propertiesCount' => Property::where('status', 'Approved')->count(),
+        'latestRequests' => ServiceRequest::latest()->take(3)->get()
+    ]);
 })->name('customer.dashboard');
 
 Route::get('/requests', function () {
@@ -47,16 +53,29 @@ Route::post('/bookings', function (Request $request) {
     return redirect()->route('customer.bookings')->with('success', 'Quote accepted! Booking created.');
 })->name('customer.bookings.store');
 
-// UPDATED: Fetch approved properties for the shortlist
 Route::get('/shortlist', function () {
     $properties = Property::where('status', 'Approved')->latest()->get();
     return view('customer.shortlist', ['properties' => $properties]);
 })->name('customer.shortlist');
 
+Route::post('/viewing-request', function (Request $request) {
+    ViewingRequest::create([
+        'property_id' => $request->property_id,
+        'customer_name' => 'Lerato',
+        'status' => 'Pending',
+    ]);
+    return redirect()->route('customer.shortlist')->with('success', 'Viewing request sent to the landlord!');
+})->name('customer.viewing.store');
+
+
 // LANDLORD ROUTES
 Route::get('/landlord/properties', function () {
     $properties = Property::latest()->get();
-    return view('landlord.properties', ['properties' => $properties]);
+    $viewingRequests = ViewingRequest::latest()->get();
+    return view('landlord.properties', [
+        'properties' => $properties,
+        'viewingRequests' => $viewingRequests
+    ]);
 })->name('landlord.properties');
 
 Route::get('/landlord/add-property', function () {

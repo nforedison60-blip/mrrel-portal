@@ -94,6 +94,15 @@ Route::get('/provider/rate-card', function () {
 })->name('provider.rate');
 
 // ADMIN ROUTES
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard', [
+        'totalRequests' => ServiceRequest::count(),
+        'totalQuotes' => Quote::count(),
+        'totalBookings' => Booking::count(),
+        'revenue' => Booking::sum('total_price'),
+    ]);
+})->name('admin.dashboard');
+
 Route::get('/admin/map', function () {
     return view('admin.map');
 })->name('admin.map');

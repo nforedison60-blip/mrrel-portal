@@ -21,4 +21,9 @@ class Property extends Model
         'deposit',
         'status',
     ];
+
+    public function viewingRequests()
+    {
+        return $this->hasMany(ViewingRequest::class);
+    }
 }

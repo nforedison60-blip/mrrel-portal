@@ -1,70 +1,66 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Customer Dashboard') }}
+        </h2>
+    </x-slot>
 
-@section('content')
-    <h1>Welcome back, Lerato</h1>
-    <div class="m">Everything that needs you, in one place.</div>
-    
-    <div class="g4">
-        <div class="card">
-            <div class="m sm">Active requests</div>
-            <div class="big">{{ $requestsCount }}</div>
-            <div class="m sm">Saved in database</div>
-        </div>
-        <div class="card">
-            <div class="m sm">Quotes to review</div>
-            <div class="big">{{ $quotesCount }}</div>
-            <div class="m sm">Available to compare</div>
-        </div>
-        <div class="card">
-            <div class="m sm">Active bookings</div>
-            <div class="big">{{ $bookingsCount }}</div>
-            <div class="m sm">Jobs confirmed</div>
-        </div>
-        <div class="card">
-            <div class="m sm">Shortlist</div>
-            <div class="big">{{ $propertiesCount }}</div>
-            <div class="m sm">Properties available</div>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+
+                    <h3 class="text-lg font-semibold mb-6">Welcome back! 👋</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                        {{-- Service Requests --}}
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                            <div class="text-sm text-blue-600 font-medium">My Requests</div>
+                            <div class="text-3xl font-bold text-blue-900 mt-2">{{ $serviceRequestCount }}</div>
+                            <a href="{{ route('customer.requests.index') }}" class="text-sm text-blue-600 hover:underline mt-2 inline-block">
+                                View all →
+                            </a>
+                        </div>
+
+                        {{-- Quotes --}}
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                            <div class="text-sm text-green-600 font-medium">Quotes</div>
+                            <div class="text-3xl font-bold text-green-900 mt-2">{{ $quoteCount }}</div>
+                            <a href="{{ route('customer.quotes.index') }}" class="text-sm text-green-600 hover:underline mt-2 inline-block">
+                                View all →
+                            </a>
+                        </div>
+
+                        {{-- Bookings --}}
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                            <div class="text-sm text-purple-600 font-medium">Bookings</div>
+                            <div class="text-3xl font-bold text-purple-900 mt-2">{{ $bookingCount }}</div>
+                            <a href="{{ route('customer.bookings.index') }}" class="text-sm text-purple-600 hover:underline mt-2 inline-block">
+                                View all →
+                            </a>
+                        </div>
+
+                        {{-- Shortlist / Properties --}}
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                            <div class="text-sm text-orange-600 font-medium">Shortlist</div>
+                            <div class="text-3xl font-bold text-orange-900 mt-2">{{ $propertyCount }}</div>
+                            <a href="{{ route('customer.shortlist.index') }}" class="text-sm text-orange-600 hover:underline mt-2 inline-block">
+                                View all →
+                            </a>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-8">
+                        <a href="{{ route('customer.requests.create') }}"
+                           class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg">
+                            + New Request
+                        </a>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="g2">
-        <div class="card">
-            <h3>Needs your attention</h3>
-            <ul>
-                <li>Compare quotes for your recent requests</li>
-                <li>Check your shortlist for new properties</li>
-                <li>Review your active bookings</li>
-            </ul>
-        </div>
-        <div class="card">
-            <h3>Start something new</h3>
-            <p class="m">Choose what you need.</p>
-            <a href="{{ route('customer.new-request') }}" class="btn" style="text-decoration:none;">New move request</a>
-            <a href="{{ route('customer.shortlist') }}" class="btn g" style="text-decoration:none;">View my shortlist</a>
-        </div>
-    </div>
-
-    <div class="card" style="margin-top:16px;">
-        <h3>Your recent requests</h3>
-        @if($latestRequests->isEmpty())
-            <p class="m">You haven't submitted any requests yet.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Service</th>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>Date</th>
-                </tr>
-                @foreach($latestRequests as $req)
-                <tr>
-                    <td>{{ $req->services_needed }}</td>
-                    <td>{{ $req->moving_from }}</td>
-                    <td>{{ $req->moving_to ?? '—' }}</td>
-                    <td>{{ $req->move_date }}</td>
-                </tr>
-                @endforeach
-            </table>
-        @endif
-    </div>
-@endsection
+</x-app-layout>

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\ServiceRequest;
 use App\Models\Quote;
 use App\Models\Booking;
+use App\Models\Property;
 use Illuminate\Http\Request;
 
 // CUSTOMER ROUTES
@@ -52,12 +53,29 @@ Route::get('/shortlist', function () {
 
 // LANDLORD ROUTES
 Route::get('/landlord/properties', function () {
-    return view('landlord.properties');
+    $properties = Property::latest()->get();
+    return view('landlord.properties', ['properties' => $properties]);
 })->name('landlord.properties');
 
 Route::get('/landlord/add-property', function () {
     return view('landlord.add-property');
 })->name('landlord.add-property');
+
+Route::post('/landlord/add-property', function (Request $request) {
+    Property::create([
+        'title' => $request->title,
+        'description' => $request->description,
+        'property_type' => $request->property_type,
+        'city' => $request->city,
+        'suburb' => $request->suburb,
+        'bedrooms' => $request->bedrooms,
+        'bathrooms' => $request->bathrooms,
+        'rent' => $request->rent,
+        'deposit' => $request->deposit,
+        'status' => 'Draft',
+    ]);
+    return redirect()->route('landlord.properties')->with('success', 'Property saved as draft!');
+})->name('landlord.properties.store');
 
 // PROVIDER ROUTES
 Route::get('/provider/dashboard', function () {

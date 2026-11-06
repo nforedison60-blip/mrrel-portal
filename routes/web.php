@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Models\ServiceRequest;
 use App\Models\Quote;
+use App\Models\Booking;
 use Illuminate\Http\Request;
 
 // CUSTOMER ROUTES
@@ -25,15 +26,27 @@ Route::post('/requests/new', function (Request $request) {
     return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
 })->name('customer.requests.store');
 
-// UPDATED: Fetch real quotes from database
 Route::get('/quotes', function () {
     $quotes = Quote::latest()->get();
     return view('customer.quotes', ['quotes' => $quotes]);
 })->name('customer.quotes');
 
+// UPDATED: Fetch real bookings
 Route::get('/bookings', function () {
-    return view('customer.bookings');
+    $booking = Booking::latest()->first(); // Get the most recent booking for now
+    return view('customer.bookings', ['booking' => $booking]);
 })->name('customer.bookings');
+
+// NEW: Save the booking when a customer accepts a quote
+Route::post('/bookings', function (Request $request) {
+    Booking::create([
+        'quote_id' => $request->quote_id,
+        'customer_name' => 'Lerato', // Hardcoded for now
+        'total_price' => $request->total_price,
+        'status' => 'Paid',
+    ]);
+    return redirect()->route('customer.bookings')->with('success', 'Quote accepted! Booking created.');
+})->name('customer.bookings.store');
 
 Route::get('/shortlist', function () {
     return view('customer.shortlist');
@@ -57,10 +70,9 @@ Route::get('/provider/send-quote', function () {
     return view('provider.send-quote');
 })->name('provider.send');
 
-// NEW: Save the quote to the DB
 Route::post('/provider/send-quote', function (Request $request) {
     Quote::create([
-        'provider_name' => 'Pieter', // Hardcoded for now
+        'provider_name' => 'Pieter', 
         'total_price' => $request->total_price,
         'price_type' => $request->price_type,
         'included' => implode(', ', $request->input('included', [])),

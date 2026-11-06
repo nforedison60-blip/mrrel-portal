@@ -34,12 +34,17 @@
                         <b>Valid for:</b> {{ $quote->validity }}
                     </p>
                     
-                    <button type="button" class="btn">Accept</button>
-                    <button type="button" class="btn g">Ask for changes</button>
+                    <!-- ACCEPT FORM -->
+                    <form method="POST" action="{{ route('customer.bookings.store') }}">
+                        @csrf
+                        <input type="hidden" name="quote_id" value="{{ $quote->id }}">
+                        <input type="hidden" name="total_price" value="{{ $quote->total_price }}">
+                        <button type="submit" class="btn" style="width:100%;">Accept and Pay</button>
+                    </form>
+                    
+                    <button type="button" class="btn g" style="width:100%;">Ask for changes</button>
                 </div>
             @endforeach
         </div>
     @endif
-    
-    <p class="m sm" style="margin-top: 20px;">Quotes expire after their validity. Accepting is online: no signature, and we record the date and time.</p>
 @endsection

@@ -4,49 +4,31 @@
     <h1>My shortlist</h1>
     <div class="m">Cape Town · up to R15,000 · 2 bedrooms · move-in 1 December. Only places MrRel shares with you.</div>
 
-    <div class="g3" style="margin-top: 20px;">
-        <!-- Property 1 -->
-        <div class="card">
-            <div class="ph">[Property photo]</div>
-            <h3>2-bed apartment, Sea Point</h3>
-            <div class="m sm">R14,500 a month · Deposit R14,500 · Available 1 Dec · Parking, fibre</div>
-            <p class="sm" style="margin-top: 8px;"><b>MrRel note:</b> Close to transport.</p>
-            <div style="margin-top: 12px;">
-                <button type="button" class="btn">Accept</button>
-                <button type="button" class="btn g">Decline</button>
-                <button type="button" class="btn g">Request viewing</button>
-                <a href="{{ route('customer.new-request') }}" class="btn g" style="text-decoration:none;">Plan move for this property</a>
-            </div>
+    @if($properties->isEmpty())
+        <div class="card" style="margin-top: 20px;">
+            <p class="m">There are no properties on your shortlist yet. Check back soon!</p>
         </div>
-
-        <!-- Property 2 -->
-        <div class="card">
-            <div class="ph">[Property photo]</div>
-            <h3>2-bed flat, Gardens</h3>
-            <div class="m sm">R12,900 a month · Deposit R12,900 · Available 15 Dec · Furnished</div>
-            <p class="sm" style="margin-top: 8px;"><b>MrRel note:</b> Pets by request.</p>
-            <div style="margin-top: 12px;">
-                <button type="button" class="btn">Accept</button>
-                <button type="button" class="btn g">Decline</button>
-                <button type="button" class="btn g">Request viewing</button>
-                <a href="{{ route('customer.new-request') }}" class="btn g" style="text-decoration:none;">Plan move for this property</a>
-            </div>
+    @else
+        <div class="g3" style="margin-top: 20px;">
+            @foreach($properties as $property)
+                <div class="card">
+                    <div class="ph">[Property photo]</div>
+                    <h3>{{ $property->title }}</h3>
+                    <div class="m sm">
+                        R{{ number_format($property->rent, 0) }} a month · Deposit R{{ number_format($property->deposit, 0) }} · Available Soon · {{ $property->bedrooms }} bed, {{ $property->bathrooms }} bath
+                    </div>
+                    <p class="sm" style="margin-top: 8px;"><b>Location:</b> {{ $property->suburb }}, {{ $property->city }}</p>
+                    <p class="sm"><b>MrRel note:</b> {{ $property->description ?? 'No description provided.' }}</p>
+                    
+                    <div style="margin-top: 12px;">
+                        <button type="button" class="btn">Accept</button>
+                        <button type="button" class="btn g">Decline</button>
+                        <button type="button" class="btn g">Request viewing</button>
+                    </div>
+                </div>
+            @endforeach
         </div>
-
-        <!-- Property 3 -->
-        <div class="card">
-            <div class="ph">[Property photo]</div>
-            <h3>2-bed townhouse, Claremont</h3>
-            <div class="m sm">R15,000 a month · Deposit R15,000 · Available 1 Jan · Garden</div>
-            <p class="sm" style="margin-top: 8px;"><b>MrRel note:</b> 12-month lease wanted.</p>
-            <div style="margin-top: 12px;">
-                <button type="button" class="btn">Accept</button>
-                <button type="button" class="btn g">Decline</button>
-                <button type="button" class="btn g">Request viewing</button>
-                <a href="{{ route('customer.new-request') }}" class="btn g" style="text-decoration:none;">Plan move for this property</a>
-            </div>
-        </div>
-    </div>
+    @endif
 
     <div class="card" style="margin-top: 20px;">
         <h3>Notes</h3>

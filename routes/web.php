@@ -47,8 +47,10 @@ Route::post('/bookings', function (Request $request) {
     return redirect()->route('customer.bookings')->with('success', 'Quote accepted! Booking created.');
 })->name('customer.bookings.store');
 
+// UPDATED: Fetch approved properties for the shortlist
 Route::get('/shortlist', function () {
-    return view('customer.shortlist');
+    $properties = Property::where('status', 'Approved')->latest()->get();
+    return view('customer.shortlist', ['properties' => $properties]);
 })->name('customer.shortlist');
 
 // LANDLORD ROUTES
@@ -121,13 +123,11 @@ Route::get('/admin/dashboard', function () {
     ]);
 })->name('admin.dashboard');
 
-// NEW: Admin Approvals
 Route::get('/admin/approvals', function () {
     $properties = Property::where('status', 'Draft')->latest()->get();
     return view('admin.approvals', ['properties' => $properties]);
 })->name('admin.approvals');
 
-// NEW: Approve property
 Route::post('/admin/approvals/{property}', function (Property $property) {
     $property->update(['status' => 'Approved']);
     return redirect()->route('admin.approvals')->with('success', 'Property approved successfully!');

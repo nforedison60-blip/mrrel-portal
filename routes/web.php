@@ -31,17 +31,15 @@ Route::get('/quotes', function () {
     return view('customer.quotes', ['quotes' => $quotes]);
 })->name('customer.quotes');
 
-// UPDATED: Fetch real bookings
 Route::get('/bookings', function () {
-    $booking = Booking::latest()->first(); // Get the most recent booking for now
+    $booking = Booking::latest()->first();
     return view('customer.bookings', ['booking' => $booking]);
 })->name('customer.bookings');
 
-// NEW: Save the booking when a customer accepts a quote
 Route::post('/bookings', function (Request $request) {
     Booking::create([
         'quote_id' => $request->quote_id,
-        'customer_name' => 'Lerato', // Hardcoded for now
+        'customer_name' => 'Lerato',
         'total_price' => $request->total_price,
         'status' => 'Paid',
     ]);

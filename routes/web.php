@@ -6,17 +6,13 @@ use App\Models\Quote;
 use App\Models\Booking;
 use App\Models\Property;
 use App\Models\ViewingRequest;
+use App\Models\Provider;
 use Illuminate\Http\Request;
 
 // CUSTOMER ROUTES
 Route::get('/', function () {
-    return view('customer.dashboard', [
-        'requestsCount' => ServiceRequest::count(),
-        'quotesCount' => Quote::count(),
-        'bookingsCount' => Booking::count(),
-        'propertiesCount' => Property::where('status', 'Approved')->count(),
-        'latestRequests' => ServiceRequest::latest()->take(3)->get()
-    ]);
+    $requests = ServiceRequest::latest()->get();
+    return view('customer.dashboard', ['requests' => $requests]);
 })->name('customer.dashboard');
 
 Route::get('/requests', function () {
@@ -66,7 +62,6 @@ Route::post('/viewing-request', function (Request $request) {
     ]);
     return redirect()->route('customer.shortlist')->with('success', 'Viewing request sent to the landlord!');
 })->name('customer.viewing.store');
-
 
 // LANDLORD ROUTES
 Route::get('/landlord/properties', function () {
@@ -131,6 +126,33 @@ Route::get('/provider/bookings', function () {
 Route::get('/provider/rate-card', function () {
     return view('provider.rate');
 })->name('provider.rate');
+
+// NEW: Provider Profile
+Route::get('/provider/profile', function () {
+    $provider = Provider::firstOrCreate(
+        ['id' => 1],
+        [
+            'name' => 'Pieter',
+            'company_name' => 'Sample Movers B',
+            'vehicle' => '1-ton bakkie',
+            'plate_number' => 'CA 000 000',
+            'verification_status' => 'Verified',
+            'rating' => 4.8,
+        ]
+    );
+    return view('provider.profile', ['provider' => $provider]);
+})->name('provider.profile');
+
+Route::post('/provider/profile', function (Request $request) {
+    $provider = Provider::find(1);
+    $provider->update([
+        'name' => $request->name,
+        'company_name' => $request->company_name,
+        'vehicle' => $request->vehicle,
+        'plate_number' => $request->plate_number,
+    ]);
+    return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
+})->name('provider.profile.update');
 
 // ADMIN ROUTES
 Route::get('/admin/dashboard', function () {

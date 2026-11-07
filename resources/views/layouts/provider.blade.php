@@ -63,6 +63,7 @@
             <a href="{{ route('provider.requests') }}" class="{{ request()->routeIs('provider.requests') ? 'on' : '' }}">Requests</a>
             <a href="{{ route('provider.pbook') }}" class="{{ request()->routeIs('provider.pbook') ? 'on' : '' }}">Bookings and payouts</a>
             <a href="{{ route('provider.rate') }}" class="{{ request()->routeIs('provider.rate') ? 'on' : '' }}">Rate card</a>
+            <a href="{{ route('provider.profile') }}" class="{{ request()->routeIs('provider.profile') ? 'on' : '' }}">Profile</a>
         </nav>
         
         <main class="mn" id="mn">

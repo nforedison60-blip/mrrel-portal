@@ -11,7 +11,6 @@
         <div class="card"><div class="m sm">Draft</div><div class="big">{{ $properties->where('status', 'Draft')->count() }}</div><div class="m sm">Not submitted yet</div></div>
     </div>
 
-    <!-- THIS IS THE BUTTON YOU NEED -->
     <div style="margin-bottom: 16px;">
         <a href="{{ route('landlord.add-property') }}" class="btn" style="text-decoration:none;">+ Add property</a>
     </div>
@@ -32,6 +31,40 @@
                     <td>{{ $property->title }}, {{ $property->suburb }}</td>
                     <td>R{{ number_format($property->rent, 0) }}</td>
                     <td><span class="chip wn">{{ $property->status }}</span></td>
+                </tr>
+                @endforeach
+            </table>
+        @endif
+    </div>
+
+    <!-- UPDATED SECTION FOR VIEWING REQUESTS -->
+    <div class="card" style="margin-top: 20px;">
+        <h3>Viewing Requests</h3>
+        @if($viewingRequests->isEmpty())
+            <p class="m">No viewing requests yet.</p>
+        @else
+            <table class="tb">
+                <tr>
+                    <th>Property</th>
+                    <th>Tenant Name</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                @foreach($viewingRequests as $req)
+                <tr>
+                    <td>{{ $req->property->title }}</td>
+                    <td>{{ $req->customer_name }}</td>
+                    <td><span class="chip {{ $req->status == 'Completed' ? 'ok' : 'wn' }}">{{ $req->status }}</span></td>
+                    <td>
+                        @if($req->status !== 'Completed')
+                            <form method="POST" action="{{ route('landlord.viewing.resolve', $req->id) }}">
+                                @csrf
+                                <button type="submit" class="btn" style="padding: 6px 14px; font-size: 13px; margin:0;">Mark as Resolved</button>
+                            </form>
+                        @else
+                            <span class="m sm">Done</span>
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
             </table>

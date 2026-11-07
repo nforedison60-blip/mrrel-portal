@@ -98,6 +98,12 @@ Route::post('/landlord/add-property', function (Request $request) {
     return redirect()->route('landlord.properties')->with('success', 'Property saved as draft!');
 })->name('landlord.properties.store');
 
+// NEW: Resolve Viewing Request
+Route::post('/landlord/viewing/{viewingRequest}/resolve', function (ViewingRequest $viewingRequest) {
+    $viewingRequest->update(['status' => 'Completed']);
+    return redirect()->route('landlord.properties')->with('success', 'Viewing request marked as completed!');
+})->name('landlord.viewing.resolve');
+
 // PROVIDER ROUTES
 Route::get('/provider/dashboard', function () {
     return view('provider.dashboard');

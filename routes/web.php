@@ -64,6 +64,7 @@ Route::post('/viewing-request', function (Request $request) {
         'property_id' => $request->property_id,
         'customer_name' => 'Lerato',
         'status' => 'Pending',
+        'message' => $request->message,
     ]);
     return redirect()->route('customer.shortlist')->with('success', 'Viewing request sent to the landlord!');
 })->name('customer.viewing.store');
@@ -129,8 +130,10 @@ Route::get('/provider/requests', function () {
     return view('provider.requests');
 })->name('provider.requests');
 
+// UPDATED: Fetch real bookings for the Provider
 Route::get('/provider/bookings', function () {
-    return view('provider.pbook');
+    $bookings = Booking::latest()->get();
+    return view('provider.pbook', ['bookings' => $bookings]);
 })->name('provider.pbook');
 
 Route::get('/provider/rate-card', function () {
@@ -164,16 +167,33 @@ Route::post('/provider/profile', function (Request $request) {
 })->name('provider.profile.update');
 
 // ADMIN ROUTES
-Route::get('/admin/dashboard', function () {
+Route::get('/admin/dashboard', function (Request $request) {
+    $status = $request->query('status', 'All');
+    $search = $request->query('search');
+
+    $query = Property::query();
+
+    if ($status !== 'All') {
+        $query->where('status', $status);
+    }
+
+    if ($search) {
+        $query->where(function($q) use ($search) {
+            $q->where('title', 'like', "%{$search}%")
+              ->orWhere('suburb', 'like', "%{$search}%")
+              ->orWhere('city', 'like', "%{$search}%");
+        });
+    }
+
     return view('admin.dashboard', [
         'totalRequests' => ServiceRequest::count(),
         'totalQuotes' => Quote::count(),
         'totalBookings' => Booking::count(),
         'revenue' => Booking::sum('total_price'),
+        'properties' => $query->latest()->get(),
     ]);
 })->name('admin.dashboard');
 
-// UPDATED: Fetch Viewing Requests for Approvals page
 Route::get('/admin/approvals', function () {
     $properties = Property::where('status', 'Draft')->latest()->get();
     $viewingRequests = ViewingRequest::latest()->get();

@@ -37,7 +37,6 @@
         @endif
     </div>
 
-    <!-- UPDATED SECTION FOR VIEWING REQUESTS -->
     <div class="card" style="margin-top: 20px;">
         <h3>Viewing Requests</h3>
         @if($viewingRequests->isEmpty())
@@ -47,6 +46,7 @@
                 <tr>
                     <th>Property</th>
                     <th>Tenant Name</th>
+                    <th>Message</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -54,6 +54,7 @@
                 <tr>
                     <td>{{ $req->property->title }}</td>
                     <td>{{ $req->customer_name }}</td>
+                    <td>{{ $req->message ?? '—' }}</td>
                     <td><span class="chip {{ $req->status == 'Completed' ? 'ok' : 'wn' }}">{{ $req->status }}</span></td>
                     <td>
                         @if($req->status !== 'Completed')

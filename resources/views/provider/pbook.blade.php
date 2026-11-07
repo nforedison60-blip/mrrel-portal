@@ -6,66 +6,54 @@
 
     <div class="card" style="margin-top: 20px;">
         <h3>Bookings</h3>
-        <table class="tb">
-            <tr>
-                <th>Booking</th>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Status</th>
-            </tr>
-            <tr>
-                <td>BKG-0101</td>
-                <td>Lerato</td>
-                <td>Sat 31 Oct</td>
-                <td><span class="chip ok">Paid</span></td>
-            </tr>
-            <tr>
-                <td>BKG-0102</td>
-                <td>Sipho</td>
-                <td>Sun 25 Oct</td>
-                <td>Job complete</td>
-            </tr>
-            <tr>
-                <td>BKG-0103</td>
-                <td>Naledi</td>
-                <td>Wed 21 Oct</td>
-                <td><span class="chip ok">Resolved</span></td>
-            </tr>
-        </table>
+        @if($bookings->isEmpty())
+            <p class="m">No bookings yet.</p>
+        @else
+            <table class="tb">
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+                @foreach($bookings as $booking)
+                <tr>
+                    <td>BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td>{{ $booking->customer_name }}</td>
+                    <td>{{ $booking->created_at->format('d M Y') }}</td>
+                    <td>R{{ number_format($booking->total_price, 2) }}</td>
+                    <td><span class="chip ok">{{ $booking->status }}</span></td>
+                </tr>
+                @endforeach
+            </table>
+        @endif
     </div>
 
     <div class="card" style="margin-top: 20px;">
         <h3>Payout ledger</h3>
-        <table class="tb">
-            <tr>
-                <th>Booking</th>
-                <th>Customer paid</th>
-                <th>Job complete</th>
-                <th>Ready for payout</th>
-                <th>Paid out</th>
-            </tr>
-            <tr>
-                <td>BKG-0101</td>
-                <td>Yes</td>
-                <td>No</td>
-                <td>No</td>
-                <td>—</td>
-            </tr>
-            <tr>
-                <td>BKG-0102</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>Waiting</td>
-            </tr>
-            <tr>
-                <td>BKG-0103</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>R600 on [date]</td>
-            </tr>
-        </table>
+        @if($bookings->isEmpty())
+            <p class="m">No payouts yet.</p>
+        @else
+            <table class="tb">
+                <tr>
+                    <th>Booking</th>
+                    <th>Customer paid</th>
+                    <th>Job complete</th>
+                    <th>Ready for payout</th>
+                    <th>Paid out</th>
+                </tr>
+                @foreach($bookings as $booking)
+                <tr>
+                    <td>BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td>Yes</td>
+                    <td>No</td>
+                    <td>No</td>
+                    <td>—</td>
+                </tr>
+                @endforeach
+            </table>
+        @endif
     </div>
 
     <div class="g2" style="margin-top: 20px;">
@@ -80,7 +68,7 @@
         <div class="card">
             <h3>Problems</h3>
             <ul>
-                <li>BKG-0105: damaged item reported. In progress</li>
+                <li>No active problems.</li>
             </ul>
             <button type="button" class="btn g">Add evidence</button>
         </div>

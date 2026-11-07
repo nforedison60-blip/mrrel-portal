@@ -26,17 +26,18 @@
                     <p class="sm" style="margin-top: 8px;"><b>Location:</b> {{ $property->suburb }}, {{ $property->city }}</p>
                     <p class="sm"><b>MrRel note:</b> {{ $property->description ?? 'No description provided.' }}</p>
                     
-                    <div style="margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap;">
-                        <!-- FIXED: This is now a proper form that submits the request -->
-                        <form method="POST" action="{{ route('customer.viewing.store') }}" style="margin:0;">
-                            @csrf
-                            <input type="hidden" name="property_id" value="{{ $property->id }}">
-                            <button type="submit" class="btn" style="margin:0;">Request viewing</button>
-                        </form>
-                        
-                        <button type="button" class="btn g" style="margin:0;">Accept</button>
-                        <button type="button" class="btn g" style="margin:0;">Decline</button>
-                    </div>
+                    <form method="POST" action="{{ route('customer.viewing.store') }}" style="margin-top: 12px;">
+                        @csrf
+                        <input type="hidden" name="property_id" value="{{ $property->id }}">
+                        <div class="f" style="margin-bottom: 8px;">
+                            <label class="k">Message to landlord (optional)
+                                <input type="text" name="message" placeholder="e.g. Can we do Saturday morning?">
+                            </label>
+                        </div>
+                        <button type="submit" class="btn" style="margin:0 8px 8px 0;">Request viewing</button>
+                        <button type="button" class="btn g" style="margin:0 8px 8px 0;">Accept</button>
+                        <button type="button" class="btn g" style="margin:0 8px 8px 0;">Decline</button>
+                    </form>
                 </div>
             @endforeach
         </div>

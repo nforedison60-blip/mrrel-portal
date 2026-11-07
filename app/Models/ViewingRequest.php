@@ -13,6 +13,7 @@ class ViewingRequest extends Model
         'property_id',
         'customer_name',
         'status',
+        'message',
     ];
 
     public function property()

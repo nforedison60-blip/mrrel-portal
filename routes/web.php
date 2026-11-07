@@ -11,8 +11,13 @@ use Illuminate\Http\Request;
 
 // CUSTOMER ROUTES
 Route::get('/', function () {
-    $requests = ServiceRequest::latest()->get();
-    return view('customer.dashboard', ['requests' => $requests]);
+    return view('customer.dashboard', [
+        'requestsCount' => ServiceRequest::count(),
+        'quotesCount' => Quote::count(),
+        'bookingsCount' => Booking::count(),
+        'propertiesCount' => Property::where('status', 'Approved')->count(),
+        'latestRequests' => ServiceRequest::latest()->take(3)->get()
+    ]);
 })->name('customer.dashboard');
 
 Route::get('/requests', function () {
@@ -127,7 +132,6 @@ Route::get('/provider/rate-card', function () {
     return view('provider.rate');
 })->name('provider.rate');
 
-// NEW: Provider Profile
 Route::get('/provider/profile', function () {
     $provider = Provider::firstOrCreate(
         ['id' => 1],

@@ -98,7 +98,6 @@ Route::post('/landlord/add-property', function (Request $request) {
     return redirect()->route('landlord.properties')->with('success', 'Property saved as draft!');
 })->name('landlord.properties.store');
 
-// NEW: Resolve Viewing Request
 Route::post('/landlord/viewing/{viewingRequest}/resolve', function (ViewingRequest $viewingRequest) {
     $viewingRequest->update(['status' => 'Completed']);
     return redirect()->route('landlord.properties')->with('success', 'Viewing request marked as completed!');
@@ -174,9 +173,14 @@ Route::get('/admin/dashboard', function () {
     ]);
 })->name('admin.dashboard');
 
+// UPDATED: Fetch Viewing Requests for Approvals page
 Route::get('/admin/approvals', function () {
     $properties = Property::where('status', 'Draft')->latest()->get();
-    return view('admin.approvals', ['properties' => $properties]);
+    $viewingRequests = ViewingRequest::latest()->get();
+    return view('admin.approvals', [
+        'properties' => $properties,
+        'viewingRequests' => $viewingRequests
+    ]);
 })->name('admin.approvals');
 
 Route::post('/admin/approvals/{property}', function (Property $property) {

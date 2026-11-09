@@ -17,5 +17,7 @@ class Provider extends Model
         'verification_status',
         'rating',
         'image_path',
+        'vehicle_image_path',
+        'id_image_path',
     ];
 }

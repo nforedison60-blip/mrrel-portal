@@ -25,7 +25,7 @@
                         @endif
                         <div>
                             <b>Profile Photo</b>
-                            <div class="m sm">Upload a clear photo or company logo.</div>
+                            <div class="m sm">Upload a clear photo of yourself.</div>
                         </div>
                     </div>
 
@@ -38,11 +38,27 @@
                         <label>Vehicle<input type="text" name="vehicle" value="{{ $provider->vehicle }}"></label>
                         <label>Plate Number<input type="text" name="plate_number" value="{{ $provider->plate_number }}"></label>
                     </div>
+
+                    <h3 style="margin-top: 20px; border-top: 1px solid var(--l); padding-top: 16px;">Verification Documents</h3>
+                    <div class="f">
+                        <label class="k">Vehicle Photo (Optional)
+                            <input type="file" name="vehicle_image" accept="image/*">
+                            @if($provider->vehicle_image_path)
+                                <span class="m sm" style="color: green;">✓ Uploaded</span>
+                            @endif
+                        </label>
+                        <label class="k">ID / Document (Optional)
+                            <input type="file" name="id_image" accept="image/*">
+                            @if($provider->id_image_path)
+                                <span class="m sm" style="color: green;">✓ Uploaded</span>
+                            @endif
+                        </label>
+                    </div>
+
                     <button type="submit" class="btn" style="margin-top: 10px;">Save Changes</button>
                 </form>
             </div>
 
-            <!-- REVIEWS LIST -->
             <div class="card" style="margin-top: 20px;">
                 <h3>Recent Reviews</h3>
                 @if($reviews->isEmpty())
@@ -69,7 +85,7 @@
                 </span>
             </div>
             <p class="sm">Your rating is currently <b>{{ $provider->rating }} stars</b>.</p>
-            <p class="m sm">Once verified by an Admin, you will get a "Verified" badge on all your quotes.</p>
+            <p class="m sm">Upload your ID and Vehicle photo to get verified by an Admin.</p>
         </div>
     </div>
 @endsection

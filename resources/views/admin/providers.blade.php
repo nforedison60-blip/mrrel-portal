@@ -18,8 +18,8 @@
             <table class="tb">
                 <tr>
                     <th>Provider / Company</th>
-                    <th>Vehicle</th>
-                    <th>Plate</th>
+                    <th>Vehicle & Plate</th>
+                    <th>Documents</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -29,8 +29,23 @@
                         <b>{{ $provider->name }}</b><br>
                         <span class="m sm">{{ $provider->company_name }}</span>
                     </td>
-                    <td>{{ $provider->vehicle ?? 'Not provided' }}</td>
-                    <td>{{ $provider->plate_number ?? 'Not provided' }}</td>
+                    <td>
+                        {{ $provider->vehicle ?? 'Not provided' }}<br>
+                        <span class="m sm">{{ $provider->plate_number ?? 'Not provided' }}</span>
+                    </td>
+                    <td>
+                        @if($provider->vehicle_image_path)
+                            <a href="{{ asset('storage/' . $provider->vehicle_image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline; display: block; margin-bottom: 4px;">Vehicle Photo</a>
+                        @else
+                            <span class="m sm" style="display: block; margin-bottom: 4px;">No vehicle photo</span>
+                        @endif
+
+                        @if($provider->id_image_path)
+                            <a href="{{ asset('storage/' . $provider->id_image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline;">ID Document</a>
+                        @else
+                            <span class="m sm">No ID</span>
+                        @endif
+                    </td>
                     <td>
                         <span class="chip {{ $provider->verification_status == 'Verified' ? 'ok' : 'wn' }}">
                             {{ $provider->verification_status }}

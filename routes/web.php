@@ -269,6 +269,7 @@ Route::get('/provider/profile', function () {
     ]);
 })->name('provider.profile');
 
+// UPDATED: Handle Vehicle and ID uploads
 Route::post('/provider/profile', function (Request $request) {
     $provider = Provider::find(1);
     
@@ -277,12 +278,24 @@ Route::post('/provider/profile', function (Request $request) {
         $imagePath = $request->file('image')->store('providers', 'public');
     }
 
+    $vehicleImagePath = $provider->vehicle_image_path;
+    if ($request->hasFile('vehicle_image')) {
+        $vehicleImagePath = $request->file('vehicle_image')->store('providers', 'public');
+    }
+
+    $idImagePath = $provider->id_image_path;
+    if ($request->hasFile('id_image')) {
+        $idImagePath = $request->file('id_image')->store('providers', 'public');
+    }
+
     $provider->update([
         'name' => $request->name,
         'company_name' => $request->company_name,
         'vehicle' => $request->vehicle,
         'plate_number' => $request->plate_number,
         'image_path' => $imagePath,
+        'vehicle_image_path' => $vehicleImagePath,
+        'id_image_path' => $idImagePath,
     ]);
     
     return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
@@ -332,7 +345,6 @@ Route::post('/admin/approvals/{property}', function (Property $property) {
     return redirect()->route('admin.approvals')->with('success', 'Property approved successfully!');
 })->name('admin.approvals.approve');
 
-// NEW: Admin Providers
 Route::get('/admin/providers', function () {
     $providers = Provider::latest()->get();
     return view('admin.providers', ['providers' => $providers]);

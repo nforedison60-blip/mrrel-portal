@@ -63,8 +63,11 @@
             <a href="{{ route('customer.requests') }}" class="{{ request()->routeIs('customer.requests') ? 'on' : '' }}">My requests</a>
             <a href="{{ route('customer.quotes') }}" class="{{ request()->routeIs('customer.quotes') ? 'on' : '' }}">Quotes</a>
             <a href="{{ route('customer.bookings') }}" class="{{ request()->routeIs('customer.bookings') ? 'on' : '' }}">Bookings</a>
+            <a href="{{ route('customer.messages') }}" class="{{ request()->routeIs('customer.messages') ? 'on' : '' }}">Messages</a>
             <a href="{{ route('customer.shortlist') }}" class="{{ request()->routeIs('customer.shortlist') ? 'on' : '' }}">My shortlist</a>
-            <a href="{{ route('customer.profile') }}" class="{{ request()->routeIs('customer.profile') ? 'on' : '' }}">My profile</a>
+            <a href="{{ route('customer.fees') }}" class="{{ request()->routeIs('customer.fees') ? 'on' : '' }}">Rental fees</a>
+            <a href="{{ route('customer.problems') }}" class="{{ request()->routeIs('customer.problems') ? 'on' : '' }}">Problems</a>
+            <a href="{{ route('customer.profile') }}" class="{{ request()->routeIs('customer.profile') ? 'on' : '' }}">Profile</a>
         </nav>
         
         <main class="mn" id="mn">

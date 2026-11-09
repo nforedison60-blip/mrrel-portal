@@ -8,9 +8,14 @@ use App\Models\Property;
 use App\Models\ViewingRequest;
 use App\Models\Provider;
 use App\Models\Customer;
+use App\Models\Review;
+use App\Models\Message;
+use App\Models\Problem;
 use Illuminate\Http\Request;
 
+// ==========================================
 // CUSTOMER ROUTES
+// ==========================================
 Route::get('/', function () {
     return view('customer.dashboard', [
         'requestsCount' => ServiceRequest::count(),
@@ -56,6 +61,17 @@ Route::post('/bookings', function (Request $request) {
     return redirect()->route('customer.bookings')->with('success', 'Quote accepted! Booking created.');
 })->name('customer.bookings.store');
 
+Route::post('/review', function (Request $request) {
+    $customer = Customer::find(1);
+    Review::create([
+        'provider_id' => 1,
+        'customer_name' => $customer ? $customer->name : 'Lerato',
+        'rating' => $request->rating,
+        'comment' => $request->comment,
+    ]);
+    return redirect()->route('customer.bookings')->with('success', 'Thank you for your review!');
+})->name('customer.review.store');
+
 Route::get('/shortlist', function () {
     $properties = Property::where('status', 'Approved')->latest()->get();
     return view('customer.shortlist', ['properties' => $properties]);
@@ -90,7 +106,41 @@ Route::post('/customer/profile', function (Request $request) {
     return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
 })->name('customer.profile.update');
 
+Route::get('/customer/messages', function () {
+    $messages = Message::latest()->get();
+    return view('customer.messages', ['messages' => $messages]);
+})->name('customer.messages');
+
+Route::post('/customer/messages', function (Request $request) {
+    Message::create([
+        'sender_name' => 'Lerato',
+        'message' => $request->message,
+    ]);
+    return redirect()->route('customer.messages')->with('success', 'Message sent!');
+})->name('customer.messages.store');
+
+Route::get('/customer/fees', function () {
+    return view('customer.fees');
+})->name('customer.fees');
+
+Route::get('/customer/problems', function () {
+    $problems = Problem::latest()->get();
+    return view('customer.problems', ['problems' => $problems]);
+})->name('customer.problems');
+
+Route::post('/customer/problems', function (Request $request) {
+    $customer = Customer::find(1);
+    Problem::create([
+        'customer_name' => $customer ? $customer->name : 'Lerato',
+        'description' => $request->description,
+    ]);
+    return redirect()->route('customer.problems')->with('success', 'Problem reported successfully!');
+})->name('customer.problems.store');
+
+
+// ==========================================
 // LANDLORD ROUTES
+// ==========================================
 Route::get('/landlord/properties', function () {
     $properties = Property::latest()->get();
     $viewingRequests = ViewingRequest::latest()->get();
@@ -131,7 +181,10 @@ Route::post('/landlord/viewing/{viewingRequest}/resolve', function (ViewingReque
     return redirect()->route('landlord.properties')->with('success', 'Viewing request marked as completed!');
 })->name('landlord.viewing.resolve');
 
+
+// ==========================================
 // PROVIDER ROUTES
+// ==========================================
 Route::get('/provider/dashboard', function () {
     return view('provider.dashboard');
 })->name('provider.dashboard');
@@ -162,6 +215,19 @@ Route::get('/provider/bookings', function () {
     return view('provider.pbook', ['bookings' => $bookings]);
 })->name('provider.pbook');
 
+Route::get('/provider/messages', function () {
+    $messages = Message::latest()->get();
+    return view('provider.messages', ['messages' => $messages]);
+})->name('provider.messages');
+
+Route::post('/provider/messages', function (Request $request) {
+    Message::create([
+        'sender_name' => 'Pieter',
+        'message' => $request->message,
+    ]);
+    return redirect()->route('provider.messages')->with('success', 'Message sent!');
+})->name('provider.messages.store');
+
 Route::get('/provider/rate-card', function () {
     return view('provider.rate');
 })->name('provider.rate');
@@ -178,10 +244,13 @@ Route::get('/provider/profile', function () {
             'rating' => 4.8,
         ]
     );
-    return view('provider.profile', ['provider' => $provider]);
+    $reviews = Review::latest()->get();
+    return view('provider.profile', [
+        'provider' => $provider,
+        'reviews' => $reviews
+    ]);
 })->name('provider.profile');
 
-// UPDATED: Handle Provider Profile Image Upload
 Route::post('/provider/profile', function (Request $request) {
     $provider = Provider::find(1);
     
@@ -201,7 +270,10 @@ Route::post('/provider/profile', function (Request $request) {
     return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
 })->name('provider.profile.update');
 
+
+// ==========================================
 // ADMIN ROUTES
+// ==========================================
 Route::get('/admin/dashboard', function (Request $request) {
     $status = $request->query('status', 'All');
     $search = $request->query('search');
@@ -232,9 +304,11 @@ Route::get('/admin/dashboard', function (Request $request) {
 Route::get('/admin/approvals', function () {
     $properties = Property::where('status', 'Draft')->latest()->get();
     $viewingRequests = ViewingRequest::latest()->get();
+    $problems = Problem::latest()->get();
     return view('admin.approvals', [
         'properties' => $properties,
-        'viewingRequests' => $viewingRequests
+        'viewingRequests' => $viewingRequests,
+        'problems' => $problems
     ]);
 })->name('admin.approvals');
 

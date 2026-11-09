@@ -16,9 +16,9 @@
             <div class="m sm">Available to compare</div>
         </div>
         <div class="card">
-            <div class="m sm">Active bookings</div>
-            <div class="big">{{ $bookingsCount }}</div>
-            <div class="m sm">Jobs confirmed</div>
+            <div class="m sm">Next booking</div>
+            <div class="big">Sat 31 Oct</div>
+            <div class="m sm">Provider arrives 08:00</div>
         </div>
         <div class="card">
             <div class="m sm">Shortlist</div>
@@ -44,27 +44,19 @@
         </div>
     </div>
 
+    <!-- NEW: YOUR NEXT PROVIDER CARD -->
     <div class="card" style="margin-top:16px;">
-        <h3>Your recent requests</h3>
-        @if($latestRequests->isEmpty())
-            <p class="m">You haven't submitted any requests yet.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Service</th>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>Date</th>
-                </tr>
-                @foreach($latestRequests as $req)
-                <tr>
-                    <td>{{ $req->services_needed }}</td>
-                    <td>{{ $req->moving_from }}</td>
-                    <td>{{ $req->moving_to ?? '—' }}</td>
-                    <td>{{ $req->move_date }}</td>
-                </tr>
-                @endforeach
-            </table>
-        @endif
+        <h3>Your next provider</h3>
+        <div class="row" style="margin-top: 12px;">
+            <div style="display:flex; gap:12px; align-items:center;">
+                <div class="av" style="width:60px; height:60px; font-size:24px;">P</div>
+                <div style="width:100px; height:60px; background:#E3F1F2; border:1px dashed #B9C6D2; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--m); font-size:12px;">[Vehicle]</div>
+            </div>
+            <div>
+                <b>Pieter · Sample Movers B</b>
+                <div class="m sm">Sat 31 Oct, 08:00 to 10:00 · 1-ton bakkie · CA 000 000</div>
+                <button type="button" class="btn g" style="margin-top: 8px; padding: 6px 14px; font-size: 13px;">Track and chat</button>
+            </div>
+        </div>
     </div>
 @endsection

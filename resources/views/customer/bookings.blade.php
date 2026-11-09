@@ -44,6 +44,25 @@
                     <div class="m sm" style="margin-bottom: 12px;">Receipt BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}-R1</div>
                     <button type="button" class="btn g w">Download receipt</button>
                 </div>
+
+                <!-- REAL REVIEW FORM -->
+                <div class="card" style="margin-top: 16px;">
+                    <h3>Review your provider</h3>
+                    <form method="POST" action="{{ route('customer.review.store') }}">
+                        @csrf
+                        <div class="pl" style="margin-bottom: 12px;">
+                            <label><input type="radio" name="rating" value="5" required> 5 Stars</label>
+                            <label><input type="radio" name="rating" value="4"> 4 Stars</label>
+                            <label><input type="radio" name="rating" value="3"> 3 Stars</label>
+                            <label><input type="radio" name="rating" value="2"> 2 Stars</label>
+                            <label><input type="radio" name="rating" value="1"> 1 Star</label>
+                        </div>
+                        <div class="f">
+                            <label class="k">Comment<input type="text" name="comment" placeholder="How was the service?"></label>
+                        </div>
+                        <button type="submit" class="btn w">Submit review</button>
+                    </form>
+                </div>
             </div>
         </div>
     @else

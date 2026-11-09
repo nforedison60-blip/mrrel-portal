@@ -62,6 +62,7 @@
             <a href="{{ route('provider.dashboard') }}" class="{{ request()->routeIs('provider.dashboard') ? 'on' : '' }}">Dashboard</a>
             <a href="{{ route('provider.requests') }}" class="{{ request()->routeIs('provider.requests') ? 'on' : '' }}">Requests</a>
             <a href="{{ route('provider.pbook') }}" class="{{ request()->routeIs('provider.pbook') ? 'on' : '' }}">Bookings and payouts</a>
+            <a href="{{ route('provider.messages') }}" class="{{ request()->routeIs('provider.messages') ? 'on' : '' }}">Messages</a>
             <a href="{{ route('provider.rate') }}" class="{{ request()->routeIs('provider.rate') ? 'on' : '' }}">Rate card</a>
             <a href="{{ route('provider.profile') }}" class="{{ request()->routeIs('provider.profile') ? 'on' : '' }}">Profile</a>
         </nav>

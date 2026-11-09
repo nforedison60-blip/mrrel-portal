@@ -11,34 +11,54 @@
     @endif
 
     <div class="sp" style="margin-top: 20px;">
-        <div class="card">
-            <h3>Edit Details</h3>
-            <form method="POST" action="{{ route('provider.profile.update') }}" enctype="multipart/form-data">
-                @csrf
-                
-                <div class="row" style="margin-bottom: 16px;">
-                    @if($provider->image_path)
-                        <img src="{{ asset('storage/' . $provider->image_path) }}" alt="Profile Photo" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--t);">
-                    @else
-                        <div class="av" style="width: 80px; height: 80px; font-size: 24px;">{{ substr($provider->name, 0, 1) }}</div>
-                    @endif
-                    <div>
-                        <b>Profile Photo</b>
-                        <div class="m sm">Upload a clear photo or company logo.</div>
+        <div>
+            <div class="card">
+                <h3>Edit Details</h3>
+                <form method="POST" action="{{ route('provider.profile.update') }}" enctype="multipart/form-data">
+                    @csrf
+                    
+                    <div class="row" style="margin-bottom: 16px;">
+                        @if($provider->image_path)
+                            <img src="{{ asset('storage/' . $provider->image_path) }}" alt="Profile Photo" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--t);">
+                        @else
+                            <div class="av" style="width: 80px; height: 80px; font-size: 24px;">{{ substr($provider->name, 0, 1) }}</div>
+                        @endif
+                        <div>
+                            <b>Profile Photo</b>
+                            <div class="m sm">Upload a clear photo or company logo.</div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="f">
-                    <label class="k">Profile Photo (Optional)
-                        <input type="file" name="image" accept="image/*">
-                    </label>
-                    <label>Name<input type="text" name="name" value="{{ $provider->name }}" required></label>
-                    <label>Company Name<input type="text" name="company_name" value="{{ $provider->company_name }}"></label>
-                    <label>Vehicle<input type="text" name="vehicle" value="{{ $provider->vehicle }}"></label>
-                    <label>Plate Number<input type="text" name="plate_number" value="{{ $provider->plate_number }}"></label>
-                </div>
-                <button type="submit" class="btn" style="margin-top: 10px;">Save Changes</button>
-            </form>
+                    <div class="f">
+                        <label class="k">Profile Photo (Optional)
+                            <input type="file" name="image" accept="image/*">
+                        </label>
+                        <label>Name<input type="text" name="name" value="{{ $provider->name }}" required></label>
+                        <label>Company Name<input type="text" name="company_name" value="{{ $provider->company_name }}"></label>
+                        <label>Vehicle<input type="text" name="vehicle" value="{{ $provider->vehicle }}"></label>
+                        <label>Plate Number<input type="text" name="plate_number" value="{{ $provider->plate_number }}"></label>
+                    </div>
+                    <button type="submit" class="btn" style="margin-top: 10px;">Save Changes</button>
+                </form>
+            </div>
+
+            <!-- REVIEWS LIST -->
+            <div class="card" style="margin-top: 20px;">
+                <h3>Recent Reviews</h3>
+                @if($reviews->isEmpty())
+                    <p class="m">No reviews yet.</p>
+                @else
+                    @foreach($reviews as $review)
+                        <div style="border-bottom: 1px solid var(--l); padding: 12px 0;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <b>{{ $review->customer_name }}</b>
+                                <span style="color: var(--a); font-weight: bold;">{{ $review->rating }} ★</span>
+                            </div>
+                            <p class="sm m" style="margin-top: 4px;">"{{ $review->comment }}"</p>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
         </div>
 
         <div class="card">

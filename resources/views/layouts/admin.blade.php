@@ -65,6 +65,12 @@
         </nav>
         
         <main class="mn" id="mn">
+            @if(session('success'))
+                <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             @yield('content')
         </main>
     </div>

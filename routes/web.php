@@ -371,8 +371,12 @@ Route::get('/admin/users', function () {
     ]);
 })->name('admin.users');
 
+// UPDATED: Fetch requests and quotes
 Route::get('/admin/requests', function () {
-    return view('admin.requests');
+    return view('admin.requests', [
+        'requests' => ServiceRequest::latest()->get(),
+        'quotes' => Quote::latest()->get()
+    ]);
 })->name('admin.requests');
 
 Route::get('/admin/bookings', function () {
@@ -387,7 +391,6 @@ Route::get('/admin/matching', function () {
     return view('admin.matching');
 })->name('admin.matching');
 
-// UPDATED: Fetch all properties for Admin
 Route::get('/admin/properties', function () {
     return view('admin.properties', [
         'properties' => Property::latest()->get()

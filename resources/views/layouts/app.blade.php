@@ -52,7 +52,7 @@
             <a href="{{ route('customer.dashboard') }}" class="on">Customer</a>
             <a href="{{ route('landlord.properties') }}">Landlord</a>
             <a href="{{ route('provider.dashboard') }}">Provider</a>
-            <a href="{{ route('admin.map') }}">Admin</a>
+            <a href="{{ route('admin.dashboard') }}">Admin</a>
         </div>
         <span style="opacity:.85;font-size:13px">Example data</span>
     </div>

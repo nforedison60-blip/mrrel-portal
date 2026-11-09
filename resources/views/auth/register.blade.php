@@ -13,6 +13,14 @@
                 <input type="email" name="email" value="{{ old('email') }}" required>
             </label>
 
+            <label>I am registering as a...
+                <select name="role" required>
+                    <option value="Customer" {{ old('role') == 'Customer' ? 'selected' : '' }}>Customer (Looking for services / a place)</option>
+                    <option value="Landlord" {{ old('role') == 'Landlord' ? 'selected' : '' }}>Landlord (Listing a property)</option>
+                    <option value="Provider" {{ old('role') == 'Provider' ? 'selected' : '' }}>Provider (Offering moving / services)</option>
+                </select>
+            </label>
+
             <label>Password
                 <input type="password" name="password" required>
             </label>

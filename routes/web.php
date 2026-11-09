@@ -72,7 +72,6 @@ Route::post('/viewing-request', function (Request $request) {
     return redirect()->route('customer.shortlist')->with('success', 'Viewing request sent to the landlord!');
 })->name('customer.viewing.store');
 
-// NEW: Customer Profile
 Route::get('/customer/profile', function () {
     $customer = Customer::firstOrCreate(
         ['id' => 1],
@@ -182,14 +181,23 @@ Route::get('/provider/profile', function () {
     return view('provider.profile', ['provider' => $provider]);
 })->name('provider.profile');
 
+// UPDATED: Handle Provider Profile Image Upload
 Route::post('/provider/profile', function (Request $request) {
     $provider = Provider::find(1);
+    
+    $imagePath = $provider->image_path;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('providers', 'public');
+    }
+
     $provider->update([
         'name' => $request->name,
         'company_name' => $request->company_name,
         'vehicle' => $request->vehicle,
         'plate_number' => $request->plate_number,
+        'image_path' => $imagePath,
     ]);
+    
     return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
 })->name('provider.profile.update');
 

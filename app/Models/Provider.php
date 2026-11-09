@@ -16,5 +16,6 @@ class Provider extends Model
         'plate_number',
         'verification_status',
         'rating',
+        'image_path',
     ];
 }

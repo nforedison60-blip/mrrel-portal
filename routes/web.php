@@ -24,6 +24,24 @@ Route::get('/', function () {
     ]);
 })->name('customer.dashboard');
 
+Route::get('/customer/search', function (Request $request) {
+    $query = Property::where('status', 'Approved');
+
+    if ($request->filled('location')) {
+        $location = $request->input('location');
+        $query->where(function($q) use ($location) {
+            $q->where('suburb', 'like', "%{$location}%")
+              ->orWhere('city', 'like', "%{$location}%");
+        });
+    }
+
+    if ($request->filled('max_price')) {
+        $query->where('rent', '<=', $request->input('max_price'));
+    }
+
+    return view('customer.search', ['properties' => $query->latest()->get()]);
+})->name('customer.search');
+
 Route::get('/requests', function () {
     $requests = ServiceRequest::latest()->get();
     return view('customer.requests', ['requests' => $requests]); 
@@ -313,6 +331,17 @@ Route::post('/admin/approvals/{property}', function (Property $property) {
     $property->update(['status' => 'Approved']);
     return redirect()->route('admin.approvals')->with('success', 'Property approved successfully!');
 })->name('admin.approvals.approve');
+
+// NEW: Admin Providers
+Route::get('/admin/providers', function () {
+    $providers = Provider::latest()->get();
+    return view('admin.providers', ['providers' => $providers]);
+})->name('admin.providers');
+
+Route::post('/admin/providers/{provider}/verify', function (Provider $provider) {
+    $provider->update(['verification_status' => 'Verified']);
+    return redirect()->route('admin.providers')->with('success', 'Provider verified successfully!');
+})->name('admin.providers.verify');
 
 Route::get('/admin/map', function () {
     return view('admin.map');

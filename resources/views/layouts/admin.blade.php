@@ -61,6 +61,7 @@
         <nav class="sd" id="sd">
             <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'on' : '' }}">Dashboard</a>
             <a href="{{ route('admin.approvals') }}" class="{{ request()->routeIs('admin.approvals') ? 'on' : '' }}">Approvals</a>
+            <a href="{{ route('admin.providers') }}" class="{{ request()->routeIs('admin.providers') ? 'on' : '' }}">Providers</a>
             <a href="{{ route('admin.map') }}" class="{{ request()->routeIs('admin.map') ? 'on' : '' }}">Portal map</a>
         </nav>
         

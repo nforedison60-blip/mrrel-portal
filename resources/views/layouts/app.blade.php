@@ -60,6 +60,7 @@
     <div class="bd">
         <nav class="sd" id="sd">
             <a href="{{ route('customer.dashboard') }}" class="{{ request()->routeIs('customer.dashboard') ? 'on' : '' }}">Dashboard</a>
+            <a href="{{ route('customer.search') }}" class="{{ request()->routeIs('customer.search') ? 'on' : '' }}">Find a place</a>
             <a href="{{ route('customer.requests') }}" class="{{ request()->routeIs('customer.requests') ? 'on' : '' }}">My requests</a>
             <a href="{{ route('customer.quotes') }}" class="{{ request()->routeIs('customer.quotes') ? 'on' : '' }}">Quotes</a>
             <a href="{{ route('customer.bookings') }}" class="{{ request()->routeIs('customer.bookings') ? 'on' : '' }}">Bookings</a>

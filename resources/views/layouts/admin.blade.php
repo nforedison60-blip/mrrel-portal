@@ -62,6 +62,16 @@
             <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'on' : '' }}">Dashboard</a>
             <a href="{{ route('admin.approvals') }}" class="{{ request()->routeIs('admin.approvals') ? 'on' : '' }}">Approvals</a>
             <a href="{{ route('admin.providers') }}" class="{{ request()->routeIs('admin.providers') ? 'on' : '' }}">Providers</a>
+            <a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'on' : '' }}">Users</a>
+            <a href="{{ route('admin.requests') }}" class="{{ request()->routeIs('admin.requests') ? 'on' : '' }}">Requests and quotes</a>
+            <a href="{{ route('admin.bookings') }}" class="{{ request()->routeIs('admin.bookings') ? 'on' : '' }}">Bookings</a>
+            <a href="{{ route('admin.messages') }}" class="{{ request()->routeIs('admin.messages') ? 'on' : '' }}">Messages</a>
+            <a href="{{ route('admin.matching') }}" class="{{ request()->routeIs('admin.matching') ? 'on' : '' }}">Tenant matching</a>
+            <a href="{{ route('admin.properties') }}" class="{{ request()->routeIs('admin.properties') ? 'on' : '' }}">Properties</a>
+            <a href="{{ route('admin.payments') }}" class="{{ request()->routeIs('admin.payments') ? 'on' : '' }}">Payments and payouts</a>
+            <a href="{{ route('admin.disputes') }}" class="{{ request()->routeIs('admin.disputes') ? 'on' : '' }}">Disputes</a>
+            <a href="{{ route('admin.subscriptions') }}" class="{{ request()->routeIs('admin.subscriptions') ? 'on' : '' }}">Subscriptions</a>
+            <a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('admin.settings') ? 'on' : '' }}">Settings and reports</a>
             <a href="{{ route('admin.map') }}" class="{{ request()->routeIs('admin.map') ? 'on' : '' }}">Portal map</a>
         </nav>
         

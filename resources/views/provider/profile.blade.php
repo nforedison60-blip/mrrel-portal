@@ -17,20 +17,21 @@
                 <form method="POST" action="{{ route('provider.profile.update') }}" enctype="multipart/form-data">
                     @csrf
                     
-                    <div class="row" style="margin-bottom: 16px;">
+                    <div class="row" style="margin-bottom: 16px; align-items: center;">
+                        <!-- ROUND CROP AS PER DESIGN -->
                         @if($provider->image_path)
-                            <img src="{{ asset('storage/' . $provider->image_path) }}" alt="Profile Photo" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--t);">
+                            <img src="{{ asset('storage/' . $provider->image_path) }}" alt="Profile Photo of {{ $provider->name }}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         @else
-                            <div class="av" style="width: 80px; height: 80px; font-size: 24px;">{{ substr($provider->name, 0, 1) }}</div>
+                            <div class="av" style="width: 150px; height: 150px; font-size: 48px;">{{ substr($provider->name, 0, 1) }}</div>
                         @endif
-                        <div>
+                        <div style="margin-left: 20px;">
                             <b>Profile Photo</b>
-                            <div class="m sm">Upload a clear photo of yourself.</div>
+                            <div class="m sm">Upload a clear, recent photo of the person who will attend.<br>Round crop will be applied automatically.</div>
                         </div>
                     </div>
 
                     <div class="f">
-                        <label class="k">Profile Photo (Optional)
+                        <label class="k">Profile Photo (Max 5MB)
                             <input type="file" name="image" accept="image/*">
                         </label>
                         <label>Name<input type="text" name="name" value="{{ $provider->name }}" required></label>
@@ -41,13 +42,13 @@
 
                     <h3 style="margin-top: 20px; border-top: 1px solid var(--l); padding-top: 16px;">Verification Documents</h3>
                     <div class="f">
-                        <label class="k">Vehicle Photo (Optional)
+                        <label class="k">Vehicle Photo (Max 5MB)
                             <input type="file" name="vehicle_image" accept="image/*">
                             @if($provider->vehicle_image_path)
                                 <span class="m sm" style="color: green;">✓ Uploaded</span>
                             @endif
                         </label>
-                        <label class="k">ID / Document (Optional)
+                        <label class="k">ID / Document (Max 5MB)
                             <input type="file" name="id_image" accept="image/*">
                             @if($provider->id_image_path)
                                 <span class="m sm" style="color: green;">✓ Uploaded</span>
@@ -85,7 +86,7 @@
                 </span>
             </div>
             <p class="sm">Your rating is currently <b>{{ $provider->rating }} stars</b>.</p>
-            <p class="m sm">Upload your ID and Vehicle photo to get verified by an Admin.</p>
+            <p class="m sm">Your profile photo and vehicle photo are visible to customers once you are verified.</p>
         </div>
     </div>
 @endsection

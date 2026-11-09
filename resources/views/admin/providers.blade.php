@@ -17,8 +17,9 @@
         @else
             <table class="tb">
                 <tr>
+                    <th>Profile</th>
                     <th>Provider / Company</th>
-                    <th>Vehicle & Plate</th>
+                    <th>Vehicle Details</th>
                     <th>Documents</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -26,24 +27,35 @@
                 @foreach($providers as $provider)
                 <tr>
                     <td>
+                        <!-- ROUND CROP -->
+                        @if($provider->image_path)
+                            <img src="{{ asset('storage/' . $provider->image_path) }}" alt="Profile Photo of {{ $provider->name }}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover;">
+                        @else
+                            <div class="av" style="width: 72px; height: 72px; font-size: 24px;">{{ substr($provider->name, 0, 1) }}</div>
+                        @endif
+                    </td>
+                    <td>
                         <b>{{ $provider->name }}</b><br>
                         <span class="m sm">{{ $provider->company_name }}</span>
                     </td>
                     <td>
                         {{ $provider->vehicle ?? 'Not provided' }}<br>
                         <span class="m sm">{{ $provider->plate_number ?? 'Not provided' }}</span>
+                        
+                        <!-- WIDE CROP -->
+                        @if($provider->vehicle_image_path)
+                            <div style="margin-top: 8px;">
+                                <a href="{{ asset('storage/' . $provider->vehicle_image_path) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $provider->vehicle_image_path) }}" alt="Vehicle Photo" style="width: 150px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--l);">
+                                </a>
+                            </div>
+                        @endif
                     </td>
                     <td>
-                        @if($provider->vehicle_image_path)
-                            <a href="{{ asset('storage/' . $provider->vehicle_image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline; display: block; margin-bottom: 4px;">Vehicle Photo</a>
-                        @else
-                            <span class="m sm" style="display: block; margin-bottom: 4px;">No vehicle photo</span>
-                        @endif
-
                         @if($provider->id_image_path)
-                            <a href="{{ asset('storage/' . $provider->id_image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline;">ID Document</a>
+                            <a href="{{ asset('storage/' . $provider->id_image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline;">View ID Document</a>
                         @else
-                            <span class="m sm">No ID</span>
+                            <span class="m sm">No ID uploaded</span>
                         @endif
                     </td>
                     <td>

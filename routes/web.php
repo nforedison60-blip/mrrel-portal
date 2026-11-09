@@ -168,6 +168,10 @@ Route::get('/landlord/add-property', function () {
 })->name('landlord.add-property');
 
 Route::post('/landlord/add-property', function (Request $request) {
+    $request->validate([
+        'image' => 'nullable|image|max:5120', 
+    ]);
+
     $imagePath = null;
     if ($request->hasFile('image')) {
         $imagePath = $request->file('image')->store('properties', 'public');
@@ -269,8 +273,13 @@ Route::get('/provider/profile', function () {
     ]);
 })->name('provider.profile');
 
-// UPDATED: Handle Vehicle and ID uploads
 Route::post('/provider/profile', function (Request $request) {
+    $request->validate([
+        'image' => 'nullable|image|max:5120',
+        'vehicle_image' => 'nullable|image|max:5120',
+        'id_image' => 'nullable|image|max:5120',
+    ]);
+
     $provider = Provider::find(1);
     
     $imagePath = $provider->image_path;
@@ -354,6 +363,47 @@ Route::post('/admin/providers/{provider}/verify', function (Provider $provider) 
     $provider->update(['verification_status' => 'Verified']);
     return redirect()->route('admin.providers')->with('success', 'Provider verified successfully!');
 })->name('admin.providers.verify');
+
+// NEW: Placeholder routes for the new Admin sidebar links
+Route::get('/admin/users', function () {
+    return view('admin.users');
+})->name('admin.users');
+
+Route::get('/admin/requests', function () {
+    return view('admin.requests');
+})->name('admin.requests');
+
+Route::get('/admin/bookings', function () {
+    return view('admin.bookings');
+})->name('admin.bookings');
+
+Route::get('/admin/messages', function () {
+    return view('admin.messages');
+})->name('admin.messages');
+
+Route::get('/admin/matching', function () {
+    return view('admin.matching');
+})->name('admin.matching');
+
+Route::get('/admin/properties', function () {
+    return view('admin.properties');
+})->name('admin.properties');
+
+Route::get('/admin/payments', function () {
+    return view('admin.payments');
+})->name('admin.payments');
+
+Route::get('/admin/disputes', function () {
+    return view('admin.disputes');
+})->name('admin.disputes');
+
+Route::get('/admin/subscriptions', function () {
+    return view('admin.subscriptions');
+})->name('admin.subscriptions');
+
+Route::get('/admin/settings', function () {
+    return view('admin.settings');
+})->name('admin.settings');
 
 Route::get('/admin/map', function () {
     return view('admin.map');

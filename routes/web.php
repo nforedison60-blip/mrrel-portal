@@ -137,7 +137,6 @@ Route::post('/customer/problems', function (Request $request) {
     return redirect()->route('customer.problems')->with('success', 'Problem reported successfully!');
 })->name('customer.problems.store');
 
-
 // ==========================================
 // LANDLORD ROUTES
 // ==========================================
@@ -181,12 +180,16 @@ Route::post('/landlord/viewing/{viewingRequest}/resolve', function (ViewingReque
     return redirect()->route('landlord.properties')->with('success', 'Viewing request marked as completed!');
 })->name('landlord.viewing.resolve');
 
-
 // ==========================================
 // PROVIDER ROUTES
 // ==========================================
+// UPDATED: Fetch real data for the provider dashboard
 Route::get('/provider/dashboard', function () {
-    return view('provider.dashboard');
+    return view('provider.dashboard', [
+        'quotesCount' => Quote::count(),
+        'bookingsCount' => Booking::count(),
+        'requests' => ServiceRequest::latest()->take(5)->get() // Show 5 most recent requests
+    ]);
 })->name('provider.dashboard');
 
 Route::get('/provider/send-quote', function () {
@@ -269,7 +272,6 @@ Route::post('/provider/profile', function (Request $request) {
     
     return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
 })->name('provider.profile.update');
-
 
 // ==========================================
 // ADMIN ROUTES

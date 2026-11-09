@@ -7,34 +7,35 @@
     <div class="g4" style="margin-top: 20px;">
         <div class="card"><div class="m sm">Subscription</div><div class="big">Pro</div><div class="m sm">Active · next billing [date]</div></div>
         <div class="card"><div class="m sm">Verification</div><div class="big">Verified</div><div class="m sm">Photo, vehicle, plate, documents</div></div>
-        <div class="card"><div class="m sm">Requests this month</div><div class="big">12</div><div class="m sm">4 quotes sent</div></div>
-        <div class="card"><div class="m sm">Rating</div><div class="big">4.8</div><div class="m sm">120 jobs · 94% on time</div></div>
+        <div class="card"><div class="m sm">Quotes Sent</div><div class="big">{{ $quotesCount }}</div><div class="m sm">All time</div></div>
+        <div class="card"><div class="m sm">Active Bookings</div><div class="big">{{ $bookingsCount }}</div><div class="m sm">Confirmed jobs</div></div>
     </div>
 
     <div class="card" style="margin-top: 20px;">
-        <h3>New requests</h3>
-        <table class="tb">
-            <tr>
-                <th>Request</th>
-                <th>Date</th>
-                <th>Action</th>
-            </tr>
-            <tr>
-                <td>1 bed, Parklands to Bellville · 18 km</td>
-                <td>Sat 31 Oct</td>
-                <td><a href="{{ route('provider.send') }}" class="btn" style="padding: 6px 14px; font-size: 13px; text-decoration:none;">Send quote</a></td>
-            </tr>
-            <tr>
-                <td>2-bedroom flat, Sea Point to Rondebosch</td>
-                <td>Sun 1 Nov</td>
-                <td><a href="{{ route('provider.send') }}" class="btn" style="padding: 6px 14px; font-size: 13px; text-decoration:none;">Send quote</a></td>
-            </tr>
-            <tr>
-                <td>Small items, Claremont to Wynberg</td>
-                <td>Mon 2 Nov</td>
-                <td>Instant price from your rate card</td>
-            </tr>
-        </table>
+        <h3>New Requests (Needs Quote)</h3>
+        @if($requests->isEmpty())
+            <p class="m">No new requests at the moment.</p>
+        @else
+            <table class="tb">
+                <tr>
+                    <th>Request Details</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+                @foreach($requests as $req)
+                <tr>
+                    <td>
+                        <b>{{ $req->services_needed }}</b><br>
+                        <span class="m sm">{{ $req->moving_from }} to {{ $req->moving_to }}</span>
+                    </td>
+                    <td>{{ $req->move_date }}</td>
+                    <td>
+                        <a href="{{ route('provider.send') }}" class="btn" style="padding: 6px 14px; font-size: 13px; text-decoration:none;">Send quote</a>
+                    </td>
+                </tr>
+                @endforeach
+            </table>
+        @endif
     </div>
 
     <div class="g2" style="margin-top: 20px;">

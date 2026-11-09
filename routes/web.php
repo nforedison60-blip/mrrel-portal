@@ -371,7 +371,6 @@ Route::get('/admin/users', function () {
     ]);
 })->name('admin.users');
 
-// UPDATED: Fetch requests and quotes
 Route::get('/admin/requests', function () {
     return view('admin.requests', [
         'requests' => ServiceRequest::latest()->get(),
@@ -380,7 +379,9 @@ Route::get('/admin/requests', function () {
 })->name('admin.requests');
 
 Route::get('/admin/bookings', function () {
-    return view('admin.bookings');
+    return view('admin.bookings', [
+        'bookings' => Booking::with('quote')->latest()->get()
+    ]);
 })->name('admin.bookings');
 
 Route::get('/admin/messages', function () {
@@ -398,12 +399,29 @@ Route::get('/admin/properties', function () {
 })->name('admin.properties');
 
 Route::get('/admin/payments', function () {
-    return view('admin.payments');
+    $bookings = Booking::latest()->get();
+    $totalRevenue = Booking::sum('total_price');
+    
+    return view('admin.payments', [
+        'bookings' => $bookings,
+        'totalRevenue' => $totalRevenue,
+        'pendingPayouts' => $totalRevenue * 0.9, 
+        'totalBookings' => $bookings->count()
+    ]);
 })->name('admin.payments');
 
+// UPDATED: Fetch problems for Disputes
 Route::get('/admin/disputes', function () {
-    return view('admin.disputes');
+    return view('admin.disputes', [
+        'problems' => Problem::latest()->get()
+    ]);
 })->name('admin.disputes');
+
+// NEW: Resolve a dispute
+Route::post('/admin/disputes/{problem}/resolve', function (Problem $problem) {
+    $problem->update(['status' => 'Resolved']);
+    return redirect()->route('admin.disputes')->with('success', 'Dispute marked as resolved!');
+})->name('admin.disputes.resolve');
 
 Route::get('/admin/subscriptions', function () {
     return view('admin.subscriptions');

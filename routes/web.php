@@ -364,9 +364,11 @@ Route::post('/admin/providers/{provider}/verify', function (Provider $provider) 
     return redirect()->route('admin.providers')->with('success', 'Provider verified successfully!');
 })->name('admin.providers.verify');
 
-// NEW: Placeholder routes for the new Admin sidebar links
 Route::get('/admin/users', function () {
-    return view('admin.users');
+    return view('admin.users', [
+        'customers' => Customer::latest()->get(),
+        'providers' => Provider::latest()->get()
+    ]);
 })->name('admin.users');
 
 Route::get('/admin/requests', function () {
@@ -385,8 +387,11 @@ Route::get('/admin/matching', function () {
     return view('admin.matching');
 })->name('admin.matching');
 
+// UPDATED: Fetch all properties for Admin
 Route::get('/admin/properties', function () {
-    return view('admin.properties');
+    return view('admin.properties', [
+        'properties' => Property::latest()->get()
+    ]);
 })->name('admin.properties');
 
 Route::get('/admin/payments', function () {

@@ -17,5 +17,6 @@ class Quote extends Model
         'not_included',
         'validity',
         'note',
+        'service_request_id',
     ];
 }

@@ -21,6 +21,7 @@
                         <b>Vehicle:</b> White 1-ton bakkie · <b>Plate:</b> CA 000 000<br>
                         <b>Arrival:</b> Sat 31 Oct, 08:00 to 10:00
                     </p>
+                    <div class="m sm">If someone else arrives, don’t hand anything over and call us.</div>
                 </div>
 
                 <div class="card" style="margin-top: 16px;">
@@ -45,7 +46,6 @@
                     <button type="button" class="btn g w">Download receipt</button>
                 </div>
 
-                <!-- REAL REVIEW FORM -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Review your provider</h3>
                     <form method="POST" action="{{ route('customer.review.store') }}">

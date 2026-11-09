@@ -30,7 +30,7 @@
                     </td>
                     <td>{{ $req->move_date }}</td>
                     <td>
-                        <a href="{{ route('provider.send') }}" class="btn" style="padding: 6px 14px; font-size: 13px; text-decoration:none;">Send quote</a>
+                        <a href="{{ route('provider.send', $req->id) }}" class="btn" style="padding: 6px 14px; font-size: 13px; text-decoration:none;">Send quote</a>
                     </td>
                 </tr>
                 @endforeach

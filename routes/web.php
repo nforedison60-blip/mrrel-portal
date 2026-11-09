@@ -13,9 +13,7 @@ use App\Models\Message;
 use App\Models\Problem;
 use Illuminate\Http\Request;
 
-// ==========================================
 // CUSTOMER ROUTES
-// ==========================================
 Route::get('/', function () {
     return view('customer.dashboard', [
         'requestsCount' => ServiceRequest::count(),
@@ -137,9 +135,7 @@ Route::post('/customer/problems', function (Request $request) {
     return redirect()->route('customer.problems')->with('success', 'Problem reported successfully!');
 })->name('customer.problems.store');
 
-// ==========================================
 // LANDLORD ROUTES
-// ==========================================
 Route::get('/landlord/properties', function () {
     $properties = Property::latest()->get();
     $viewingRequests = ViewingRequest::latest()->get();
@@ -180,20 +176,20 @@ Route::post('/landlord/viewing/{viewingRequest}/resolve', function (ViewingReque
     return redirect()->route('landlord.properties')->with('success', 'Viewing request marked as completed!');
 })->name('landlord.viewing.resolve');
 
-// ==========================================
 // PROVIDER ROUTES
-// ==========================================
-// UPDATED: Fetch real data for the provider dashboard
 Route::get('/provider/dashboard', function () {
     return view('provider.dashboard', [
         'quotesCount' => Quote::count(),
         'bookingsCount' => Booking::count(),
-        'requests' => ServiceRequest::latest()->take(5)->get() // Show 5 most recent requests
+        'totalRevenue' => Booking::sum('total_price'),
+        'nextJobs' => Booking::latest()->take(3)->get(),
+        'requests' => ServiceRequest::latest()->take(5)->get()
     ]);
 })->name('provider.dashboard');
 
-Route::get('/provider/send-quote', function () {
-    return view('provider.send-quote');
+Route::get('/provider/send-quote/{id}', function ($id) {
+    $serviceRequest = ServiceRequest::findOrFail($id);
+    return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
 })->name('provider.send');
 
 Route::post('/provider/send-quote', function (Request $request) {
@@ -205,6 +201,7 @@ Route::post('/provider/send-quote', function (Request $request) {
         'not_included' => implode(', ', $request->input('not_included', [])),
         'validity' => $request->validity,
         'note' => $request->note,
+        'service_request_id' => $request->service_request_id,
     ]);
     return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully!');
 })->name('provider.send.store');
@@ -273,9 +270,7 @@ Route::post('/provider/profile', function (Request $request) {
     return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
 })->name('provider.profile.update');
 
-// ==========================================
 // ADMIN ROUTES
-// ==========================================
 Route::get('/admin/dashboard', function (Request $request) {
     $status = $request->query('status', 'All');
     $search = $request->query('search');

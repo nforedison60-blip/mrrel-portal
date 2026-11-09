@@ -34,7 +34,6 @@
                         <b>Valid for:</b> {{ $quote->validity }}
                     </p>
                     
-                    <!-- ACCEPT FORM -->
                     <form method="POST" action="{{ route('customer.bookings.store') }}">
                         @csrf
                         <input type="hidden" name="quote_id" value="{{ $quote->id }}">

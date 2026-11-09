@@ -3,25 +3,25 @@
 @section('content')
     <div class="m sm">Jobs / New request / Send a quote</div>
     <h1>Send a quote</h1>
-    <div class="m">Request REQ-0042 · Moving · Parklands to Bellville</div>
+    <div class="m">Request for {{ $serviceRequest->services_needed }} · {{ $serviceRequest->moving_from }} to {{ $serviceRequest->moving_to }}</div>
 
     <form method="POST" action="{{ route('provider.send.store') }}">
         @csrf
+        <input type="hidden" name="service_request_id" value="{{ $serviceRequest->id }}">
         <div class="sp" style="margin-top: 20px;">
             <div>
-                <!-- 1. The Job -->
                 <div class="card">
                     <h3>1. The job</h3>
                     <p class="m sm">From the customer’s request. You can’t change this part.</p>
                     <div class="g2" style="margin:8px 0 0">
-                        <div>From: Parklands, Cape Town</div>
-                        <div>To: Bellville, Cape Town</div>
-                        <div>Date: Sat 31 Oct 2026</div>
-                        <div>Distance: 18 km (calculated)</div>
+                        <div><b>From:</b> {{ $serviceRequest->moving_from }}</div>
+                        <div><b>To:</b> {{ $serviceRequest->moving_to }}</div>
+                        <div><b>Date:</b> {{ $serviceRequest->move_date }} ({{ $serviceRequest->date_flexibility }})</div>
+                        <div><b>Size:</b> {{ $serviceRequest->item_size }}</div>
+                        <div><b>Access:</b> Pickup: {{ $serviceRequest->access_pickup }} | Delivery: {{ $serviceRequest->access_delivery }}</div>
                     </div>
                 </div>
 
-                <!-- 2. Your Price -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>2. Your price</h3>
                     <div class="pl">
@@ -34,10 +34,8 @@
                     </div>
                 </div>
 
-                <!-- 3. Included / Not Included -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>3. Included and not included</h3>
-                    
                     <b class="sm">Included</b>
                     <div class="pl">
                         <label><input type="checkbox" name="included[]" value="Fuel" checked> Fuel</label>
@@ -54,7 +52,6 @@
                     </div>
                 </div>
 
-                <!-- 4. Validity -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>4. Cover, validity and note</h3>
                     <div class="f">
@@ -77,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- Right Sidebar Preview -->
             <div class="st">
                 <div class="card" style="border:2px solid var(--t);">
                     <h3>What the customer will see</h3>

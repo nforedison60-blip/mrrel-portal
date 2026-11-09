@@ -1,5 +1,9 @@
 @extends('layouts.admin')
 
+@php
+    use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('content')
     <h1>Provider Approvals</h1>
     <div class="m">Review and verify new service providers before they can quote.</div>
@@ -27,8 +31,8 @@
                 @foreach($providers as $provider)
                 <tr>
                     <td>
-                        <!-- ROUND CROP -->
-                        @if($provider->image_path)
+                        <!-- SAFE IMAGE CHECK -->
+                        @if($provider->image_path && Storage::disk('public')->exists($provider->image_path))
                             <img src="{{ asset('storage/' . $provider->image_path) }}" alt="Profile Photo of {{ $provider->name }}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover;">
                         @else
                             <div class="av" style="width: 72px; height: 72px; font-size: 24px;">{{ substr($provider->name, 0, 1) }}</div>
@@ -42,8 +46,7 @@
                         {{ $provider->vehicle ?? 'Not provided' }}<br>
                         <span class="m sm">{{ $provider->plate_number ?? 'Not provided' }}</span>
                         
-                        <!-- WIDE CROP -->
-                        @if($provider->vehicle_image_path)
+                        @if($provider->vehicle_image_path && Storage::disk('public')->exists($provider->vehicle_image_path))
                             <div style="margin-top: 8px;">
                                 <a href="{{ asset('storage/' . $provider->vehicle_image_path) }}" target="_blank">
                                     <img src="{{ asset('storage/' . $provider->vehicle_image_path) }}" alt="Vehicle Photo" style="width: 150px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--l);">
@@ -52,7 +55,7 @@
                         @endif
                     </td>
                     <td>
-                        @if($provider->id_image_path)
+                        @if($provider->id_image_path && Storage::disk('public')->exists($provider->id_image_path))
                             <a href="{{ asset('storage/' . $provider->id_image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline;">View ID Document</a>
                         @else
                             <span class="m sm">No ID uploaded</span>

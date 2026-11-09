@@ -18,7 +18,13 @@
         <div class="g3" style="margin-top: 20px;">
             @foreach($properties as $property)
                 <div class="card">
-                    <div class="ph">[Property photo]</div>
+                    <!-- UPDATED: Show the real image -->
+                    @if($property->image_path)
+                        <img src="{{ asset('storage/' . $property->image_path) }}" alt="Property Photo" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
+                    @else
+                        <div class="ph">[No photo uploaded]</div>
+                    @endif
+                    
                     <h3>{{ $property->title }}</h3>
                     <div class="m sm">
                         R{{ number_format($property->rent, 0) }} a month · Deposit R{{ number_format($property->deposit, 0) }} · {{ $property->bedrooms }} bed, {{ $property->bathrooms }} bath
@@ -35,16 +41,9 @@
                             </label>
                         </div>
                         <button type="submit" class="btn" style="margin:0 8px 8px 0;">Request viewing</button>
-                        <button type="button" class="btn g" style="margin:0 8px 8px 0;">Accept</button>
-                        <button type="button" class="btn g" style="margin:0 8px 8px 0;">Decline</button>
                     </form>
                 </div>
             @endforeach
         </div>
     @endif
-
-    <div class="card" style="margin-top: 20px;">
-        <h3>Notes</h3>
-        <p class="sm">Accepting a place does not reserve it, create a lease or guarantee availability. Rent and deposit are paid directly to the landlord. Viewing requests can be video or in person.</p>
-    </div>
 @endsection

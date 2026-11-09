@@ -64,6 +64,7 @@
             <a href="{{ route('customer.quotes') }}" class="{{ request()->routeIs('customer.quotes') ? 'on' : '' }}">Quotes</a>
             <a href="{{ route('customer.bookings') }}" class="{{ request()->routeIs('customer.bookings') ? 'on' : '' }}">Bookings</a>
             <a href="{{ route('customer.shortlist') }}" class="{{ request()->routeIs('customer.shortlist') ? 'on' : '' }}">My shortlist</a>
+            <a href="{{ route('customer.profile') }}" class="{{ request()->routeIs('customer.profile') ? 'on' : '' }}">My profile</a>
         </nav>
         
         <main class="mn" id="mn">

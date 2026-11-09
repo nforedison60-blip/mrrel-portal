@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Property;
 use App\Models\ViewingRequest;
 use App\Models\Provider;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 
 // CUSTOMER ROUTES
@@ -45,9 +46,10 @@ Route::get('/bookings', function () {
 })->name('customer.bookings');
 
 Route::post('/bookings', function (Request $request) {
+    $customer = Customer::find(1);
     Booking::create([
         'quote_id' => $request->quote_id,
-        'customer_name' => 'Lerato',
+        'customer_name' => $customer ? $customer->name : 'Lerato',
         'total_price' => $request->total_price,
         'status' => 'Paid',
     ]);
@@ -60,14 +62,34 @@ Route::get('/shortlist', function () {
 })->name('customer.shortlist');
 
 Route::post('/viewing-request', function (Request $request) {
+    $customer = Customer::find(1);
     ViewingRequest::create([
         'property_id' => $request->property_id,
-        'customer_name' => 'Lerato',
+        'customer_name' => $customer ? $customer->name : 'Lerato',
         'status' => 'Pending',
         'message' => $request->message,
     ]);
     return redirect()->route('customer.shortlist')->with('success', 'Viewing request sent to the landlord!');
 })->name('customer.viewing.store');
+
+// NEW: Customer Profile
+Route::get('/customer/profile', function () {
+    $customer = Customer::firstOrCreate(
+        ['id' => 1],
+        ['name' => 'Lerato', 'email' => 'lerato@example.com', 'phone' => '082 000 0000']
+    );
+    return view('customer.profile', ['customer' => $customer]);
+})->name('customer.profile');
+
+Route::post('/customer/profile', function (Request $request) {
+    $customer = Customer::find(1);
+    $customer->update([
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => $request->phone,
+    ]);
+    return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
+})->name('customer.profile.update');
 
 // LANDLORD ROUTES
 Route::get('/landlord/properties', function () {
@@ -84,6 +106,11 @@ Route::get('/landlord/add-property', function () {
 })->name('landlord.add-property');
 
 Route::post('/landlord/add-property', function (Request $request) {
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('properties', 'public');
+    }
+
     Property::create([
         'title' => $request->title,
         'description' => $request->description,
@@ -95,6 +122,7 @@ Route::post('/landlord/add-property', function (Request $request) {
         'rent' => $request->rent,
         'deposit' => $request->deposit,
         'status' => 'Draft',
+        'image_path' => $imagePath,
     ]);
     return redirect()->route('landlord.properties')->with('success', 'Property saved as draft!');
 })->name('landlord.properties.store');
@@ -130,7 +158,6 @@ Route::get('/provider/requests', function () {
     return view('provider.requests');
 })->name('provider.requests');
 
-// UPDATED: Fetch real bookings for the Provider
 Route::get('/provider/bookings', function () {
     $bookings = Booking::latest()->get();
     return view('provider.pbook', ['bookings' => $bookings]);

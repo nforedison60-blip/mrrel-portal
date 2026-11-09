@@ -20,6 +20,7 @@ class Property extends Model
         'rent',
         'deposit',
         'status',
+        'image_path',
     ];
 
     public function viewingRequests()

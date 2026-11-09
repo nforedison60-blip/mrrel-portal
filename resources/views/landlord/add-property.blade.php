@@ -4,7 +4,7 @@
     <h1>Add a property</h1>
     <div class="m">Saved as a draft until you submit it for MrRel’s review.</div>
 
-    <form method="POST" action="{{ route('landlord.properties.store') }}">
+    <form method="POST" action="{{ route('landlord.properties.store') }}" enctype="multipart/form-data">
         @csrf
         <div class="sp">
             <div class="card">
@@ -50,6 +50,7 @@
                     </label>
                     <label>Monthly rent (R)<input type="number" name="rent" required></label>
                     <label>Deposit (R)<input type="number" name="deposit" required></label>
+                    <label class="k">Property Photo (Optional)<input type="file" name="image" accept="image/*"></label>
                 </div>
                 <button type="submit" class="btn">Submit for review</button>
             </div>

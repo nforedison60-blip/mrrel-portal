@@ -13,6 +13,8 @@
                 <li>Quotes: instant prices and quotes to compare, accept online</li>
                 <li>Bookings: provider card, payment, extras, confirm completion, review</li>
                 <li>My shortlist: private places: accept, decline, viewing, plan move</li>
+                <li>Find a place: search for properties</li>
+                <li>Messages: chat with providers</li>
                 <li>Rental fees, Problems, Profile</li>
             </ul>
         </div>
@@ -33,6 +35,7 @@
                 <li>Dashboard: requests, jobs, payouts</li>
                 <li>Requests: send quote in the MrRel template</li>
                 <li>Bookings and payouts, Reviews</li>
+                <li>Messages: chat with customers</li>
                 <li>Rate card: prices for instant quotes</li>
                 <li>Profile and verification, Subscription, Problems</li>
             </ul>
@@ -43,6 +46,7 @@
             <ul>
                 <li>Dashboard: to-do and numbers</li>
                 <li>Approvals: verify providers, approve properties</li>
+                <li>Providers: view ID and vehicle photos for verification</li>
                 <li>Users, Requests and quotes, Bookings</li>
                 <li>Tenant matching: build private shortlists</li>
                 <li>Payments and payouts, Disputes, Subscriptions</li>

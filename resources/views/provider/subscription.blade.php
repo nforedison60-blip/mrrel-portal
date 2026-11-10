@@ -1,0 +1,1 @@
+@extends('layouts.provider') @section('content') <h1>Subscription</h1> @endsection

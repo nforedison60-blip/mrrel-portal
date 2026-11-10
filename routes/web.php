@@ -15,22 +15,28 @@ use App\Models\Problem;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
 
+// Load Breeze Auth routes
 require __DIR__.'/auth.php';
 
+// SMART REDIRECT AFTER LOGIN
 Route::get('/dashboard', function () {
     $role = auth()->user()->role;
+    
     if ($role == 'Admin') return redirect()->route('admin.dashboard');
     if ($role == 'Provider') return redirect()->route('provider.dashboard');
     if ($role == 'Landlord') return redirect()->route('landlord.properties');
+    
     return redirect()->route('customer.dashboard');
 })->middleware(['auth'])->name('dashboard');
 
+// BREEZE PROFILE ROUTES
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// ALL PROTECTED ROUTES
 Route::middleware(['auth'])->group(function () {
     
     // CUSTOMER ROUTES
@@ -249,6 +255,23 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/provider/requests', function () {
         return view('provider.requests');
     })->name('provider.requests');
+
+    // NEW PROVIDER ROUTES
+    Route::get('/provider/quotes', function () {
+        return view('provider.quotes');
+    })->name('provider.quotes');
+
+    Route::get('/provider/reviews', function () {
+        return view('provider.reviews');
+    })->name('provider.reviews');
+
+    Route::get('/provider/subscription', function () {
+        return view('provider.subscription');
+    })->name('provider.subscription');
+
+    Route::get('/provider/problems', function () {
+        return view('provider.problems');
+    })->name('provider.problems');
 
     Route::get('/provider/bookings', function () {
         $bookings = Booking::latest()->get();

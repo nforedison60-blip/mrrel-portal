@@ -19,7 +19,7 @@
                     
                     <div class="row" style="margin-bottom: 16px; align-items: center;">
                         @if($provider->image_path)
-                            <img src="{{ Storage::disk('s3')->url($provider->image_path) }}" alt="Profile Photo of {{ $provider->name }}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <img src="{{ Storage::url($provider->image_path) }}" alt="Profile Photo of {{ $provider->name }}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         @else
                             <div class="av" style="width: 150px; height: 150px; font-size: 48px;">{{ substr($provider->name, 0, 1) }}</div>
                         @endif

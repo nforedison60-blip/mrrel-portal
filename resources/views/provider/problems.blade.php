@@ -1,0 +1,1 @@
+@extends('layouts.provider') @section('content') <h1>Problems</h1> @endsection

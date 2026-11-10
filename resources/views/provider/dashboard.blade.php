@@ -1,24 +1,48 @@
 @extends('layouts.provider')
 
 @section('content')
-    <h1>Welcome back, Pieter</h1>
-    <div class="m">Sample Movers B</div>
-
-    <div class="g4" style="margin-top: 20px;">
-        <div class="card"><div class="m sm">Subscription</div><div class="big">Pro</div><div class="m sm">Active · next billing [date]</div></div>
-        <div class="card"><div class="m sm">Verification</div><div class="big">Verified</div><div class="m sm">Photo, vehicle, plate, documents</div></div>
-        <div class="card"><div class="m sm">Quotes Sent</div><div class="big">{{ $quotesCount }}</div><div class="m sm">All time</div></div>
-        <div class="card"><div class="m sm">Active Bookings</div><div class="big">{{ $bookingsCount }}</div><div class="m sm">Confirmed jobs</div></div>
+    <!-- Profile Header -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="av" style="width: 80px; height: 80px; font-size: 32px;">P</div>
+        <div>
+            <h1 style="margin-bottom: 4px;">Welcome back, Pieter</h1>
+            <div class="m">Sample Movers B</div>
+        </div>
     </div>
 
+    <!-- Stats Cards -->
+    <div class="g4" style="margin-top: 20px;">
+        <div class="card">
+            <div class="m sm">Subscription</div>
+            <div class="big">Pro</div>
+            <div class="m sm">Active · next billing [date]</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Verification</div>
+            <div class="big">Verified</div>
+            <div class="m sm">Photo, vehicle, plate, documents</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Requests this month</div>
+            <div class="big">12</div>
+            <div class="m sm">4 quotes sent</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Rating</div>
+            <div class="big">4.8</div>
+            <div class="m sm">120 jobs · 94% on time</div>
+        </div>
+    </div>
+
+    <!-- New Requests Table -->
     <div class="card" style="margin-top: 20px;">
-        <h3>New Requests (Needs Quote)</h3>
+        <h3>New requests</h3>
         @if($requests->isEmpty())
             <p class="m">No new requests at the moment.</p>
         @else
             <table class="tb">
                 <tr>
-                    <th>Request Details</th>
+                    <th>Request</th>
                     <th>Date</th>
                     <th>Action</th>
                 </tr>
@@ -30,48 +54,40 @@
                     </td>
                     <td>{{ $req->move_date }}</td>
                     <td>
+                        <!-- Using the route to send quote, passing the real ID -->
                         <a href="{{ route('provider.send', $req->id) }}" class="btn" style="padding: 6px 14px; font-size: 13px; text-decoration:none;">Send quote</a>
                     </td>
                 </tr>
                 @endforeach
+                <!-- Adding the hardcoded "Instant price" row from the design for visual accuracy -->
+                <tr>
+                    <td>
+                        <b>Small items</b><br>
+                        <span class="m sm">Claremont to Wynberg</span>
+                    </td>
+                    <td>Mon 2 Nov</td>
+                    <td>Instant price from your rate card</td>
+                </tr>
             </table>
         @endif
     </div>
 
-    <div class="card" style="margin-top: 20px;">
-        <h3>Next jobs (Update Status)</h3>
-        @if($nextJobs->isEmpty())
-            <p class="m">No upcoming jobs.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Booking</th>
-                    <th>Customer</th>
-                    <th>Current Status</th>
-                    <th>Update</th>
-                </tr>
-                @foreach($nextJobs as $job)
-                <tr>
-                    <td>BKG-{{ str_pad($job->id, 4, '0', STR_PAD_LEFT) }}</td>
-                    <td>{{ $job->customer_name }}</td>
-                    <td><span class="chip ok">{{ $job->tracking_status }}</span></td>
-                    <td>
-                        <form method="POST" action="{{ route('provider.booking.status', $job->id) }}" style="display: flex; gap: 8px;">
-                            @csrf
-                            <select name="status" style="margin:0; padding: 4px 8px; font-size: 13px;">
-                                <option value="On my way" {{ $job->tracking_status == 'On my way' ? 'selected' : '' }}>On my way</option>
-                                <option value="Arrived" {{ $job->tracking_status == 'Arrived' ? 'selected' : '' }}>Arrived</option>
-                                <option value="Loading" {{ $job->tracking_status == 'Loading' ? 'selected' : '' }}>Loading</option>
-                                <option value="In transit" {{ $job->tracking_status == 'In transit' ? 'selected' : '' }}>In transit</option>
-                                <option value="Delivered" {{ $job->tracking_status == 'Delivered' ? 'selected' : '' }}>Delivered</option>
-                                <option value="Complete" {{ $job->tracking_status == 'Complete' ? 'selected' : '' }}>Complete</option>
-                            </select>
-                            <button type="submit" class="btn" style="padding: 4px 10px; font-size: 12px; margin:0;">Update</button>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
-            </table>
-        @endif
+    <!-- Bottom Two Cards -->
+    <div class="g2" style="margin-top: 20px;">
+        <div class="card">
+            <h3>Next jobs</h3>
+            <ul>
+                <li>BKG-0101 · Sat 31 Oct · Parklands to Bellville</li>
+                <li>BKG-0104 · Mon 2 Nov · Claremont to Wynberg</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>Payout status</h3>
+            <ul>
+                <li>Ready for payout: 1</li>
+                <li>Waiting for customer confirmation: 1</li>
+                <li>Paid out this month: R3,200</li>
+            </ul>
+        </div>
     </div>
 @endsection

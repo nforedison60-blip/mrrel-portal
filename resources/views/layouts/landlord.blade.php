@@ -67,6 +67,8 @@
         <nav class="sd" id="sd">
             <a href="{{ route('landlord.properties') }}" class="{{ request()->routeIs('landlord.properties') ? 'on' : '' }}">My properties</a>
             <a href="{{ route('landlord.add-property') }}" class="{{ request()->routeIs('landlord.add-property') ? 'on' : '' }}">Add property</a>
+            <a href="{{ route('landlord.viewing-requests') }}" class="{{ request()->routeIs('landlord.viewing-requests') ? 'on' : '' }}">Viewing requests</a>
+            <a href="{{ route('landlord.profile') }}" class="{{ request()->routeIs('landlord.profile') ? 'on' : '' }}">Profile</a>
         </nav>
         
         <main class="mn" id="mn">

@@ -54,40 +54,4 @@
             <p class="m sm" style="margin-top: 16px;">Statuses: Draft, Submitted, Approved, Changes requested, Rejected, Withdrawn.</p>
         @endif
     </div>
-
-    <!-- Viewing Requests Section -->
-    <div class="card" style="margin-top: 20px;">
-        <h3>Viewing Requests</h3>
-        @if($viewingRequests->isEmpty())
-            <p class="m">No viewing requests yet.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Property</th>
-                    <th>Tenant Name</th>
-                    <th>Message</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-                @foreach($viewingRequests as $req)
-                <tr>
-                    <td>{{ $req->property->title }}</td>
-                    <td>{{ $req->customer_name }}</td>
-                    <td>{{ $req->message ?? '—' }}</td>
-                    <td><span class="chip {{ $req->status == 'Completed' ? 'ok' : 'wn' }}">{{ $req->status }}</span></td>
-                    <td>
-                        @if($req->status !== 'Completed')
-                            <form method="POST" action="{{ route('landlord.viewing.resolve', $req->id) }}">
-                                @csrf
-                                <button type="submit" class="btn" style="padding: 6px 14px; font-size: 13px; margin:0;">Mark as Resolved</button>
-                            </form>
-                        @else
-                            <span class="m sm">Done</span>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </table>
-        @endif
-    </div>
 @endsection

@@ -15,28 +15,22 @@ use App\Models\Problem;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
 
-// Load Breeze Auth routes
 require __DIR__.'/auth.php';
 
-// SMART REDIRECT AFTER LOGIN
 Route::get('/dashboard', function () {
     $role = auth()->user()->role;
-    
     if ($role == 'Admin') return redirect()->route('admin.dashboard');
     if ($role == 'Provider') return redirect()->route('provider.dashboard');
     if ($role == 'Landlord') return redirect()->route('landlord.properties');
-    
     return redirect()->route('customer.dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-// BREEZE PROFILE ROUTES
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// ALL PROTECTED ROUTES
 Route::middleware(['auth'])->group(function () {
     
     // CUSTOMER ROUTES
@@ -53,19 +47,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/customer/search', function (Request $request) {
         $query = Property::where('status', 'Approved');
-
         if ($request->filled('location')) {
             $location = $request->input('location');
             $query->where(function($q) use ($location) {
-                $q->where('suburb', 'like', "%{$location}%")
-                  ->orWhere('city', 'like', "%{$location}%");
+                $q->where('suburb', 'like', "%{$location}%")->orWhere('city', 'like', "%{$location}%");
             });
         }
-
         if ($request->filled('max_price')) {
             $query->where('rent', '<=', $request->input('max_price'));
         }
-
         return view('customer.search', ['properties' => $query->latest()->get()]);
     })->name('customer.search');
 
@@ -137,20 +127,13 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.viewing.store');
 
     Route::get('/customer/profile', function () {
-        $customer = Customer::firstOrCreate(
-            ['id' => 1],
-            ['name' => 'Lerato', 'email' => 'lerato@example.com', 'phone' => '082 000 0000']
-        );
+        $customer = Customer::firstOrCreate(['id' => 1], ['name' => 'Lerato', 'email' => 'lerato@example.com', 'phone' => '082 000 0000']);
         return view('customer.profile', ['customer' => $customer]);
     })->name('customer.profile');
 
     Route::post('/customer/profile', function (Request $request) {
         $customer = Customer::find(1);
-        $customer->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-        ]);
+        $customer->update(['name' => $request->name, 'email' => $request->email, 'phone' => $request->phone]);
         return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
     })->name('customer.profile.update');
 
@@ -160,10 +143,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.messages');
 
     Route::post('/customer/messages', function (Request $request) {
-        Message::create([
-            'sender_name' => 'Lerato',
-            'message' => $request->message,
-        ]);
+        Message::create(['sender_name' => 'Lerato', 'message' => $request->message]);
         return redirect()->route('customer.messages')->with('success', 'Message sent!');
     })->name('customer.messages.store');
 
@@ -176,15 +156,12 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.problems', ['problems' => $problems]);
     })->name('customer.problems');
 
-    // UPDATED: Handle file upload for problems
     Route::post('/customer/problems', function (Request $request) {
         $customer = Customer::find(1);
-        
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('problems', 's3');
         }
-
         Problem::create([
             'customer_name' => $customer ? $customer->name : 'Lerato',
             'description' => $request->description,
@@ -196,11 +173,7 @@ Route::middleware(['auth'])->group(function () {
     // LANDLORD ROUTES
     Route::get('/landlord/properties', function () {
         $properties = Property::latest()->get();
-        $viewingRequests = ViewingRequest::latest()->get();
-        return view('landlord.properties', [
-            'properties' => $properties,
-            'viewingRequests' => $viewingRequests
-        ]);
+        return view('landlord.properties', ['properties' => $properties]);
     })->name('landlord.properties');
 
     Route::get('/landlord/add-property', function () {
@@ -208,15 +181,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('landlord.add-property');
 
     Route::post('/landlord/add-property', function (Request $request) {
-        $request->validate([
-            'image' => 'nullable|image|max:5120', 
-        ]);
-
+        $request->validate(['image' => 'nullable|image|max:5120']);
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('properties', 's3');
         }
-
         Property::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -233,10 +202,19 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('landlord.properties')->with('success', 'Property saved as draft!');
     })->name('landlord.properties.store');
 
+    Route::get('/landlord/viewing-requests', function () {
+        $viewingRequests = ViewingRequest::latest()->get();
+        return view('landlord.viewing-requests', ['viewingRequests' => $viewingRequests]);
+    })->name('landlord.viewing-requests');
+
     Route::post('/landlord/viewing/{viewingRequest}/resolve', function (ViewingRequest $viewingRequest) {
         $viewingRequest->update(['status' => 'Completed']);
-        return redirect()->route('landlord.properties')->with('success', 'Viewing request marked as completed!');
+        return redirect()->route('landlord.viewing-requests')->with('success', 'Viewing request marked as completed!');
     })->name('landlord.viewing.resolve');
+
+    Route::get('/landlord/profile', function () {
+        return view('landlord.profile');
+    })->name('landlord.profile');
 
     // PROVIDER ROUTES
     Route::get('/provider/dashboard', function () {
@@ -283,10 +261,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.messages');
 
     Route::post('/provider/messages', function (Request $request) {
-        Message::create([
-            'sender_name' => 'Pieter',
-            'message' => $request->message,
-        ]);
+        Message::create(['sender_name' => 'Pieter', 'message' => $request->message]);
         return redirect()->route('provider.messages')->with('success', 'Message sent!');
     })->name('provider.messages.store');
 
@@ -300,58 +275,21 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.rate');
 
     Route::get('/provider/profile', function () {
-        $provider = Provider::firstOrCreate(
-            ['id' => 1],
-            [
-                'name' => 'Pieter',
-                'company_name' => 'Sample Movers B',
-                'vehicle' => '1-ton bakkie',
-                'plate_number' => 'CA 000 000',
-                'verification_status' => 'Verified',
-                'rating' => 4.8,
-            ]
-        );
+        $provider = Provider::firstOrCreate(['id' => 1], ['name' => 'Pieter', 'company_name' => 'Sample Movers B', 'vehicle' => '1-ton bakkie', 'plate_number' => 'CA 000 000', 'verification_status' => 'Verified', 'rating' => 4.8]);
         $reviews = Review::latest()->get();
-        return view('provider.profile', [
-            'provider' => $provider,
-            'reviews' => $reviews
-        ]);
+        return view('provider.profile', ['provider' => $provider, 'reviews' => $reviews]);
     })->name('provider.profile');
 
     Route::post('/provider/profile', function (Request $request) {
-        $request->validate([
-            'image' => 'nullable|image|max:5120',
-            'vehicle_image' => 'nullable|image|max:5120',
-            'id_image' => 'nullable|image|max:5120',
-        ]);
-
+        $request->validate(['image' => 'nullable|image|max:5120', 'vehicle_image' => 'nullable|image|max:5120', 'id_image' => 'nullable|image|max:5120']);
         $provider = Provider::find(1);
-        
         $imagePath = $provider->image_path;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('providers', 's3');
-        }
-
+        if ($request->hasFile('image')) $imagePath = $request->file('image')->store('providers', 's3');
         $vehicleImagePath = $provider->vehicle_image_path;
-        if ($request->hasFile('vehicle_image')) {
-            $vehicleImagePath = $request->file('vehicle_image')->store('providers', 's3');
-        }
-
+        if ($request->hasFile('vehicle_image')) $vehicleImagePath = $request->file('vehicle_image')->store('providers', 's3');
         $idImagePath = $provider->id_image_path;
-        if ($request->hasFile('id_image')) {
-            $idImagePath = $request->file('id_image')->store('providers', 's3');
-        }
-
-        $provider->update([
-            'name' => $request->name,
-            'company_name' => $request->company_name,
-            'vehicle' => $request->vehicle,
-            'plate_number' => $request->plate_number,
-            'image_path' => $imagePath,
-            'vehicle_image_path' => $vehicleImagePath,
-            'id_image_path' => $idImagePath,
-        ]);
-        
+        if ($request->hasFile('id_image')) $idImagePath = $request->file('id_image')->store('providers', 's3');
+        $provider->update(['name' => $request->name, 'company_name' => $request->company_name, 'vehicle' => $request->vehicle, 'plate_number' => $request->plate_number, 'image_path' => $imagePath, 'vehicle_image_path' => $vehicleImagePath, 'id_image_path' => $idImagePath]);
         return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
     })->name('provider.profile.update');
 
@@ -359,39 +297,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function (Request $request) {
         $status = $request->query('status', 'All');
         $search = $request->query('search');
-
         $query = Property::query();
-
-        if ($status !== 'All') {
-            $query->where('status', $status);
-        }
-
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('suburb', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%");
-            });
-        }
-
-        return view('admin.dashboard', [
-            'totalRequests' => ServiceRequest::count(),
-            'totalQuotes' => Quote::count(),
-            'totalBookings' => Booking::count(),
-            'revenue' => Booking::sum('total_price'),
-            'properties' => $query->latest()->get(),
-        ]);
+        if ($status !== 'All') $query->where('status', $status);
+        if ($search) $query->where(function($q) use ($search) { $q->where('title', 'like', "%{$search}%")->orWhere('suburb', 'like', "%{$search}%")->orWhere('city', 'like', "%{$search}%"); });
+        return view('admin.dashboard', ['totalRequests' => ServiceRequest::count(), 'totalQuotes' => Quote::count(), 'totalBookings' => Booking::count(), 'revenue' => Booking::sum('total_price'), 'properties' => $query->latest()->get()]);
     })->name('admin.dashboard');
 
     Route::get('/admin/approvals', function () {
         $properties = Property::where('status', 'Draft')->latest()->get();
         $viewingRequests = ViewingRequest::latest()->get();
         $problems = Problem::latest()->get();
-        return view('admin.approvals', [
-            'properties' => $properties,
-            'viewingRequests' => $viewingRequests,
-            'problems' => $problems
-        ]);
+        return view('admin.approvals', ['properties' => $properties, 'viewingRequests' => $viewingRequests, 'problems' => $problems]);
     })->name('admin.approvals');
 
     Route::post('/admin/approvals/{property}', function (Property $property) {
@@ -410,29 +326,19 @@ Route::middleware(['auth'])->group(function () {
     })->name('admin.providers.verify');
 
     Route::get('/admin/users', function () {
-        return view('admin.users', [
-            'customers' => Customer::latest()->get(),
-            'providers' => Provider::latest()->get()
-        ]);
+        return view('admin.users', ['customers' => Customer::latest()->get(), 'providers' => Provider::latest()->get()]);
     })->name('admin.users');
 
     Route::get('/admin/requests', function () {
-        return view('admin.requests', [
-            'requests' => ServiceRequest::latest()->get(),
-            'quotes' => Quote::latest()->get()
-        ]);
+        return view('admin.requests', ['requests' => ServiceRequest::latest()->get(), 'quotes' => Quote::latest()->get()]);
     })->name('admin.requests');
 
     Route::get('/admin/bookings', function () {
-        return view('admin.bookings', [
-            'bookings' => Booking::with('quote')->latest()->get()
-        ]);
+        return view('admin.bookings', ['bookings' => Booking::with('quote')->latest()->get()]);
     })->name('admin.bookings');
 
     Route::get('/admin/messages', function () {
-        return view('admin.messages', [
-            'messages' => Message::latest()->get()
-        ]);
+        return view('admin.messages', ['messages' => Message::latest()->get()]);
     })->name('admin.messages');
 
     Route::get('/admin/matching', function () {
@@ -440,27 +346,17 @@ Route::middleware(['auth'])->group(function () {
     })->name('admin.matching');
 
     Route::get('/admin/properties', function () {
-        return view('admin.properties', [
-            'properties' => Property::latest()->get()
-        ]);
+        return view('admin.properties', ['properties' => Property::latest()->get()]);
     })->name('admin.properties');
 
     Route::get('/admin/payments', function () {
         $bookings = Booking::latest()->get();
         $totalRevenue = Booking::sum('total_price');
-        
-        return view('admin.payments', [
-            'bookings' => $bookings,
-            'totalRevenue' => $totalRevenue,
-            'pendingPayouts' => $totalRevenue * 0.9, 
-            'totalBookings' => $bookings->count()
-        ]);
+        return view('admin.payments', ['bookings' => $bookings, 'totalRevenue' => $totalRevenue, 'pendingPayouts' => $totalRevenue * 0.9, 'totalBookings' => $bookings->count()]);
     })->name('admin.payments');
 
     Route::get('/admin/disputes', function () {
-        return view('admin.disputes', [
-            'problems' => Problem::latest()->get()
-        ]);
+        return view('admin.disputes', ['problems' => Problem::latest()->get()]);
     })->name('admin.disputes');
 
     Route::post('/admin/disputes/{problem}/resolve', function (Problem $problem) {

@@ -15,28 +15,22 @@ use App\Models\Problem;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
 
-// Load Breeze Auth routes
 require __DIR__.'/auth.php';
 
-// SMART REDIRECT AFTER LOGIN
 Route::get('/dashboard', function () {
     $role = auth()->user()->role;
-    
     if ($role == 'Admin') return redirect()->route('admin.dashboard');
     if ($role == 'Provider') return redirect()->route('provider.dashboard');
     if ($role == 'Landlord') return redirect()->route('landlord.properties');
-    
     return redirect()->route('customer.dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-// BREEZE PROFILE ROUTES
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// ALL PROTECTED ROUTES
 Route::middleware(['auth'])->group(function () {
     
     // CUSTOMER ROUTES
@@ -256,8 +250,16 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.requests');
     })->name('provider.requests');
 
+    // UPDATED: Fetch quotes, reviews, and problems
     Route::get('/provider/quotes', function () {
-        return view('provider.quotes');
+        $quotes = Quote::latest()->get();
+        $reviews = Review::latest()->get();
+        $problems = Problem::latest()->get();
+        return view('provider.quotes', [
+            'quotes' => $quotes,
+            'reviews' => $reviews,
+            'problems' => $problems
+        ]);
     })->name('provider.quotes');
 
     Route::get('/provider/reviews', function () {
@@ -268,7 +270,6 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.subscription');
     })->name('provider.subscription');
 
-    // UPDATED: Fetch problems for Provider
     Route::get('/provider/problems', function () {
         return view('provider.problems', [
             'problems' => Problem::latest()->get()

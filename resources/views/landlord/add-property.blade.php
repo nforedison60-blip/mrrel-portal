@@ -73,7 +73,11 @@
                     <label class="k">Features (parking, furnished, pets, secure complex, fibre, backup power)<input type="text"></label>
                     <label class="k">Extra costs and rules<input type="text"></label>
                     <label class="k">Tenant requirements<input type="text"></label>
-                    <label class="k">Property photos (up to 10)<input type="file" name="image" accept="image/*"></label>
+                    
+                    <!-- Hidden File Input -->
+                    <input type="file" name="image" id="imageInput" accept="image/*" style="display: none;" onchange="document.getElementById('fileName').textContent = this.files[0].name">
+                    <div id="fileName" class="m sm" style="margin-top: 4px;"></div>
+
                     <label class="k" style="display: flex; align-items: center; gap: 8px; font-weight: 500;">
                         <input type="checkbox" id="own" required style="width: auto; margin: 0;"> I own this property or am authorised to let it
                     </label>
@@ -99,7 +103,9 @@
                         </div>
                     </div>
                     <p class="m sm">Up to 10 photos. The first is the cover photo. JPG, PNG or WebP, up to 5 MB.</p>
-                    <button type="button" class="btn g" style="margin-top: 12px;">Upload photos</button>
+                    
+                    <!-- Button that triggers the hidden file input -->
+                    <button type="button" class="btn g" style="margin-top: 12px;" onclick="document.getElementById('imageInput').click()">Upload photos</button>
                 </div>
 
                 <!-- How it works Card -->

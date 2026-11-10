@@ -1,90 +1,99 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1>Approvals & Requests</h1>
-    <div class="m">Review pending properties, monitor viewing requests, and handle customer problems.</div>
+    <h1>Approvals</h1>
+    <div class="m">Providers and properties wait here until you verify or approve them.</div>
 
-    @if(session('success'))
-        <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
-            {{ session('success') }}
+    <div class="row" style="margin-bottom: 16px;">
+        <span class="chip">Providers (4)</span>
+        <span class="chip">Properties (3)</span>
+    </div>
+
+    <!-- Provider Applications -->
+    <div class="card" style="margin-top: 20px;">
+        <h3>Provider applications</h3>
+        <table class="tb">
+            <tr>
+                <th>Provider</th>
+                <th>Type</th>
+                <th>Photo</th>
+                <th>ID</th>
+                <th>Vehicle and plate</th>
+                <th>Documents</th>
+                <th>Action</th>
+            </tr>
+            <tr>
+                <td>Pieter · Sample Movers B</td>
+                <td>Business</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Waiting</td>
+                <td><button type="button" class="btn" style="padding: 6px 14px; font-size: 13px;">Review</button></td>
+            </tr>
+            <tr>
+                <td>Zanele · Sample Handyman</td>
+                <td>Individual</td>
+                <td>Yes</td>
+                <td>Waiting</td>
+                <td>n/a</td>
+                <td>Waiting</td>
+                <td><button type="button" class="btn" style="padding: 6px 14px; font-size: 13px;">Review</button></td>
+            </tr>
+            <tr>
+                <td>Johan · Sample Storage</td>
+                <td>Business</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>n/a</td>
+                <td>Yes</td>
+                <td><button type="button" class="btn" style="padding: 6px 14px; font-size: 13px;">Review</button></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Review Section -->
+    <div class="card" style="margin-top: 20px;">
+        <h3>Review: Pieter</h3>
+        <div class="g3" style="margin-top: 16px;">
+            <div>
+                <div style="width: 100%; height: 160px; background: #E3F1F2; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <div class="av" style="width: 80px; height: 80px; font-size: 32px;">P</div>
+                </div>
+                <div class="sm" style="margin-top: 8px;"><b>Profile photo</b></div>
+                <div class="m sm">Compare with the ID</div>
+            </div>
+            <div>
+                <div style="width: 100%; height: 160px; background: #E3F1F2; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="100" height="50" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="5" y="10" width="45" height="20" rx="2" fill="#D5DEE6"/>
+                        <path d="M50 15H65L75 25V30H50V15Z" fill="#D5DEE6"/>
+                        <circle cx="20" cy="32" r="5" fill="#51657A"/>
+                        <circle cx="60" cy="32" r="5" fill="#51657A"/>
+                    </svg>
+                </div>
+                <div class="sm" style="margin-top: 8px;"><b>Vehicle and plate</b></div>
+                <div class="m sm">CA 000 000</div>
+            </div>
+            <div>
+                <div style="width: 100%; height: 160px; background: #E3F1F2; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="60" height="80" viewBox="0 0 100 100"><rect x="20" y="10" width="60" height="80" fill="#D5DEE6" stroke="#51657A" stroke-width="4"/></svg>
+                </div>
+                <div class="sm" style="margin-top: 8px;"><b>ID and documents (private)</b></div>
+                <div class="m sm">Never shown to the public</div>
+            </div>
         </div>
-    @endif
 
-    <div class="card" style="margin-top: 20px;">
-        <h3>Pending Properties</h3>
-        @if($properties->isEmpty())
-            <p class="m">No pending properties to approve.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Property</th>
-                    <th>Landlord Rent</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-                @foreach($properties as $property)
-                <tr>
-                    <td>
-                        <b>{{ $property->title }}</b><br>
-                        <span class="m sm">{{ $property->suburb }}, {{ $property->city }}</span>
-                    </td>
-                    <td>R{{ number_format($property->rent, 0) }}</td>
-                    <td><span class="chip wn">{{ $property->status }}</span></td>
-                    <td>
-                        <form method="POST" action="{{ route('admin.approvals.approve', $property->id) }}">
-                            @csrf
-                            <button type="submit" class="btn" style="padding: 6px 14px; font-size: 13px;">Approve</button>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
-            </table>
-        @endif
-    </div>
+        <ul style="margin-top: 16px; margin-bottom: 16px;">
+            <li>Photo matches ID</li>
+            <li>Vehicle registration and insurance checked</li>
+            <li>References checked</li>
+        </ul>
 
-    <div class="card" style="margin-top: 20px;">
-        <h3>All Viewing Requests</h3>
-        @if($viewingRequests->isEmpty())
-            <p class="m">No viewing requests have been made yet.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Property</th>
-                    <th>Tenant Name</th>
-                    <th>Status</th>
-                </tr>
-                @foreach($viewingRequests as $req)
-                <tr>
-                    <td>{{ $req->property->title }}</td>
-                    <td>{{ $req->customer_name }}</td>
-                    <td><span class="chip {{ $req->status == 'Completed' ? 'ok' : 'wn' }}">{{ $req->status }}</span></td>
-                </tr>
-                @endforeach
-            </table>
-        @endif
-    </div>
-
-    <div class="card" style="margin-top: 20px;">
-        <h3>Customer Problems</h3>
-        @if($problems->isEmpty())
-            <p class="m">No problems reported.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Report ID</th>
-                    <th>Customer</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                </tr>
-                @foreach($problems as $problem)
-                <tr>
-                    <td>#{{ $problem->id }}</td>
-                    <td>{{ $problem->customer_name }}</td>
-                    <td>{{ $problem->description }}</td>
-                    <td><span class="chip wn">{{ $problem->status }}</span></td>
-                </tr>
-                @endforeach
-            </table>
-        @endif
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn">Verify</button>
+            <button type="button" class="btn g">Request changes</button>
+            <button type="button" class="btn g">Reject</button>
+        </div>
     </div>
 @endsection

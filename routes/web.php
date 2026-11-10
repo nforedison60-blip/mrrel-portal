@@ -320,7 +320,6 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.profile.update');
 
     // ADMIN ROUTES
-    // UPDATED: Fetch admin stats
     Route::get('/admin/dashboard', function (Request $request) {
         return view('admin.dashboard', [
             'providerApplications' => Provider::where('verification_status', 'Pending')->count(),
@@ -352,15 +351,25 @@ Route::middleware(['auth'])->group(function () {
     })->name('admin.providers.verify');
 
     Route::get('/admin/users', function () {
-        return view('admin.users', ['customers' => Customer::latest()->get(), 'providers' => Provider::latest()->get()]);
+        return view('admin.users', [
+            'customers' => Customer::latest()->get(), 
+            'providers' => Provider::latest()->get(),
+            'requests' => ServiceRequest::latest()->get(),
+            'quotes' => Quote::latest()->get()
+        ]);
     })->name('admin.users');
 
     Route::get('/admin/requests', function () {
         return view('admin.requests', ['requests' => ServiceRequest::latest()->get(), 'quotes' => Quote::latest()->get()]);
     })->name('admin.requests');
 
+    // UPDATED: Fetch bookings, properties, AND providers
     Route::get('/admin/bookings', function () {
-        return view('admin.bookings', ['bookings' => Booking::with('quote')->latest()->get()]);
+        return view('admin.bookings', [
+            'bookings' => Booking::with('quote')->latest()->get(),
+            'properties' => Property::latest()->get(),
+            'providers' => Provider::latest()->get()
+        ]);
     })->name('admin.bookings');
 
     Route::get('/admin/messages', function () {

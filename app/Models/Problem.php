@@ -12,6 +12,7 @@ class Problem extends Model
     protected $fillable = [
         'booking_id',
         'customer_name',
+        'subject',
         'description',
         'status',
         'image_path',

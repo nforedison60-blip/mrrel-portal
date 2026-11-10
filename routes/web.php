@@ -192,7 +192,8 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.messages.store');
 
     Route::get('/customer/fees', function () {
-        return view('customer.fees');
+        $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->get();
+        return view('customer.fees', ['properties' => $properties]);
     })->name('customer.fees');
 
     Route::get('/customer/problems', function () {
@@ -200,6 +201,7 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.problems', ['problems' => $problems]);
     })->name('customer.problems');
 
+    // UPDATED: Save booking_id and subject
     Route::post('/customer/problems', function (Request $request) {
         $customer = Customer::find(1);
         $imagePath = null;
@@ -208,6 +210,8 @@ Route::middleware(['auth'])->group(function () {
         }
         Problem::create([
             'customer_name' => $customer ? $customer->name : 'Lerato',
+            'booking_id' => $request->booking_id,
+            'subject' => $request->subject,
             'description' => $request->description,
             'image_path' => $imagePath,
         ]);
@@ -281,7 +285,7 @@ Route::middleware(['auth'])->group(function () {
             'bookingsCount' => Booking::count(),
             'totalRevenue' => Booking::sum('total_price'),
             'nextJobs' => Booking::latest()->take(3)->get(),
-            'requests' => ServiceRequest::where('status', 'Active')->latest()->take(5)->get() // FILTER ADDED
+            'requests' => ServiceRequest::where('status', 'Active')->latest()->take(5)->get()
         ]);
     })->name('provider.dashboard');
 

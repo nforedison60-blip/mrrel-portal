@@ -5,7 +5,6 @@
     <div class="m">Pages not shown elsewhere.</div>
 
     <div class="g2" style="margin-top: 20px;">
-        <!-- Raise a problem -->
         <div class="card">
             <h3>Raise a problem</h3>
             <form method="POST" action="{{ route('customer.problems.store') }}" enctype="multipart/form-data">
@@ -31,7 +30,6 @@
             </form>
         </div>
 
-        <!-- My problems -->
         <div class="card">
             <h3>My problems</h3>
             @if($problems->isEmpty())
@@ -44,7 +42,7 @@
                     </tr>
                     @foreach($problems as $problem)
                     <tr>
-                        <td>D-{{ str_pad($problem->id, 3, '0', STR_PAD_LEFT) }} · {{ $problem->description }}</td>
+                        <td>D-{{ str_pad($problem->id, 3, '0', STR_PAD_LEFT) }} · {{ $problem->subject ?? $problem->description }}</td>
                         <td>
                             <span class="chip {{ $problem->status == 'Resolved' ? 'ok' : 'wn' }}">
                                 {{ $problem->status == 'Resolved' ? 'Resolved' : 'In progress' }}

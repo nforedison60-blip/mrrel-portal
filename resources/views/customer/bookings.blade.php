@@ -44,18 +44,11 @@
                     <div class="m sm">If someone else arrives, don’t hand anything over and call us.</div>
                 </div>
 
-                <!-- Track your driver -->
+                <!-- Track your driver (REAL MAP) -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Track your driver</h3>
-                    <div style="width: 100%; height: 180px; background-color: #E3F1F2; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 16px;">
-                        <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                             <svg width="400" height="150" viewBox="0 0 400 150">
-                                <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0E7C86" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
-                                <circle cx="50" cy="100" r="8" fill="#F4B731" stroke="#10243A" stroke-width="2"/>
-                                <circle cx="350" cy="50" r="8" fill="#0E7C86"/>
-                             </svg>
-                        </div>
-                    </div>
+                    
+                    <div id="map" style="width: 100%; height: 250px; border-radius: 8px; margin-bottom: 16px; background: #E3F1F2;"></div>
 
                     <p class="sm"><b>Pieter is on his way.</b> Status: {{ $booking->tracking_status }}</p>
                     <div class="pl" style="margin-top: 8px;">
@@ -130,7 +123,7 @@
                     <p class="m sm" style="margin-top: 12px;">Extras are always approved and paid through MrRel, not in cash.</p>
                 </div>
 
-                <!-- When the job is done (FIXED) -->
+                <!-- When the job is done -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>When the job is done</h3>
                     @if($booking->job_confirmed)
@@ -141,7 +134,7 @@
                                 @csrf
                                 <button type="submit" class="btn">Confirm the job is done</button>
                             </form>
-                            <button type="button" class="btn g">Report a problem</button>
+                            <a href="{{ route('customer.problems') }}" class="btn g" style="text-decoration:none;">Report a problem</a>
                         </div>
                     @endif
                 </div>
@@ -190,5 +183,43 @@
             <p class="m">When you accept a quote, your booking details will appear here.</p>
             <a href="{{ route('customer.quotes') }}" class="btn" style="text-decoration:none;">View Quotes</a>
         </div>
+    @endif
+
+    <!-- GOOGLE MAPS SCRIPT (USES CONFIG) -->
+    @if($booking)
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}"></script>
+    <script>
+        function initMap() {
+            // Center map on Cape Town (replace with dynamic coords later)
+            const location = { lat: -33.9249, lng: 18.4241 };
+            
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 12,
+                center: location,
+                disableDefaultUI: true,
+            });
+
+            // Add a marker for the driver
+            new google.maps.Marker({
+                position: location,
+                map: map,
+                title: "Pieter is here",
+                icon: {
+                    url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                }
+            });
+
+            // Add a marker for the customer address
+            new google.maps.Marker({
+                position: { lat: -33.8949, lng: 18.6241 },
+                map: map,
+                title: "Your address",
+                icon: {
+                    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                }
+            });
+        }
+        window.onload = initMap;
+    </script>
     @endif
 @endsection

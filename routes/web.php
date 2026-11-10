@@ -261,7 +261,6 @@ Route::middleware(['auth'])->group(function () {
     })->name('landlord.profile');
 
     // PROVIDER ROUTES
-    // UPDATED: Fetch the logged-in provider's details
     Route::get('/provider/dashboard', function () {
         $user = auth()->user();
         $provider = Provider::firstOrCreate(
@@ -282,7 +281,7 @@ Route::middleware(['auth'])->group(function () {
             'bookingsCount' => Booking::count(),
             'totalRevenue' => Booking::sum('total_price'),
             'nextJobs' => Booking::latest()->take(3)->get(),
-            'requests' => ServiceRequest::latest()->take(5)->get()
+            'requests' => ServiceRequest::where('status', 'Active')->latest()->take(5)->get() // FILTER ADDED
         ]);
     })->name('provider.dashboard');
 

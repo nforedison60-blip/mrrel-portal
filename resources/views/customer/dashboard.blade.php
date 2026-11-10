@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Welcome back, Lerato</h1>
+    <h1>Welcome back, {{ auth()->user()->name }}</h1>
     <div class="m">Everything that needs you, in one place.</div>
     
     <div class="g4">

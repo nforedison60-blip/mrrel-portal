@@ -107,11 +107,11 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.bookings', ['booking' => $booking]);
     })->name('customer.bookings');
 
+    // UPDATED: Uses real logged-in user name
     Route::post('/bookings', function (Request $request) {
-        $customer = Customer::find(1);
         Booking::create([
             'quote_id' => $request->quote_id,
-            'customer_name' => $customer ? $customer->name : 'Lerato',
+            'customer_name' => auth()->user()->name,
             'total_price' => $request->total_price,
             'status' => 'Paid',
             'tracking_status' => 'On my way',
@@ -135,10 +135,9 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.extras.decline');
 
     Route::post('/review', function (Request $request) {
-        $customer = Customer::find(1);
         Review::create([
             'provider_id' => 1,
-            'customer_name' => $customer ? $customer->name : 'Lerato',
+            'customer_name' => auth()->user()->name,
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
@@ -160,10 +159,9 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.shortlist.decline');
 
     Route::post('/viewing-request', function (Request $request) {
-        $customer = Customer::find(1);
         ViewingRequest::create([
             'property_id' => $request->property_id,
-            'customer_name' => $customer ? $customer->name : 'Lerato',
+            'customer_name' => auth()->user()->name,
             'status' => 'Pending',
             'message' => $request->message,
         ]);
@@ -171,7 +169,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.viewing.store');
 
     Route::get('/customer/profile', function () {
-        $customer = Customer::firstOrCreate(['id' => 1], ['name' => 'Lerato', 'email' => 'lerato@example.com', 'phone' => '082 000 0000']);
+        $customer = Customer::firstOrCreate(['id' => 1], ['name' => auth()->user()->name, 'email' => auth()->user()->email, 'phone' => '082 000 0000']);
         return view('customer.profile', ['customer' => $customer]);
     })->name('customer.profile');
 
@@ -187,7 +185,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.messages');
 
     Route::post('/customer/messages', function (Request $request) {
-        Message::create(['sender_name' => 'Lerato', 'message' => $request->message]);
+        Message::create(['sender_name' => auth()->user()->name, 'message' => $request->message]);
         return redirect()->route('customer.messages')->with('success', 'Message sent!');
     })->name('customer.messages.store');
 
@@ -201,15 +199,13 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.problems', ['problems' => $problems]);
     })->name('customer.problems');
 
-    // UPDATED: Save booking_id and subject
     Route::post('/customer/problems', function (Request $request) {
-        $customer = Customer::find(1);
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('problems', 's3');
         }
         Problem::create([
-            'customer_name' => $customer ? $customer->name : 'Lerato',
+            'customer_name' => auth()->user()->name,
             'booking_id' => $request->booking_id,
             'subject' => $request->subject,
             'description' => $request->description,
@@ -296,7 +292,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/provider/send-quote', function (Request $request) {
         Quote::create([
-            'provider_name' => 'Pieter', 
+            'provider_name' => auth()->user()->name,
             'total_price' => $request->total_price,
             'price_type' => $request->price_type,
             'included' => implode(', ', $request->input('included', [])),
@@ -349,7 +345,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.messages');
 
     Route::post('/provider/messages', function (Request $request) {
-        Message::create(['sender_name' => 'Pieter', 'message' => $request->message]);
+        Message::create(['sender_name' => auth()->user()->name, 'message' => $request->message]);
         return redirect()->route('provider.messages')->with('success', 'Message sent!');
     })->name('provider.messages.store');
 

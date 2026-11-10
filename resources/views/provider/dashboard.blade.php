@@ -38,21 +38,40 @@
         @endif
     </div>
 
-    <div class="g2" style="margin-top: 20px;">
-        <div class="card">
-            <h3>Next jobs</h3>
-            <ul>
-                <li>BKG-0101 · Sat 31 Oct · Parklands to Bellville</li>
-                <li>BKG-0104 · Mon 2 Nov · Claremont to Wynberg</li>
-            </ul>
-        </div>
-        <div class="card">
-            <h3>Payout status</h3>
-            <ul>
-                <li>Ready for payout: 1</li>
-                <li>Waiting for customer confirmation: 1</li>
-                <li>Paid out this month: R3,200</li>
-            </ul>
-        </div>
+    <div class="card" style="margin-top: 20px;">
+        <h3>Next jobs (Update Status)</h3>
+        @if($nextJobs->isEmpty())
+            <p class="m">No upcoming jobs.</p>
+        @else
+            <table class="tb">
+                <tr>
+                    <th>Booking</th>
+                    <th>Customer</th>
+                    <th>Current Status</th>
+                    <th>Update</th>
+                </tr>
+                @foreach($nextJobs as $job)
+                <tr>
+                    <td>BKG-{{ str_pad($job->id, 4, '0', STR_PAD_LEFT) }}</td>
+                    <td>{{ $job->customer_name }}</td>
+                    <td><span class="chip ok">{{ $job->tracking_status }}</span></td>
+                    <td>
+                        <form method="POST" action="{{ route('provider.booking.status', $job->id) }}" style="display: flex; gap: 8px;">
+                            @csrf
+                            <select name="status" style="margin:0; padding: 4px 8px; font-size: 13px;">
+                                <option value="On my way" {{ $job->tracking_status == 'On my way' ? 'selected' : '' }}>On my way</option>
+                                <option value="Arrived" {{ $job->tracking_status == 'Arrived' ? 'selected' : '' }}>Arrived</option>
+                                <option value="Loading" {{ $job->tracking_status == 'Loading' ? 'selected' : '' }}>Loading</option>
+                                <option value="In transit" {{ $job->tracking_status == 'In transit' ? 'selected' : '' }}>In transit</option>
+                                <option value="Delivered" {{ $job->tracking_status == 'Delivered' ? 'selected' : '' }}>Delivered</option>
+                                <option value="Complete" {{ $job->tracking_status == 'Complete' ? 'selected' : '' }}>Complete</option>
+                            </select>
+                            <button type="submit" class="btn" style="padding: 4px 10px; font-size: 12px; margin:0;">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </table>
+        @endif
     </div>
 @endsection

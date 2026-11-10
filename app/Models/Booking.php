@@ -14,6 +14,7 @@ class Booking extends Model
         'customer_name',
         'total_price',
         'status',
+        'tracking_status',
     ];
 
     public function quote()

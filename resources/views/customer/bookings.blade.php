@@ -47,9 +47,7 @@
                 <!-- Track your driver -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Track your driver</h3>
-                    <!-- Map Placeholder -->
                     <div style="width: 100%; height: 180px; background-color: #E3F1F2; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 16px;">
-                        <!-- Fake map lines -->
                         <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
                              <svg width="400" height="150" viewBox="0 0 400 150">
                                 <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0E7C86" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
@@ -59,17 +57,16 @@
                         </div>
                     </div>
 
-                    <p class="sm"><b>Pieter is on his way.</b> Arriving about 08:25 (window 08:00 to 10:00)</p>
+                    <p class="sm"><b>Pieter is on his way.</b> Status: {{ $booking->tracking_status }}</p>
                     <div class="pl" style="margin-top: 8px;">
-                        <span class="chip">On my way</span>
-                        <span class="chip wn">Arrived</span>
-                        <span class="chip">Loading</span>
-                        <span class="chip">In transit</span>
-                        <span class="chip">Delivered</span>
-                        <span class="chip">Complete</span>
+                        <span class="chip {{ $booking->tracking_status == 'On my way' ? 'ok' : '' }}">On my way</span>
+                        <span class="chip {{ $booking->tracking_status == 'Arrived' ? 'ok' : '' }}">Arrived</span>
+                        <span class="chip {{ $booking->tracking_status == 'Loading' ? 'ok' : '' }}">Loading</span>
+                        <span class="chip {{ $booking->tracking_status == 'In transit' ? 'ok' : '' }}">In transit</span>
+                        <span class="chip {{ $booking->tracking_status == 'Delivered' ? 'ok' : '' }}">Delivered</span>
+                        <span class="chip {{ $booking->tracking_status == 'Complete' ? 'ok' : '' }}">Complete</span>
                     </div>
                     <p class="m sm" style="margin-top: 12px;">Location is shared only while the job is active, and stops when the job is complete.</p>
-                    <button type="button" class="btn g">Open full tracking and chat</button>
                 </div>
 
                 <!-- Chat with Pieter -->
@@ -107,10 +104,9 @@
                             <button type="button" class="btn g">Attach photo</button>
                         </div>
                     </form>
-                    <p class="m sm" style="margin-top: 12px;">Phone numbers stay private. Messages are saved with the booking, and MrRel can read them if there is a problem.</p>
                 </div>
 
-                <!-- Progress -->
+                <!-- Extras / Progress / Job Done -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Progress</h3>
                     <div style="margin-bottom: 8px;">
@@ -119,12 +115,9 @@
                         <span class="chip ok">Paid</span>
                         <span class="chip">Job done</span>
                         <span class="chip">Confirmed</span>
-                        <span class="chip">Reviewed</span>
                     </div>
-                    <p class="m sm">Current step: {{ $booking->status }}</p>
                 </div>
 
-                <!-- Extras -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Extras on the day</h3>
                     <p class="sm">Pieter proposes an extra: <b>Extra stairs, R150</b></p>
@@ -132,17 +125,14 @@
                         <button type="button" class="btn">Approve and pay</button>
                         <button type="button" class="btn g">Decline</button>
                     </div>
-                    <p class="m sm" style="margin-top: 12px;">Extras are always approved and paid through MrRel, not in cash.</p>
                 </div>
 
-                <!-- When job is done -->
-                <div class="card" style="margin-top: 16px;">
+                 <div class="card" style="margin-top: 16px;">
                     <h3>When the job is done</h3>
                      <div style="display: flex; gap: 8px; margin-top: 12px;">
                         <button type="button" class="btn">Confirm the job is done</button>
                         <button type="button" class="btn g">Report a problem</button>
                     </div>
-                    <p class="m sm" style="margin-top: 12px;">If you don’t respond within [set time], the job counts as complete unless you raise a problem.</p>
                 </div>
             </div>
 

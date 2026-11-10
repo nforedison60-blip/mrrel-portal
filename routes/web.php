@@ -46,7 +46,7 @@ Route::middleware(['auth'])->group(function () {
             'quotesCount' => Quote::count(),
             'bookingsCount' => Booking::count(),
             'propertiesCount' => Property::where('status', 'Approved')->count(),
-            'nextBooking' => Booking::latest()->first(), // NEW
+            'nextBooking' => Booking::latest()->first(),
             'latestRequests' => ServiceRequest::latest()->take(3)->get()
         ]);
     })->name('customer.dashboard');
@@ -100,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
             'customer_name' => $customer ? $customer->name : 'Lerato',
             'total_price' => $request->total_price,
             'status' => 'Paid',
+            'tracking_status' => 'On my way',
         ]);
         return redirect()->route('customer.bookings')->with('success', 'Quote accepted! Booking created.');
     })->name('customer.bookings.store');
@@ -276,6 +277,12 @@ Route::middleware(['auth'])->group(function () {
         ]);
         return redirect()->route('provider.messages')->with('success', 'Message sent!');
     })->name('provider.messages.store');
+
+    // NEW: Update Booking Status (Tracking)
+    Route::post('/provider/booking/{booking}/status', function (Request $request, Booking $booking) {
+        $booking->update(['tracking_status' => $request->status]);
+        return redirect()->route('provider.dashboard')->with('success', 'Tracking status updated!');
+    })->name('provider.booking.status');
 
     Route::get('/provider/rate-card', function () {
         return view('provider.rate');

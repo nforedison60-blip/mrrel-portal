@@ -70,6 +70,7 @@
                     </label>
                 </div>
                 <button type="submit" class="btn">Submit request</button>
+                <button type="button" class="btn g">Save draft</button>
             </form>
         </div>
 

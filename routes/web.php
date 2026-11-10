@@ -256,7 +256,6 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.requests');
     })->name('provider.requests');
 
-    // NEW PROVIDER ROUTES
     Route::get('/provider/quotes', function () {
         return view('provider.quotes');
     })->name('provider.quotes');
@@ -269,13 +268,17 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.subscription');
     })->name('provider.subscription');
 
+    // UPDATED: Fetch problems for Provider
     Route::get('/provider/problems', function () {
-        return view('provider.problems');
+        return view('provider.problems', [
+            'problems' => Problem::latest()->get()
+        ]);
     })->name('provider.problems');
 
     Route::get('/provider/bookings', function () {
         $bookings = Booking::latest()->get();
-        return view('provider.pbook', ['bookings' => $bookings]);
+        $problems = Problem::latest()->get();
+        return view('provider.pbook', ['bookings' => $bookings, 'problems' => $problems]);
     })->name('provider.pbook');
 
     Route::get('/provider/messages', function () {

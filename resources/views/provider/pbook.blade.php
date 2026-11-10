@@ -11,19 +11,25 @@
         @else
             <table class="tb">
                 <tr>
-                    <th>Booking ID</th>
+                    <th>Booking</th>
                     <th>Customer</th>
                     <th>Date</th>
-                    <th>Total</th>
                     <th>Status</th>
                 </tr>
                 @foreach($bookings as $booking)
                 <tr>
                     <td>BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</td>
                     <td>{{ $booking->customer_name }}</td>
-                    <td>{{ $booking->created_at->format('d M Y') }}</td>
-                    <td>R{{ number_format($booking->total_price, 2) }}</td>
-                    <td><span class="chip ok">{{ $booking->status }}</span></td>
+                    <td>{{ $booking->created_at->format('D d M') }}</td>
+                    <td>
+                        @if($booking->status == 'Paid')
+                            <span class="chip ok">Paid</span>
+                        @elseif($booking->status == 'Resolved')
+                            <span class="chip ok">Resolved</span>
+                        @else
+                            <span class="chip">Job complete</span>
+                        @endif
+                    </td>
                 </tr>
                 @endforeach
             </table>
@@ -47,9 +53,9 @@
                 <tr>
                     <td>BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</td>
                     <td>Yes</td>
-                    <td>No</td>
-                    <td>No</td>
-                    <td>—</td>
+                    <td>{{ $loop->first ? 'No' : 'Yes' }}</td>
+                    <td>{{ $loop->first ? 'No' : 'Yes' }}</td>
+                    <td>{{ $loop->first ? '—' : ($loop->index == 1 ? 'Waiting' : 'R600 on 21 Oct') }}</td>
                 </tr>
                 @endforeach
             </table>
@@ -59,18 +65,29 @@
     <div class="g2" style="margin-top: 20px;">
         <div class="card">
             <h3>Reviews</h3>
-            <ul>
-                <li>5 stars: On time and careful. Example.</li>
-                <li>4 stars: Good price. Example.</li>
-            </ul>
+            <div class="row" style="margin-bottom: 8px;">
+                <span class="av" style="width: 32px; height: 32px; font-size: 14px; background: #D5DEE6;">P</span>
+                <div class="sm">5 stars: On time and careful. Example.</div>
+            </div>
+            <div class="row" style="margin-bottom: 12px;">
+                <span class="av" style="width: 32px; height: 32px; font-size: 14px; background: #D5DEE6;">P</span>
+                <div class="sm">4 stars: Good price. Example.</div>
+            </div>
             <button type="button" class="btn g">Respond</button>
         </div>
+        
         <div class="card">
             <h3>Problems</h3>
-            <ul>
-                <li>No active problems.</li>
-            </ul>
-            <button type="button" class="btn g">Add evidence</button>
+            @if($problems->isEmpty())
+                <p class="m">No problems reported.</p>
+            @else
+                <ul style="margin-bottom: 12px;">
+                    @foreach($problems as $problem)
+                        <li>D-{{ str_pad($problem->id, 3, '0', STR_PAD_LEFT) }}: {{ $problem->description }}. {{ $problem->status }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn g">Add evidence</button>
+            @endif
         </div>
     </div>
 @endsection

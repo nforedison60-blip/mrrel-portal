@@ -18,9 +18,8 @@
         <div class="g3" style="margin-top: 20px;">
             @foreach($properties as $property)
                 <div class="card">
-                    <!-- UPDATED: Show the real image -->
                     @if($property->image_path)
-                        <img src="{{ asset('storage/' . $property->image_path) }}" alt="Property Photo" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
+                        <img src="{{ Storage::disk('s3')->url($property->image_path) }}" alt="Property Photo" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
                     @else
                         <div class="ph">[No photo uploaded]</div>
                     @endif
@@ -46,4 +45,9 @@
             @endforeach
         </div>
     @endif
+
+    <div class="card" style="margin-top: 20px;">
+        <h3>Notes</h3>
+        <p class="sm">Accepting a place does not reserve it, create a lease or guarantee availability. Rent and deposit are paid directly to the landlord. Viewing requests can be video or in person.</p>
+    </div>
 @endsection

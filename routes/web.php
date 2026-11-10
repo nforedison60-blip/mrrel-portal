@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use App\Models\ServiceRequest;
 use App\Models\Quote;
 use App\Models\Booking;
@@ -17,7 +18,7 @@ use App\Http\Controllers\ProfileController;
 // Load Breeze Auth routes
 require __DIR__.'/auth.php';
 
-// SMART REDIRECT AFTER LOGIN (Based on Role)
+// SMART REDIRECT AFTER LOGIN
 Route::get('/dashboard', function () {
     $role = auth()->user()->role;
     
@@ -35,9 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// ==========================================
-// ALL PROTECTED ROUTES (Must be logged in)
-// ==========================================
+// ALL PROTECTED ROUTES
 Route::middleware(['auth'])->group(function () {
     
     // CUSTOMER ROUTES
@@ -201,7 +200,7 @@ Route::middleware(['auth'])->group(function () {
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('properties', 'public');
+            $imagePath = $request->file('image')->store('properties', 's3');
         }
 
         Property::create([
@@ -311,17 +310,17 @@ Route::middleware(['auth'])->group(function () {
         
         $imagePath = $provider->image_path;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('providers', 'public');
+            $imagePath = $request->file('image')->store('providers', 's3');
         }
 
         $vehicleImagePath = $provider->vehicle_image_path;
         if ($request->hasFile('vehicle_image')) {
-            $vehicleImagePath = $request->file('vehicle_image')->store('providers', 'public');
+            $vehicleImagePath = $request->file('vehicle_image')->store('providers', 's3');
         }
 
         $idImagePath = $provider->id_image_path;
         if ($request->hasFile('id_image')) {
-            $idImagePath = $request->file('id_image')->store('providers', 'public');
+            $idImagePath = $request->file('id_image')->store('providers', 's3');
         }
 
         $provider->update([

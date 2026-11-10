@@ -43,11 +43,17 @@
                     <div class="m sm">If someone else arrives, don’t hand anything over and call us.</div>
                 </div>
 
-                <!-- Map (MapLibre) -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Track your driver</h3>
-                    
-                    <div id="map" style="width: 100%; height: 250px; border-radius: 8px; margin-bottom: 16px; background: #E3F1F2;"></div>
+                    <div style="width: 100%; height: 180px; background-color: #E3F1F2; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 16px;">
+                        <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                             <svg width="400" height="150" viewBox="0 0 400 150">
+                                <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0E7C86" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
+                                <circle cx="50" cy="100" r="8" fill="#F4B731" stroke="#10243A" stroke-width="2"/>
+                                <circle cx="350" cy="50" r="8" fill="#0E7C86"/>
+                             </svg>
+                        </div>
+                    </div>
 
                     <p class="sm"><b>Pieter is on his way.</b> Status: {{ $booking->tracking_status }}</p>
                     <div class="pl" style="margin-top: 8px;">
@@ -60,7 +66,6 @@
                     </div>
                 </div>
 
-                <!-- Chat -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Chat with Pieter</h3>
                     <div class="row" style="margin-bottom: 12px;">
@@ -97,7 +102,6 @@
                     </form>
                 </div>
 
-                <!-- Extras -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Extras on the day</h3>
                     <p class="sm">Pieter proposes an extra: <b>Extra stairs, R150</b></p>
@@ -120,7 +124,6 @@
                     @endif
                 </div>
 
-                <!-- Job Done -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>When the job is done</h3>
                     @if($booking->job_confirmed)
@@ -180,29 +183,5 @@
             <p class="m">When you accept a quote, your booking details will appear here.</p>
             <a href="{{ route('customer.quotes') }}" class="btn" style="text-decoration:none;">View Quotes</a>
         </div>
-    @endif
-
-    <!-- MAPLIBRE (Free, No API Key) -->
-    @if($booking)
-    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
-    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
-    <script>
-        function initMap() {
-            const lat = {{ $booking->provider_lat ?? -33.9249 }};
-            const lng = {{ $booking->provider_lng ?? 18.4241 }};
-
-            const map = new maplibregl.Map({
-                container: 'map',
-                style: 'https://tiles.openfreemap.org/styles/positron',
-                center: [lng, lat], // MapLibre uses [lng, lat]
-                zoom: 13
-            });
-
-            new maplibregl.Marker({ color: "#0E7C86" })
-                .setLngLat([lng, lat])
-                .addTo(map);
-        }
-        window.onload = initMap;
-    </script>
     @endif
 @endsection

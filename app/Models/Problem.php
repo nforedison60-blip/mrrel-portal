@@ -14,5 +14,6 @@ class Problem extends Model
         'customer_name',
         'description',
         'status',
+        'image_path',
     ];
 }

@@ -8,7 +8,7 @@
         <!-- Raise a problem -->
         <div class="card">
             <h3>Raise a problem</h3>
-            <form method="POST" action="{{ route('customer.problems.store') }}">
+            <form method="POST" action="{{ route('customer.problems.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="f">
                     <label>Booking
@@ -20,8 +20,11 @@
                     <label class="k">Subject
                         <input type="text" name="subject">
                     </label>
-                    <label class="k">What happened (required)
+                    <label class="k">What happened
                         <textarea name="description" rows="4" required></textarea>
+                    </label>
+                    <label class="k">Photos or documents
+                        <input type="file" name="image" accept="image/*">
                     </label>
                 </div>
                 <button type="submit" class="btn">Send</button>

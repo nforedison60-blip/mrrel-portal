@@ -88,7 +88,6 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.quotes', ['quotes' => $quotes]);
     })->name('customer.quotes');
 
-    // NEW: Quote Detail Page
     Route::get('/quote/{quote}', function (Quote $quote) {
         return view('customer.quote-detail', ['quote' => $quote]);
     })->name('customer.quote.show');
@@ -177,11 +176,19 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.problems', ['problems' => $problems]);
     })->name('customer.problems');
 
+    // UPDATED: Handle file upload for problems
     Route::post('/customer/problems', function (Request $request) {
         $customer = Customer::find(1);
+        
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('problems', 's3');
+        }
+
         Problem::create([
             'customer_name' => $customer ? $customer->name : 'Lerato',
             'description' => $request->description,
+            'image_path' => $imagePath,
         ]);
         return redirect()->route('customer.problems')->with('success', 'Problem reported successfully!');
     })->name('customer.problems.store');

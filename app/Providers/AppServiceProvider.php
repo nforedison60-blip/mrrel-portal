@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Storage;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,9 +14,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // If we are testing locally and don't have S3 keys, 
-        // tell Laravel to use the local 'public' disk instead so it doesn't crash.
+        // Force local to use public disk if no AWS keys are present
         if (app()->environment('local') && !env('AWS_ACCESS_KEY_ID')) {
+            config(['filesystems.default' => 'public']);
             config(['filesystems.disks.s3' => config('filesystems.disks.public')]);
         }
     }

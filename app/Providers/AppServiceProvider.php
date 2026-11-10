@@ -14,8 +14,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Force local to use public disk if no AWS keys are present
-        if (app()->environment('local') && !env('AWS_ACCESS_KEY_ID')) {
+        // If we are on local (testing), and don't have AWS keys, 
+        // force it to use the public disk so it doesn't crash.
+        if (app()->environment('local') && !env('AWS_BUCKET')) {
             config(['filesystems.default' => 'public']);
             config(['filesystems.disks.s3' => config('filesystems.disks.public')]);
         }

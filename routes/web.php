@@ -88,6 +88,11 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.quotes', ['quotes' => $quotes]);
     })->name('customer.quotes');
 
+    // NEW: Quote Detail Page
+    Route::get('/quote/{quote}', function (Quote $quote) {
+        return view('customer.quote-detail', ['quote' => $quote]);
+    })->name('customer.quote.show');
+
     Route::get('/bookings', function () {
         $booking = Booking::latest()->first();
         return view('customer.bookings', ['booking' => $booking]);
@@ -278,7 +283,6 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('provider.messages')->with('success', 'Message sent!');
     })->name('provider.messages.store');
 
-    // NEW: Update Booking Status (Tracking)
     Route::post('/provider/booking/{booking}/status', function (Request $request, Booking $booking) {
         $booking->update(['tracking_status' => $request->status]);
         return redirect()->route('provider.dashboard')->with('success', 'Tracking status updated!');

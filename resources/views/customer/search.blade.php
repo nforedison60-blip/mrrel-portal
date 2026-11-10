@@ -27,7 +27,7 @@
             @foreach($properties as $property)
                 <div class="card">
                     @if($property->image_path)
-                        <img src="{{ Storage::disk('s3')->url($property->image_path) }}" alt="Property Photo" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
+                        <img src="{{ Storage::url($property->image_path) }}" alt="Property Photo" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
                     @else
                         <div class="ph">[No photo uploaded]</div>
                     @endif

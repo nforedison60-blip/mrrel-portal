@@ -23,7 +23,6 @@
                         </div>
                     </div>
 
-                    <!-- Vehicle Placeholder Image -->
                     <div style="width: 100%; height: 120px; background-color: #E3F1F2; border-radius: 8px; margin: 16px 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--l);">
                         <svg width="80" height="40" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="5" y="10" width="45" height="20" rx="2" fill="#D5DEE6"/>
@@ -45,6 +44,9 @@
                         <b>Valid for:</b> {{ $quote->validity }}
                     </p>
                     
+                    <!-- NEW: View Full Quote Button -->
+                    <a href="{{ route('customer.quote.show', $quote->id) }}" class="btn g" style="width:100%; display:block; text-align:center; text-decoration:none; margin-bottom: 8px;">View Full Quote</a>
+
                     <form method="POST" action="{{ route('customer.bookings.store') }}" style="margin-bottom: 8px;">
                         @csrf
                         <input type="hidden" name="quote_id" value="{{ $quote->id }}">

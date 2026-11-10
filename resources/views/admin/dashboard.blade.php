@@ -1,55 +1,92 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1>Admin Dashboard</h1>
-    <div class="m">Overview of the MrRel platform.</div>
+    <h1>Admin dashboard</h1>
+    <div class="m">Everything the MrRel team manages. Not shown on the public site.</div>
 
     <div class="g4" style="margin-top: 20px;">
-        <div class="card"><div class="m sm">Total Requests</div><div class="big">{{ $totalRequests }}</div></div>
-        <div class="card"><div class="m sm">Active Bookings</div><div class="big">{{ $totalBookings }}</div></div>
-        <div class="card"><div class="m sm">Quotes Sent</div><div class="big">{{ $totalQuotes }}</div></div>
-        <div class="card"><div class="m sm">Revenue</div><div class="big">R{{ number_format($revenue, 2) }}</div></div>
+        <div class="card">
+            <div class="m sm">Provider applications</div>
+            <div class="big">{{ $providerApplications }}</div>
+            <div class="m sm">waiting</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Properties to review</div>
+            <div class="big">{{ $propertiesToReview }}</div>
+            <div class="m sm">waiting</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Tenants to match</div>
+            <div class="big">5</div>
+            <div class="m sm">new requirements</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Open disputes</div>
+            <div class="big">{{ $openDisputes }}</div>
+            <div class="m sm">need a decision</div>
+        </div>
+    </div>
+
+    <div class="g2" style="margin-top: 20px;">
+        <div class="card">
+            <h3>To do today</h3>
+            <ul>
+                <li>Verify {{ $providerApplications }} providers</li>
+                <li>Build 3 shortlists</li>
+                <li>Record 4 payouts</li>
+                <li>Resolve {{ $openDisputes }} disputes</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>This week</h3>
+            <ul>
+                <li>Tenants served: 9</li>
+                <li>Average time to first options: 1.5 days</li>
+                <li>Refund rate: 3%</li>
+                <li>Provider renewals: 8 of 10</li>
+            </ul>
+        </div>
     </div>
 
     <div class="card" style="margin-top: 20px;">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-            <h3 style="margin:0;">All Properties</h3>
-            
-            <!-- FILTER & SEARCH FORM -->
-            <form method="GET" action="{{ route('admin.dashboard') }}" style="margin:0; display:flex; gap:10px; align-items:center; flex-wrap: wrap;">
-                <input type="text" name="search" placeholder="Search title or suburb..." value="{{ request('search') }}" style="width:200px; margin:0; padding:6px 12px;">
-                
-                <select name="status" onchange="this.form.submit()" style="width:auto; margin:0; padding:6px 12px;">
-                    <option value="All" {{ request('status') == 'All' || !request('status') ? 'selected' : '' }}>All Statuses</option>
-                    <option value="Draft" {{ request('status') == 'Draft' ? 'selected' : '' }}>Draft</option>
-                    <option value="Approved" {{ request('status') == 'Approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="Submitted" {{ request('status') == 'Submitted' ? 'selected' : '' }}>Submitted</option>
-                </select>
-                
-                <button type="submit" class="btn" style="padding: 6px 14px; font-size: 13px; margin:0;">Search</button>
-            </form>
-        </div>
+        <h3>Live jobs today</h3>
+        <div class="sp" style="margin-top: 16px;">
+            <!-- Map Placeholder -->
+            <div style="width: 100%; height: 200px; background-color: #E3F1F2; border-radius: 8px; position: relative; overflow: hidden;">
+                <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                     <svg width="400" height="150" viewBox="0 0 400 150">
+                        <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0E7C86" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
+                        <circle cx="50" cy="100" r="8" fill="#F4B731" stroke="#10243A" stroke-width="2"/>
+                        <circle cx="350" cy="50" r="8" fill="#0E7C86"/>
+                     </svg>
+                </div>
+            </div>
 
-        @if($properties->isEmpty())
-            <p class="m">No properties found matching your criteria.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Property</th>
-                    <th>Landlord Rent</th>
-                    <th>Status</th>
-                </tr>
-                @foreach($properties as $property)
-                <tr>
-                    <td>
-                        <b>{{ $property->title }}</b><br>
-                        <span class="m sm">{{ $property->suburb }}, {{ $property->city }}</span>
-                    </td>
-                    <td>R{{ number_format($property->rent, 0) }}</td>
-                    <td><span class="chip {{ $property->status == 'Approved' ? 'ok' : 'wn' }}">{{ $property->status }}</span></td>
-                </tr>
-                @endforeach
-            </table>
-        @endif
+            <!-- Live Jobs Table -->
+            <div>
+                <table class="tb">
+                    <tr>
+                        <th>Booking</th>
+                        <th>Provider</th>
+                        <th>Status</th>
+                    </tr>
+                    <tr>
+                        <td>BKG-0101</td>
+                        <td>Pieter</td>
+                        <td><span class="chip wn">In progress</span></td>
+                    </tr>
+                    <tr>
+                        <td>BKG-0104</td>
+                        <td>Thandi</td>
+                        <td><span class="chip wn">Waiting</span></td>
+                    </tr>
+                    <tr>
+                        <td>BKG-0107</td>
+                        <td>Lwazi</td>
+                        <td><span class="chip ok">Paid</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
     </div>
 @endsection

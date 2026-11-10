@@ -250,7 +250,6 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.requests');
     })->name('provider.requests');
 
-    // UPDATED: Fetch quotes, reviews, and problems
     Route::get('/provider/quotes', function () {
         $quotes = Quote::latest()->get();
         $reviews = Review::latest()->get();
@@ -321,13 +320,13 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.profile.update');
 
     // ADMIN ROUTES
+    // UPDATED: Fetch admin stats
     Route::get('/admin/dashboard', function (Request $request) {
-        $status = $request->query('status', 'All');
-        $search = $request->query('search');
-        $query = Property::query();
-        if ($status !== 'All') $query->where('status', $status);
-        if ($search) $query->where(function($q) use ($search) { $q->where('title', 'like', "%{$search}%")->orWhere('suburb', 'like', "%{$search}%")->orWhere('city', 'like', "%{$search}%"); });
-        return view('admin.dashboard', ['totalRequests' => ServiceRequest::count(), 'totalQuotes' => Quote::count(), 'totalBookings' => Booking::count(), 'revenue' => Booking::sum('total_price'), 'properties' => $query->latest()->get()]);
+        return view('admin.dashboard', [
+            'providerApplications' => Provider::where('verification_status', 'Pending')->count(),
+            'propertiesToReview' => Property::where('status', 'Draft')->count(),
+            'openDisputes' => Problem::where('status', 'In progress')->count(),
+        ]);
     })->name('admin.dashboard');
 
     Route::get('/admin/approvals', function () {

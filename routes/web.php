@@ -46,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
             'quotesCount' => Quote::count(),
             'bookingsCount' => Booking::count(),
             'propertiesCount' => Property::where('status', 'Approved')->count(),
+            'nextBooking' => Booking::latest()->first(), // NEW
             'latestRequests' => ServiceRequest::latest()->take(3)->get()
         ]);
     })->name('customer.dashboard');

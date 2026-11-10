@@ -17,8 +17,8 @@
         </div>
         <div class="card">
             <div class="m sm">Next booking</div>
-            <div class="big">Sat 31 Oct</div>
-            <div class="m sm">Provider arrives 08:00</div>
+            <div class="big">{{ $nextBooking ? $nextBooking->created_at->format('D d M') : 'None' }}</div>
+            <div class="m sm">{{ $nextBooking ? 'Provider arrives soon' : 'No upcoming jobs' }}</div>
         </div>
         <div class="card">
             <div class="m sm">Shortlist</div>
@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <!-- NEW: YOUR NEXT PROVIDER CARD -->
+    @if($nextBooking)
     <div class="card" style="margin-top:16px;">
         <h3>Your next provider</h3>
         <div class="row" style="margin-top: 12px;">
@@ -53,10 +53,20 @@
                 <div style="width:100px; height:60px; background:#E3F1F2; border:1px dashed #B9C6D2; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--m); font-size:12px;">[Vehicle]</div>
             </div>
             <div>
-                <b>Pieter · Sample Movers B</b>
-                <div class="m sm">Sat 31 Oct, 08:00 to 10:00 · 1-ton bakkie · CA 000 000</div>
-                <button type="button" class="btn g" style="margin-top: 8px; padding: 6px 14px; font-size: 13px;">Track and chat</button>
+                <b>{{ $nextBooking->quote->provider_name ?? 'Pieter' }} · Sample Movers B</b>
+                <div class="m sm">{{ $nextBooking->created_at->format('D d M, H:i') }} · 1-ton bakkie · CA 000 000</div>
+                <a href="{{ route('customer.bookings') }}" class="btn g" style="margin-top: 8px; padding: 6px 14px; font-size: 13px; text-decoration:none;">Track and chat</a>
             </div>
         </div>
+    </div>
+    @endif
+
+    <div class="card" style="margin-top:16px;">
+        <h3>Recent activity</h3>
+        <ul>
+            <li>Quote received from Pieter (Sample Movers B)</li>
+            <li>Booking BKG-0101 confirmed. Your provider card is ready</li>
+            <li>MrRel shared a shortlist of {{ $propertiesCount }} places</li>
+        </ul>
     </div>
 @endsection

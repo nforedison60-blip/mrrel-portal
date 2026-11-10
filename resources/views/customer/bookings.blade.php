@@ -8,7 +8,6 @@
         <div class="sp" style="margin-top: 20px;">
             <!-- LEFT COLUMN -->
             <div>
-                <!-- Provider Card -->
                 <div class="card">
                     <h3>Your provider</h3>
                     <div class="row" style="margin-top: 12px; align-items: flex-start;">
@@ -44,7 +43,7 @@
                     <div class="m sm">If someone else arrives, don’t hand anything over and call us.</div>
                 </div>
 
-                <!-- Track your driver (REAL MAP) -->
+                <!-- Map (MapLibre) -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Track your driver</h3>
                     
@@ -59,10 +58,9 @@
                         <span class="chip {{ $booking->tracking_status == 'Delivered' ? 'ok' : '' }}">Delivered</span>
                         <span class="chip {{ $booking->tracking_status == 'Complete' ? 'ok' : '' }}">Complete</span>
                     </div>
-                    <p class="m sm" style="margin-top: 12px;">Location is shared only while the job is active, and stops when the job is complete.</p>
                 </div>
 
-                <!-- Chat with Pieter -->
+                <!-- Chat -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Chat with Pieter</h3>
                     <div class="row" style="margin-bottom: 12px;">
@@ -99,7 +97,7 @@
                     </form>
                 </div>
 
-                <!-- Extras on the day -->
+                <!-- Extras -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Extras on the day</h3>
                     <p class="sm">Pieter proposes an extra: <b>Extra stairs, R150</b></p>
@@ -120,10 +118,9 @@
                             </form>
                         </div>
                     @endif
-                    <p class="m sm" style="margin-top: 12px;">Extras are always approved and paid through MrRel, not in cash.</p>
                 </div>
 
-                <!-- When the job is done -->
+                <!-- Job Done -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>When the job is done</h3>
                     @if($booking->job_confirmed)
@@ -185,39 +182,25 @@
         </div>
     @endif
 
-    <!-- GOOGLE MAPS SCRIPT (USES CONFIG) -->
+    <!-- MAPLIBRE (Free, No API Key) -->
     @if($booking)
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <script>
         function initMap() {
-            // Center map on Cape Town (replace with dynamic coords later)
-            const location = { lat: -33.9249, lng: 18.4241 };
-            
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 12,
-                center: location,
-                disableDefaultUI: true,
+            const lat = {{ $booking->provider_lat ?? -33.9249 }};
+            const lng = {{ $booking->provider_lng ?? 18.4241 }};
+
+            const map = new maplibregl.Map({
+                container: 'map',
+                style: 'https://tiles.openfreemap.org/styles/positron',
+                center: [lng, lat], // MapLibre uses [lng, lat]
+                zoom: 13
             });
 
-            // Add a marker for the driver
-            new google.maps.Marker({
-                position: location,
-                map: map,
-                title: "Pieter is here",
-                icon: {
-                    url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                }
-            });
-
-            // Add a marker for the customer address
-            new google.maps.Marker({
-                position: { lat: -33.8949, lng: 18.6241 },
-                map: map,
-                title: "Your address",
-                icon: {
-                    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
-                }
-            });
+            new maplibregl.Marker({ color: "#0E7C86" })
+                .setLngLat([lng, lat])
+                .addTo(map);
         }
         window.onload = initMap;
     </script>

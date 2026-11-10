@@ -107,7 +107,6 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.bookings', ['booking' => $booking]);
     })->name('customer.bookings');
 
-    // UPDATED: Uses real logged-in user name
     Route::post('/bookings', function (Request $request) {
         Booking::create([
             'quote_id' => $request->quote_id,
@@ -378,6 +377,19 @@ Route::middleware(['auth'])->group(function () {
         $provider->update(['name' => $request->name, 'company_name' => $request->company_name, 'vehicle' => $request->vehicle, 'plate_number' => $request->plate_number, 'image_path' => $imagePath, 'vehicle_image_path' => $vehicleImagePath, 'id_image_path' => $idImagePath]);
         return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
     })->name('provider.profile.update');
+
+    // NEW: GPS Tracking Routes
+    Route::get('/provider/tracking', function () {
+        return view('provider.tracking');
+    })->name('provider.tracking');
+
+    Route::post('/provider/tracking/{booking}', function (Request $request, Booking $booking) {
+        $booking->update([
+            'provider_lat' => $request->lat,
+            'provider_lng' => $request->lng,
+        ]);
+        return response()->json(['success' => true]);
+    })->name('provider.tracking.update');
 
     // ADMIN ROUTES
     Route::get('/admin/dashboard', function (Request $request) {

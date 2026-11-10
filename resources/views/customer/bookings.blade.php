@@ -5,12 +5,32 @@
         <h1>Booking BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</h1>
         <div class="m">Moving one bed · Sat 31 Oct · Parklands to Bellville</div>
 
-        <div class="sp">
+        <div class="sp" style="margin-top: 20px;">
+            <!-- LEFT COLUMN -->
             <div>
+                <!-- Provider & Vehicle Images -->
                 <div class="card">
                     <h3>Your provider</h3>
-                    <div class="row">
-                        <span class="av">P</span>
+                    <div class="row" style="margin-top: 12px; align-items: flex-start;">
+                        <div style="text-align: center;">
+                            <div class="av" style="width: 120px; height: 120px; font-size: 40px; border-radius: 50%;">P</div>
+                            <div class="m sm" style="margin-top: 8px;">The person who will arrive</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 200px; height: 120px; background-color: #E3F1F2; border: 1px solid var(--l); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <svg width="100" height="50" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="5" y="10" width="45" height="20" rx="2" fill="#D5DEE6"/>
+                                    <path d="M50 15H65L75 25V30H50V15Z" fill="#D5DEE6"/>
+                                    <circle cx="20" cy="32" r="5" fill="#51657A"/>
+                                    <circle cx="60" cy="32" r="5" fill="#51657A"/>
+                                </svg>
+                            </div>
+                            <div class="m sm" style="margin-top: 8px;">Your vehicle · CA 000 000</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row" style="margin-top: 16px;">
+                        <span class="av" style="width: 48px; height: 48px; font-size: 18px;">P</span>
                         <div>
                             <b>Pieter</b> <span class="chip ok">Verified</span>
                             <div class="m sm">Sample Movers B · 1-ton bakkie</div>
@@ -18,25 +38,115 @@
                         </div>
                     </div>
                     <p class="sm" style="margin-top: 12px;">
-                        <b>Vehicle:</b> White 1-ton bakkie · <b>Plate:</b> CA 000 000<br>
+                        <b>Vehicle:</b> White 1-ton bakkie · <b>Number plate:</b> CA 000 000<br>
                         <b>Arrival:</b> Sat 31 Oct, 08:00 to 10:00
                     </p>
                     <div class="m sm">If someone else arrives, don’t hand anything over and call us.</div>
                 </div>
 
+                <!-- Track your driver -->
+                <div class="card" style="margin-top: 16px;">
+                    <h3>Track your driver</h3>
+                    <!-- Map Placeholder -->
+                    <div style="width: 100%; height: 180px; background-color: #E3F1F2; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 16px;">
+                        <!-- Fake map lines -->
+                        <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                             <svg width="400" height="150" viewBox="0 0 400 150">
+                                <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0E7C86" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
+                                <circle cx="50" cy="100" r="8" fill="#F4B731" stroke="#10243A" stroke-width="2"/>
+                                <circle cx="350" cy="50" r="8" fill="#0E7C86"/>
+                             </svg>
+                        </div>
+                    </div>
+
+                    <p class="sm"><b>Pieter is on his way.</b> Arriving about 08:25 (window 08:00 to 10:00)</p>
+                    <div class="pl" style="margin-top: 8px;">
+                        <span class="chip">On my way</span>
+                        <span class="chip wn">Arrived</span>
+                        <span class="chip">Loading</span>
+                        <span class="chip">In transit</span>
+                        <span class="chip">Delivered</span>
+                        <span class="chip">Complete</span>
+                    </div>
+                    <p class="m sm" style="margin-top: 12px;">Location is shared only while the job is active, and stops when the job is complete.</p>
+                    <button type="button" class="btn g">Open full tracking and chat</button>
+                </div>
+
+                <!-- Chat with Pieter -->
+                <div class="card" style="margin-top: 16px;">
+                    <h3>Chat with Pieter</h3>
+                    <div class="row" style="margin-bottom: 12px;">
+                        <span class="av" style="width: 40px; height: 40px; font-size: 16px;">P</span>
+                        <div>
+                            <b>Pieter</b> <span class="chip ok">Verified</span>
+                            <div class="m sm">Booking BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+                        <div style="background: #F5F8FA; padding: 10px 16px; border-radius: 8px; border-bottom-left-radius: 0; align-self: flex-start; max-width: 80%; border: 1px solid var(--l);">
+                            <div class="sm">Hi Lerato, I'm on my way. I should arrive around 08:25.</div>
+                        </div>
+                        <div style="background: #E3F1F2; padding: 10px 16px; border-radius: 8px; border-bottom-right-radius: 0; align-self: flex-end; max-width: 80%; border: 1px solid #D5DEE6;">
+                            <div class="sm">Great, the lift is booked for 08:30.</div>
+                        </div>
+                         <div style="background: #F5F8FA; padding: 10px 16px; border-radius: 8px; border-bottom-left-radius: 0; align-self: flex-start; max-width: 80%; border: 1px solid var(--l);">
+                            <div class="sm">Thanks. I'll ring the intercom.</div>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ route('customer.messages.store') }}">
+                        @csrf
+                        <div class="f" style="margin:0;">
+                            <label class="k">Write a message
+                                <input type="text" name="message" required style="margin-bottom: 8px;">
+                            </label>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="submit" class="btn">Send</button>
+                            <button type="button" class="btn g">Attach photo</button>
+                        </div>
+                    </form>
+                    <p class="m sm" style="margin-top: 12px;">Phone numbers stay private. Messages are saved with the booking, and MrRel can read them if there is a problem.</p>
+                </div>
+
+                <!-- Progress -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Progress</h3>
                     <div style="margin-bottom: 8px;">
-                        <span class="chip ok">Requested</span>
-                        <span class="chip ok">Quote accepted</span>
+                        <span class="chip">Requested</span>
+                        <span class="chip">Quote accepted</span>
                         <span class="chip ok">Paid</span>
                         <span class="chip">Job done</span>
                         <span class="chip">Confirmed</span>
+                        <span class="chip">Reviewed</span>
                     </div>
                     <p class="m sm">Current step: {{ $booking->status }}</p>
                 </div>
+
+                <!-- Extras -->
+                <div class="card" style="margin-top: 16px;">
+                    <h3>Extras on the day</h3>
+                    <p class="sm">Pieter proposes an extra: <b>Extra stairs, R150</b></p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button type="button" class="btn">Approve and pay</button>
+                        <button type="button" class="btn g">Decline</button>
+                    </div>
+                    <p class="m sm" style="margin-top: 12px;">Extras are always approved and paid through MrRel, not in cash.</p>
+                </div>
+
+                <!-- When job is done -->
+                <div class="card" style="margin-top: 16px;">
+                    <h3>When the job is done</h3>
+                     <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button type="button" class="btn">Confirm the job is done</button>
+                        <button type="button" class="btn g">Report a problem</button>
+                    </div>
+                    <p class="m sm" style="margin-top: 12px;">If you don’t respond within [set time], the job counts as complete unless you raise a problem.</p>
+                </div>
             </div>
 
+            <!-- RIGHT COLUMN -->
             <div>
                 <div class="card">
                     <h3>Payment</h3>
@@ -47,15 +157,23 @@
                 </div>
 
                 <div class="card" style="margin-top: 16px;">
+                    <h3>Documents</h3>
+                    <ul>
+                        <li>Accepted quote QTN-0001 Rev 01 (PDF)</li>
+                        <li>Receipt</li>
+                    </ul>
+                </div>
+
+                <div class="card" style="margin-top: 16px;">
                     <h3>Review your provider</h3>
                     <form method="POST" action="{{ route('customer.review.store') }}">
                         @csrf
                         <div class="pl" style="margin-bottom: 12px;">
-                            <label><input type="radio" name="rating" value="5" required> 5 Stars</label>
-                            <label><input type="radio" name="rating" value="4"> 4 Stars</label>
-                            <label><input type="radio" name="rating" value="3"> 3 Stars</label>
-                            <label><input type="radio" name="rating" value="2"> 2 Stars</label>
-                            <label><input type="radio" name="rating" value="1"> 1 Star</label>
+                            <label><input type="radio" name="rating" value="5" required> 5</label>
+                            <label><input type="radio" name="rating" value="4"> 4</label>
+                            <label><input type="radio" name="rating" value="3"> 3</label>
+                            <label><input type="radio" name="rating" value="2"> 2</label>
+                            <label><input type="radio" name="rating" value="1"> 1</label>
                         </div>
                         <div class="f">
                             <label class="k">Comment<input type="text" name="comment" placeholder="How was the service?"></label>

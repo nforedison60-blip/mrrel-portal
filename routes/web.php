@@ -73,6 +73,26 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
     })->name('customer.requests.store');
 
+    Route::post('/requests/{serviceRequest}/publish', function (ServiceRequest $serviceRequest) {
+        $serviceRequest->update(['status' => 'Active']);
+        return redirect()->route('customer.requests')->with('success', 'Request submitted! Providers will now send quotes.');
+    })->name('customer.requests.publish');
+
+    Route::post('/requests/draft', function (Request $request) {
+        ServiceRequest::create([
+            'services_needed' => $request->services_needed ?? 'Draft',
+            'moving_from' => $request->moving_from ?? 'TBD',
+            'moving_to' => $request->moving_to ?? 'TBD',
+            'move_date' => $request->move_date ?? now(),
+            'date_flexibility' => $request->date_flexibility ?? 'Exact date',
+            'item_size' => $request->item_size ?? 'Small items',
+            'access_pickup' => $request->access_pickup ?? 'Ground floor',
+            'access_delivery' => $request->access_delivery ?? 'Ground floor',
+            'status' => 'Draft',
+        ]);
+        return redirect()->route('customer.dashboard')->with('success', 'Draft saved!');
+    })->name('customer.requests.draft');
+
     Route::get('/quotes', function () {
         $quotes = Quote::latest()->get();
         return view('customer.quotes', ['quotes' => $quotes]);
@@ -99,6 +119,21 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.bookings')->with('success', 'Quote accepted! Booking created.');
     })->name('customer.bookings.store');
 
+    Route::post('/bookings/{booking}/confirm', function (Booking $booking) {
+        $booking->update(['job_confirmed' => true]);
+        return redirect()->route('customer.bookings')->with('success', 'Job confirmed! Thank you.');
+    })->name('customer.bookings.confirm');
+
+    Route::post('/bookings/{booking}/extras/approve', function (Booking $booking) {
+        $booking->update(['extras_status' => 'Approved']);
+        return redirect()->route('customer.bookings')->with('success', 'Extra charge approved and paid.');
+    })->name('customer.extras.approve');
+
+    Route::post('/bookings/{booking}/extras/decline', function (Booking $booking) {
+        $booking->update(['extras_status' => 'Declined']);
+        return redirect()->route('customer.bookings')->with('success', 'Extra charge declined.');
+    })->name('customer.extras.decline');
+
     Route::post('/review', function (Request $request) {
         $customer = Customer::find(1);
         Review::create([
@@ -111,9 +146,18 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.review.store');
 
     Route::get('/shortlist', function () {
-        $properties = Property::where('status', 'Approved')->latest()->get();
+        $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->latest()->get();
         return view('customer.shortlist', ['properties' => $properties]);
     })->name('customer.shortlist');
+
+    Route::post('/shortlist/{property}/accept', function (Property $property) {
+        $property->update(['status' => 'Under Offer']);
+        return redirect()->route('customer.shortlist')->with('success', 'You accepted the property! MrRel will contact you to finalize the lease.');
+    })->name('customer.shortlist.accept');
+
+    Route::post('/shortlist/{property}/decline', function (Property $property) {
+        return redirect()->route('customer.shortlist')->with('success', 'You declined the property.');
+    })->name('customer.shortlist.decline');
 
     Route::post('/viewing-request', function (Request $request) {
         $customer = Customer::find(1);
@@ -217,8 +261,23 @@ Route::middleware(['auth'])->group(function () {
     })->name('landlord.profile');
 
     // PROVIDER ROUTES
+    // UPDATED: Fetch the logged-in provider's details
     Route::get('/provider/dashboard', function () {
+        $user = auth()->user();
+        $provider = Provider::firstOrCreate(
+            ['email' => $user->email],
+            [
+                'name' => $user->name,
+                'company_name' => 'Sample Movers B',
+                'vehicle' => '1-ton bakkie',
+                'plate_number' => 'CA 000 000',
+                'verification_status' => 'Verified',
+                'rating' => 4.8,
+            ]
+        );
+        
         return view('provider.dashboard', [
+            'provider' => $provider,
             'quotesCount' => Quote::count(),
             'bookingsCount' => Booking::count(),
             'totalRevenue' => Booking::sum('total_price'),
@@ -301,14 +360,16 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.rate');
 
     Route::get('/provider/profile', function () {
-        $provider = Provider::firstOrCreate(['id' => 1], ['name' => 'Pieter', 'company_name' => 'Sample Movers B', 'vehicle' => '1-ton bakkie', 'plate_number' => 'CA 000 000', 'verification_status' => 'Verified', 'rating' => 4.8]);
+        $user = auth()->user();
+        $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name, 'company_name' => 'Sample Movers B', 'vehicle' => '1-ton bakkie', 'plate_number' => 'CA 000 000', 'verification_status' => 'Verified', 'rating' => 4.8]);
         $reviews = Review::latest()->get();
         return view('provider.profile', ['provider' => $provider, 'reviews' => $reviews]);
     })->name('provider.profile');
 
     Route::post('/provider/profile', function (Request $request) {
         $request->validate(['image' => 'nullable|image|max:5120', 'vehicle_image' => 'nullable|image|max:5120', 'id_image' => 'nullable|image|max:5120']);
-        $provider = Provider::find(1);
+        $user = auth()->user();
+        $provider = Provider::where('email', $user->email)->first();
         $imagePath = $provider->image_path;
         if ($request->hasFile('image')) $imagePath = $request->file('image')->store('providers', 's3');
         $vehicleImagePath = $provider->vehicle_image_path;
@@ -363,7 +424,6 @@ Route::middleware(['auth'])->group(function () {
         return view('admin.requests', ['requests' => ServiceRequest::latest()->get(), 'quotes' => Quote::latest()->get()]);
     })->name('admin.requests');
 
-    // UPDATED: Fetch bookings, properties, AND providers
     Route::get('/admin/bookings', function () {
         return view('admin.bookings', [
             'bookings' => Booking::with('quote')->latest()->get(),

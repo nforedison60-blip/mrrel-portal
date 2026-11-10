@@ -21,5 +21,6 @@ class ServiceRequest extends Model
         'access_pickup',
         'access_delivery',
         'details',
+        'status',
     ];
 }

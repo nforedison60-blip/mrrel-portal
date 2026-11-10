@@ -18,6 +18,15 @@
         <div class="g3" style="margin-top: 20px;">
             @foreach($properties as $property)
                 <div class="card">
+                    <!-- Status Chip -->
+                    @if($property->shortlist_status && $property->shortlist_status !== 'Pending')
+                        <div style="margin-bottom: 12px;">
+                            <span class="chip {{ $property->shortlist_status == 'Accepted' ? 'ok' : 'wn' }}">
+                                {{ $property->shortlist_status }}
+                            </span>
+                        </div>
+                    @endif
+
                     <!-- House SVG / Real Image -->
                     @if($property->image_path)
                         <img src="{{ Storage::url($property->image_path) }}" alt="Property Photo" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">
@@ -57,8 +66,17 @@
                     <p class="sm"><b>MrRel note:</b> {{ $property->description ?? 'No description provided.' }}</p>
                     
                     <div style="display: flex; gap: 8px; margin-top: 12px;">
-                        <button type="button" class="btn" style="margin:0;">Accept</button>
-                        <button type="button" class="btn g" style="margin:0;">Decline</button>
+                        <!-- ACCEPT FORM -->
+                        <form method="POST" action="{{ route('customer.shortlist.accept', $property->id) }}" style="margin:0; flex:1;">
+                            @csrf
+                            <button type="submit" class="btn" style="width:100%; margin:0;">Accept</button>
+                        </form>
+                        
+                        <!-- DECLINE FORM -->
+                        <form method="POST" action="{{ route('customer.shortlist.decline', $property->id) }}" style="margin:0; flex:1;">
+                            @csrf
+                            <button type="submit" class="btn g" style="width:100%; margin:0;">Decline</button>
+                        </form>
                     </div>
                     
                     <form method="POST" action="{{ route('customer.viewing.store') }}" style="margin-top: 8px;">

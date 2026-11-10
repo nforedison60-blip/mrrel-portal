@@ -7,6 +7,8 @@
     <div class="sp">
         <div class="card">
             <h3>Request details</h3>
+            
+            <!-- SUBMIT FORM -->
             <form method="POST" action="{{ route('customer.requests.store') }}">
                 @csrf
                 <div class="f">
@@ -70,8 +72,15 @@
                     </label>
                 </div>
                 <button type="submit" class="btn">Submit request</button>
-                <button type="button" class="btn g">Save draft</button>
+                <button type="button" class="btn g" onclick="document.getElementById('draftForm').submit()">Save draft</button>
             </form>
+
+            <!-- HIDDEN DRAFT FORM -->
+            <form id="draftForm" method="POST" action="{{ route('customer.requests.draft') }}" style="display:none;">
+                @csrf
+                <input type="hidden" name="is_draft" value="1">
+            </form>
+
         </div>
 
         <div class="card">

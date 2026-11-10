@@ -20,7 +20,9 @@
                 <div class="card">
                     <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
                         <h3 style="margin:0;">{{ $req->services_needed }}</h3>
-                        <span class="chip ok">Active</span>
+                        <span class="chip {{ ($req->status ?? 'Active') == 'Draft' ? 'wn' : 'ok' }}">
+                            {{ $req->status ?? 'Active' }}
+                        </span>
                     </div>
                     
                     <div style="margin-bottom: 12px;">
@@ -30,26 +32,20 @@
                         @endif
                         <div class="m sm"><b>Date:</b> {{ $req->move_date }} ({{ $req->date_flexibility }})</div>
                         <div class="m sm"><b>Size:</b> {{ $req->item_size }}</div>
-                        
-                        @if($req->items_count)
-                            <div class="m sm"><b>Items:</b> {{ $req->items_count }}</div>
-                        @endif
-                        
-                        @if($req->budget)
-                            <div class="m sm"><b>Budget:</b> {{ $req->budget }}</div>
-                        @endif
-                        
-                        <div class="m sm"><b>Pickup Access:</b> {{ $req->access_pickup }}</div>
-                        <div class="m sm"><b>Delivery Access:</b> {{ $req->access_delivery }}</div>
-                        
-                        @if($req->details)
-                            <div class="m sm" style="margin-top:8px;"><b>Details:</b> {{ $req->details }}</div>
-                        @endif
                     </div>
                     
                     <div style="border-top:1px solid #EEF2F5; padding-top:12px; display:flex; gap:8px;">
-                        <button type="button" class="btn g" style="margin:0;">View quotes</button>
-                        <button type="button" class="btn g" style="margin:0;">Edit</button>
+                        @if(($req->status ?? 'Active') == 'Draft')
+                            <!-- If it's a draft, show the submit button -->
+                            <form method="POST" action="{{ route('customer.requests.publish', $req->id) }}" style="margin:0;">
+                                @csrf
+                                <button type="submit" class="btn" style="margin:0;">Submit Request</button>
+                            </form>
+                            <a href="{{ route('customer.new-request') }}" class="btn g" style="margin:0; text-decoration:none;">Edit</a>
+                        @else
+                            <!-- If it's active, show quotes -->
+                            <a href="{{ route('customer.quotes') }}" class="btn g" style="margin:0; text-decoration:none;">View quotes</a>
+                        @endif
                     </div>
                 </div>
             @endforeach

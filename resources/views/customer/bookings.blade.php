@@ -8,7 +8,7 @@
         <div class="sp" style="margin-top: 20px;">
             <!-- LEFT COLUMN -->
             <div>
-                <!-- Provider & Vehicle Images -->
+                <!-- Provider Card -->
                 <div class="card">
                     <h3>Your provider</h3>
                     <div class="row" style="margin-top: 12px; align-items: flex-start;">
@@ -106,33 +106,44 @@
                     </form>
                 </div>
 
-                <!-- Extras / Progress / Job Done -->
-                <div class="card" style="margin-top: 16px;">
-                    <h3>Progress</h3>
-                    <div style="margin-bottom: 8px;">
-                        <span class="chip">Requested</span>
-                        <span class="chip">Quote accepted</span>
-                        <span class="chip ok">Paid</span>
-                        <span class="chip">Job done</span>
-                        <span class="chip">Confirmed</span>
-                    </div>
-                </div>
-
+                <!-- Extras on the day -->
                 <div class="card" style="margin-top: 16px;">
                     <h3>Extras on the day</h3>
                     <p class="sm">Pieter proposes an extra: <b>Extra stairs, R150</b></p>
-                    <div style="display: flex; gap: 8px; margin-top: 12px;">
-                        <button type="button" class="btn">Approve and pay</button>
-                        <button type="button" class="btn g">Decline</button>
-                    </div>
+                    
+                    @if($booking->extras_status == 'Approved')
+                        <div style="margin-top: 12px;"><span class="chip ok">Approved and paid</span></div>
+                    @elseif($booking->extras_status == 'Declined')
+                        <div style="margin-top: 12px;"><span class="chip wn">Declined</span></div>
+                    @else
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <form method="POST" action="{{ route('customer.extras.approve', $booking->id) }}" style="margin:0;">
+                                @csrf
+                                <button type="submit" class="btn">Approve and pay</button>
+                            </form>
+                            <form method="POST" action="{{ route('customer.extras.decline', $booking->id) }}" style="margin:0;">
+                                @csrf
+                                <button type="submit" class="btn g">Decline</button>
+                            </form>
+                        </div>
+                    @endif
+                    <p class="m sm" style="margin-top: 12px;">Extras are always approved and paid through MrRel, not in cash.</p>
                 </div>
 
-                 <div class="card" style="margin-top: 16px;">
+                <!-- When the job is done (FIXED) -->
+                <div class="card" style="margin-top: 16px;">
                     <h3>When the job is done</h3>
-                     <div style="display: flex; gap: 8px; margin-top: 12px;">
-                        <button type="button" class="btn">Confirm the job is done</button>
-                        <button type="button" class="btn g">Report a problem</button>
-                    </div>
+                    @if($booking->job_confirmed)
+                        <div style="margin-top: 12px;"><span class="chip ok">Job Confirmed</span></div>
+                    @else
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <form method="POST" action="{{ route('customer.bookings.confirm', $booking->id) }}" style="margin:0;">
+                                @csrf
+                                <button type="submit" class="btn">Confirm the job is done</button>
+                            </form>
+                            <button type="button" class="btn g">Report a problem</button>
+                        </div>
+                    @endif
                 </div>
             </div>
 

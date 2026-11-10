@@ -2,6 +2,7 @@
     <h2>Welcome back</h2>
     <div class="m">Log in to your MrRel account</div>
 
+    <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form method="POST" action="{{ route('login') }}">
@@ -14,6 +15,14 @@
             <label>Password
                 <input type="password" name="password" required>
             </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+            @if (Route::has('password.request'))
+                <a class="links" href="{{ route('password.request') }}" style="font-size: 13px;">
+                    Forgot your password?
+                </a>
+            @endif
         </div>
 
         <button type="submit" class="btn">Log in</button>

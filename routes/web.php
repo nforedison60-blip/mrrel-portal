@@ -378,19 +378,6 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
     })->name('provider.profile.update');
 
-    // NEW: GPS Tracking Routes
-    Route::get('/provider/tracking', function () {
-        return view('provider.tracking');
-    })->name('provider.tracking');
-
-    Route::post('/provider/tracking/{booking}', function (Request $request, Booking $booking) {
-        $booking->update([
-            'provider_lat' => $request->lat,
-            'provider_lng' => $request->lng,
-        ]);
-        return response()->json(['success' => true]);
-    })->name('provider.tracking.update');
-
     // ADMIN ROUTES
     Route::get('/admin/dashboard', function (Request $request) {
         return view('admin.dashboard', [

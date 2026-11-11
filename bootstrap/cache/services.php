@@ -36,6 +36,7 @@
     32 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     33 => 'Termwind\\Laravel\\TermwindServiceProvider',
     34 => 'Pest\\Laravel\\PestServiceProvider',
+    35 => 'rainwaves\\PayfastPayment\\PayFastServiceProvider',
   ),
   'eager' => 
   array (
@@ -58,6 +59,7 @@
     16 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     17 => 'Termwind\\Laravel\\TermwindServiceProvider',
     18 => 'Pest\\Laravel\\PestServiceProvider',
+    19 => 'rainwaves\\PayfastPayment\\PayFastServiceProvider',
   ),
   'deferred' => 
   array (

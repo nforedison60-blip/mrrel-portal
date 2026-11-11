@@ -16,6 +16,7 @@ use App\Models\ProviderLocation;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrackingController;
+use App\Http\Controllers\PaymentController;
 
 require __DIR__.'/auth.php';
 
@@ -35,6 +36,12 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     
+    // PAYMENT ROUTES
+    Route::get('/payment/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
+    Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
+    Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+
     // CUSTOMER ROUTES
     Route::get('/', function () {
         return view('customer.dashboard', [

@@ -80,4 +80,15 @@
       0 => 'Pest\\Laravel\\PestServiceProvider',
     ),
   ),
+  'rainwaves/payfast-payment' => 
+  array (
+    'config' => 
+    array (
+      0 => 'payfast.php',
+    ),
+    'providers' => 
+    array (
+      0 => 'rainwaves\\PayfastPayment\\PayFastServiceProvider',
+    ),
+  ),
 );

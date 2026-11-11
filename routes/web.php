@@ -61,7 +61,6 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.search', ['properties' => $query->latest()->get()]);
     })->name('customer.search');
 
-    // CUSTOMER LIVE TRACKING ROUTES
     Route::get('/customer/tracking', [TrackingController::class, 'customerMap'])->name('customer.tracking');
     Route::get('/customer/tracking/latest', [TrackingController::class, 'getLatestLocation'])->name('customer.tracking.latest');
 
@@ -475,7 +474,6 @@ Route::middleware(['auth'])->group(function () {
         return view('admin.settings');
     })->name('admin.settings');
 
-    Route::get('/admin/map', function () {
-        return view('admin.map');
-    })->name('admin.map');
+    // ADMIN LIVE TRACKING ROUTE
+    Route::get('/admin/map', [TrackingController::class, 'adminMap'])->name('admin.map');
 });

@@ -1,92 +1,88 @@
-@extends('layouts.admin')
-
-@section('content')
-    <h1>Admin dashboard</h1>
-    <div class="m">Everything the MrRel team manages. Not shown on the public site.</div>
-
-    <div class="g4" style="margin-top: 20px;">
-        <div class="card">
-            <div class="m sm">Provider applications</div>
-            <div class="big">{{ $providerApplications }}</div>
-            <div class="m sm">waiting</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CRITICAL FOR MAPS -->
+    <title>MrRel Portal - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--n:#10243A;--t:#0E7C86;--tl:#E3F1F2;--td:#0A5C64;--a:#F4B731;--m:#51657A;--l:#D5DEE6;--bg:#F5F8FA;--wn:#FDF1CC}
+        *{box-sizing:border-box;margin:0}
+        body{font:15px/1.5 Figtree,system-ui,sans-serif;color:var(--n);background:var(--bg)}
+        h1,h2,h3,.big{font-family:'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.01em}
+        h1{font-size:30px}h3{font-size:17px;margin-bottom:8px}
+        .top{background:var(--n);color:#fff;min-height:58px;display:flex;align-items:center;justify-content:space-between;padding:8px 24px;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+        .logo{display:flex;align-items:center;gap:10px;font:800 24px 'Bricolage Grotesque'}.logo i{width:18px;height:18px;border-radius:4px;background:var(--a)}
+        .sw{display:flex;gap:4px;background:rgba(255,255,255,.1);padding:4px;border-radius:99px}
+        .sw a{border:0;background:none;color:#fff;font:600 13px Figtree;padding:7px 14px;border-radius:99px;cursor:pointer;transition:.25s;text-decoration:none;}
+        .sw a.on{background:var(--a);color:var(--n)}
+        .bd{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 58px)}
+        .sd{background:#fff;border-right:1px solid var(--l);padding:16px 0;position:sticky;top:58px;height:calc(100vh - 58px);overflow:auto}
+        .sd a{display:block;padding:9px 22px;color:var(--n);text-decoration:none;font-weight:500;border-left:4px solid transparent;cursor:pointer;transition:.2s}
+        .sd a:hover{background:var(--bg)}.sd a.on{border-left-color:var(--t);background:var(--tl);color:var(--td);font-weight:700}
+        .mn{padding:26px 30px 60px;min-width:0;animation:up .45s both}
+        @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+        .card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:16px 18px;transition:.25s;animation:up .5s both}
+        .card:hover{box-shadow:0 8px 22px rgba(16,36,58,.08)}
+        .g2,.g3,.g4,.sp{display:grid;gap:16px;margin:16px 0}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.sp{grid-template-columns:2fr 1fr}
+        .m{color:var(--m)}.sm{font-size:14px}.big{font-weight:800;font-size:28px;line-height:1.1}
+        .chip{display:inline-block;border:1px solid var(--l);border-radius:99px;padding:3px 12px;margin:0 6px 6px 0;background:#fff;font-size:13px;font-weight:600}
+        .ok{background:var(--tl);color:var(--td);border-color:var(--tl)}.wn{background:var(--wn);color:#5C4300;border-color:var(--wn)}
+        .btn{display:inline-block;background:var(--a);color:var(--n);font:700 14px Figtree;padding:10px 18px;border-radius:99px;border:0;cursor:pointer;margin:0 8px 8px 0;transition:.2s}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(244,183,49,.4)}.btn.g{background:#fff;border:2px solid var(--l);padding:8px 16px;box-shadow:none}.btn.w{width:100%;margin:0 0 8px}
+        .tb{width:100%;border-collapse:collapse;font-size:14px}.tb th{text-align:left;padding:7px 8px;border-bottom:2px solid var(--l)}.tb td{padding:7px 8px;border-bottom:1px solid #EEF2F5;vertical-align:top}.tb td:last-child.r{text-align:right}
+        ul{margin:6px 0 0;padding-left:20px}li{margin-bottom:3px}
+        @media(max-width:860px){.bd{grid-template-columns:1fr}.sd{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;display:flex;overflow-x:auto;padding:0;border-top:1px solid var(--l);z-index:30}.sd a{white-space:nowrap;border-left:0;border-top:3px solid transparent;padding:12px 14px}.sd a.on{border-top-color:var(--t)}.g2,.g3,.g4,.sp{grid-template-columns:1fr}.mn{padding:20px 16px 90px}}
+    </style>
+</head>
+<body>
+    <div class="top">
+        <div class="logo"><i></i>MrRel</div>
+        <div class="sw" id="sw">
+            <a href="{{ route('customer.dashboard') }}">Customer</a>
+            <a href="{{ route('landlord.properties') }}">Landlord</a>
+            <a href="{{ route('provider.dashboard') }}">Provider</a>
+            <a href="{{ route('admin.dashboard') }}" class="on">Admin</a>
         </div>
-        <div class="card">
-            <div class="m sm">Properties to review</div>
-            <div class="big">{{ $propertiesToReview }}</div>
-            <div class="m sm">waiting</div>
-        </div>
-        <div class="card">
-            <div class="m sm">Tenants to match</div>
-            <div class="big">5</div>
-            <div class="m sm">new requirements</div>
-        </div>
-        <div class="card">
-            <div class="m sm">Open disputes</div>
-            <div class="big">{{ $openDisputes }}</div>
-            <div class="m sm">need a decision</div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span style="opacity:.85;font-size:13px">Example data</span>
+            <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                @csrf
+                <button type="submit" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 14px; border-radius:99px; cursor:pointer; font:600 13px Figtree;">Log Out</button>
+            </form>
         </div>
     </div>
 
-    <div class="g2" style="margin-top: 20px;">
-        <div class="card">
-            <h3>To do today</h3>
-            <ul>
-                <li>Verify {{ $providerApplications }} providers</li>
-                <li>Build 3 shortlists</li>
-                <li>Record 4 payouts</li>
-                <li>Resolve {{ $openDisputes }} disputes</li>
-            </ul>
-        </div>
-        <div class="card">
-            <h3>This week</h3>
-            <ul>
-                <li>Tenants served: 9</li>
-                <li>Average time to first options: 1.5 days</li>
-                <li>Refund rate: 3%</li>
-                <li>Provider renewals: 8 of 10</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="card" style="margin-top: 20px;">
-        <h3>Live jobs today</h3>
-        <div class="sp" style="margin-top: 16px;">
-            <!-- Map Placeholder -->
-            <div style="width: 100%; height: 200px; background-color: #E3F1F2; border-radius: 8px; position: relative; overflow: hidden;">
-                <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                     <svg width="400" height="150" viewBox="0 0 400 150">
-                        <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0E7C86" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
-                        <circle cx="50" cy="100" r="8" fill="#F4B731" stroke="#10243A" stroke-width="2"/>
-                        <circle cx="350" cy="50" r="8" fill="#0E7C86"/>
-                     </svg>
+    <div class="bd">
+        <nav class="sd" id="sd">
+            <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'on' : '' }}">Dashboard</a>
+            <a href="{{ route('admin.approvals') }}" class="{{ request()->routeIs('admin.approvals') ? 'on' : '' }}">Approvals</a>
+            <a href="{{ route('admin.providers') }}" class="{{ request()->routeIs('admin.providers') ? 'on' : '' }}">Providers</a>
+            <a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'on' : '' }}">Users</a>
+            <a href="{{ route('admin.requests') }}" class="{{ request()->routeIs('admin.requests') ? 'on' : '' }}">Requests</a>
+            <a href="{{ route('admin.bookings') }}" class="{{ request()->routeIs('admin.bookings') ? 'on' : '' }}">Bookings</a>
+            <a href="{{ route('admin.messages') }}" class="{{ request()->routeIs('admin.messages') ? 'on' : '' }}">Messages</a>
+            <a href="{{ route('admin.matching') }}" class="{{ request()->routeIs('admin.matching') ? 'on' : '' }}">Matching</a>
+            <a href="{{ route('admin.properties') }}" class="{{ request()->routeIs('admin.properties') ? 'on' : '' }}">Properties</a>
+            <a href="{{ route('admin.payments') }}" class="{{ request()->routeIs('admin.payments') ? 'on' : '' }}">Payments</a>
+            <a href="{{ route('admin.disputes') }}" class="{{ request()->routeIs('admin.disputes') ? 'on' : '' }}">Disputes</a>
+            <a href="{{ route('admin.subscriptions') }}" class="{{ request()->routeIs('admin.subscriptions') ? 'on' : '' }}">Subscriptions</a>
+            <a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('admin.settings') ? 'on' : '' }}">Settings</a>
+            
+            <!-- NEW ADMIN LIVE TRACKING LINK -->
+            <a href="{{ route('admin.map') }}" class="{{ request()->routeIs('admin.map') ? 'on' : '' }}">Live Tracking Map</a>
+        </nav>
+        
+        <main class="mn" id="mn">
+            @if(session('success'))
+                <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
+                    {{ session('success') }}
                 </div>
-            </div>
+            @endif
 
-            <!-- Live Jobs Table -->
-            <div>
-                <table class="tb">
-                    <tr>
-                        <th>Booking</th>
-                        <th>Provider</th>
-                        <th>Status</th>
-                    </tr>
-                    <tr>
-                        <td>BKG-0101</td>
-                        <td>Pieter</td>
-                        <td><span class="chip wn">In progress</span></td>
-                    </tr>
-                    <tr>
-                        <td>BKG-0104</td>
-                        <td>Thandi</td>
-                        <td><span class="chip wn">Waiting</span></td>
-                    </tr>
-                    <tr>
-                        <td>BKG-0107</td>
-                        <td>Lwazi</td>
-                        <td><span class="chip ok">Paid</span></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
+            @yield('content')
+        </main>
     </div>
-@endsection
+</body>
+</html>

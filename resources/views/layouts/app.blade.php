@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CRITICAL FOR MAPS -->
-    <title>MrRel Portal - Customer</title>
+    <title>MrRel Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root{--n:#10243A;--t:#0E7C86;--tl:#E3F1F2;--td:#0A5C64;--a:#F4B731;--m:#51657A;--l:#D5DEE6;--bg:#F5F8FA;--wn:#FDF1CC}
@@ -68,7 +68,7 @@
         <nav class="sd" id="sd">
             <a href="{{ route('customer.dashboard') }}" class="{{ request()->routeIs('customer.dashboard') ? 'on' : '' }}">Dashboard</a>
             
-            <!-- NEW CUSTOMER LIVE TRACKING LINK -->
+            <!-- CUSTOMER LIVE TRACKING LINK -->
             <a href="{{ route('customer.tracking') }}" class="{{ request()->routeIs('customer.tracking') ? 'on' : '' }}">Live Tracking</a>
             
             <a href="{{ route('customer.search') }}" class="{{ request()->routeIs('customer.search') ? 'on' : '' }}">Find a place</a>

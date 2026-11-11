@@ -7,13 +7,13 @@ use App\Models\ProviderLocation;
 
 class TrackingController extends Controller
 {
-    // This shows the map to the provider
+    // Provider Map
     public function providerMap()
     {
         return view('provider.tracking');
     }
 
-    // This receives the GPS coordinates from the phone
+    // Save GPS from Provider
     public function updateLocation(Request $request)
     {
         $request->validate([
@@ -21,7 +21,6 @@ class TrackingController extends Controller
             'longitude' => 'required|numeric',
         ]);
 
-        // Save or update the provider's location in the database
         ProviderLocation::updateOrCreate(
             ['user_id' => auth()->id()],
             [
@@ -33,16 +32,15 @@ class TrackingController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    // NEW: This shows the map to the customer
+    // Customer Map
     public function customerMap()
     {
         return view('customer.tracking');
     }
 
-    // NEW: This fetches the latest GPS coordinates for the customer map
+    // Fetch Latest GPS for Customer
     public function getLatestLocation()
     {
-        // For this example, we just grab the most recently updated provider location
         $location = ProviderLocation::latest('updated_at')->first();
 
         if ($location) {
@@ -54,5 +52,11 @@ class TrackingController extends Controller
         }
 
         return response()->json(['status' => 'no_location_found']);
+    }
+
+    // NEW: Admin Map
+    public function adminMap()
+    {
+        return view('admin.map');
     }
 }

@@ -12,8 +12,10 @@ use App\Models\Customer;
 use App\Models\Review;
 use App\Models\Message;
 use App\Models\Problem;
+use App\Models\ProviderLocation;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TrackingController;
 
 require __DIR__.'/auth.php';
 
@@ -377,6 +379,11 @@ Route::middleware(['auth'])->group(function () {
         $provider->update(['name' => $request->name, 'company_name' => $request->company_name, 'vehicle' => $request->vehicle, 'plate_number' => $request->plate_number, 'image_path' => $imagePath, 'vehicle_image_path' => $vehicleImagePath, 'id_image_path' => $idImagePath]);
         return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
     })->name('provider.profile.update');
+
+    // --- NEW PROVIDER TRACKING ROUTES ---
+    Route::get('/provider/tracking', [TrackingController::class, 'providerMap'])->name('provider.tracking');
+    Route::post('/provider/tracking/update', [TrackingController::class, 'updateLocation'])->name('provider.tracking.update');
+    // -------------------------------------
 
     // ADMIN ROUTES
     Route::get('/admin/dashboard', function (Request $request) {

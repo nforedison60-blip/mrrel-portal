@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- THIS WAS MISSING -->
     <title>MrRel Portal - Provider</title>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -66,10 +67,7 @@
     <div class="bd">
         <nav class="sd" id="sd">
             <a href="{{ route('provider.dashboard') }}" class="{{ request()->routeIs('provider.dashboard') ? 'on' : '' }}">Dashboard</a>
-            
-            <!-- LIVE TRACKING LINK ADDED HERE -->
             <a href="{{ route('provider.tracking') }}" class="{{ request()->routeIs('provider.tracking') ? 'on' : '' }}">Live Tracking</a>
-            
             <a href="{{ route('provider.requests') }}" class="{{ request()->routeIs('provider.requests') ? 'on' : '' }}">Requests</a>
             <a href="{{ route('provider.quotes') }}" class="{{ request()->routeIs('provider.quotes') ? 'on' : '' }}">My quotes</a>
             <a href="{{ route('provider.pbook') }}" class="{{ request()->routeIs('provider.pbook') ? 'on' : '' }}">Bookings and payouts</a>

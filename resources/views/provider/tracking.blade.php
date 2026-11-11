@@ -1,16 +1,9 @@
 @extends('layouts.provider')
 
 @section('content')
-<!-- MapLibre CSS -->
 <link href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
-    #map { 
-        height: 500px; 
-        width: 100%; 
-        border-radius: 12px; 
-        border: 1px solid var(--l); 
-        margin-top: 16px;
-    }
+    #map { height: 500px; width: 100%; border-radius: 12px; border: 1px solid var(--l); margin-top: 16px; }
 </style>
 
 <h1>Job Day: Location Sharing</h1>
@@ -21,18 +14,18 @@
     <p id="statusText" class="m" style="margin-bottom: 12px;">Please allow location access in your browser settings.</p>
     
     <button id="trackBtn" class="btn">Stop Tracking</button>
-
-    <!-- The Map Container -->
     <div id="map"></div>
 </div>
 
-<!-- MapLibre JS -->
 <script src="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.js"></script>
 <script>
+    // Get the CSRF token that we just added to the layout
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
     const map = new maplibregl.Map({
         container: 'map',
         style: 'https://tiles.openfreemap.org/styles/liberty',
-        center: [28.0473, -26.2041], // Default Johannesburg
+        center: [28.0473, -26.2041], 
         zoom: 13
     });
 
@@ -40,12 +33,9 @@
     let trackingInterval = null;
     const trackBtn = document.getElementById('trackBtn');
     const statusText = document.getElementById('statusText');
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    // Start tracking automatically when page loads
     startTracking();
 
-    // Make the button stop tracking
     trackBtn.addEventListener('click', () => {
         clearInterval(trackingInterval);
         trackingInterval = null;
@@ -82,6 +72,7 @@
                         .addTo(map);
                 }
 
+                // Send to database
                 fetch('/provider/tracking/update', {
                     method: 'POST',
                     headers: {

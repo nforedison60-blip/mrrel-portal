@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\ProviderLocation;
 
 class TrackingController extends Controller
 {
@@ -21,7 +22,7 @@ class TrackingController extends Controller
         ]);
 
         // Save or update the provider's location in the database
-        \App\Models\ProviderLocation::updateOrCreate(
+        ProviderLocation::updateOrCreate(
             ['user_id' => auth()->id()],
             [
                 'latitude' => $request->latitude,
@@ -30,5 +31,28 @@ class TrackingController extends Controller
         );
 
         return response()->json(['status' => 'success']);
+    }
+
+    // NEW: This shows the map to the customer
+    public function customerMap()
+    {
+        return view('customer.tracking');
+    }
+
+    // NEW: This fetches the latest GPS coordinates for the customer map
+    public function getLatestLocation()
+    {
+        // For this example, we just grab the most recently updated provider location
+        $location = ProviderLocation::latest('updated_at')->first();
+
+        if ($location) {
+            return response()->json([
+                'latitude' => $location->latitude,
+                'longitude' => $location->longitude,
+                'updated_at' => $location->updated_at->diffForHumans(),
+            ]);
+        }
+
+        return response()->json(['status' => 'no_location_found']);
     }
 }

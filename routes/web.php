@@ -61,6 +61,10 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.search', ['properties' => $query->latest()->get()]);
     })->name('customer.search');
 
+    // CUSTOMER LIVE TRACKING ROUTES
+    Route::get('/customer/tracking', [TrackingController::class, 'customerMap'])->name('customer.tracking');
+    Route::get('/customer/tracking/latest', [TrackingController::class, 'getLatestLocation'])->name('customer.tracking.latest');
+
     Route::get('/requests', function () {
         $requests = ServiceRequest::latest()->get();
         return view('customer.requests', ['requests' => $requests]); 
@@ -380,10 +384,9 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
     })->name('provider.profile.update');
 
-    // --- NEW PROVIDER TRACKING ROUTES ---
+    // PROVIDER LIVE TRACKING ROUTES
     Route::get('/provider/tracking', [TrackingController::class, 'providerMap'])->name('provider.tracking');
     Route::post('/provider/tracking/update', [TrackingController::class, 'updateLocation'])->name('provider.tracking.update');
-    // -------------------------------------
 
     // ADMIN ROUTES
     Route::get('/admin/dashboard', function (Request $request) {

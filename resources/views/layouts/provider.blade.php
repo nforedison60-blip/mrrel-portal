@@ -66,6 +66,10 @@
     <div class="bd">
         <nav class="sd" id="sd">
             <a href="{{ route('provider.dashboard') }}" class="{{ request()->routeIs('provider.dashboard') ? 'on' : '' }}">Dashboard</a>
+            
+            <!-- LIVE TRACKING LINK ADDED HERE -->
+            <a href="{{ route('provider.tracking') }}" class="{{ request()->routeIs('provider.tracking') ? 'on' : '' }}">Live Tracking</a>
+            
             <a href="{{ route('provider.requests') }}" class="{{ request()->routeIs('provider.requests') ? 'on' : '' }}">Requests</a>
             <a href="{{ route('provider.quotes') }}" class="{{ request()->routeIs('provider.quotes') ? 'on' : '' }}">My quotes</a>
             <a href="{{ route('provider.pbook') }}" class="{{ request()->routeIs('provider.pbook') ? 'on' : '' }}">Bookings and payouts</a>

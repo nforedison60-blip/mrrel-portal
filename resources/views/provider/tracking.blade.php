@@ -1,31 +1,29 @@
-@extends('layouts.app') <!-- Adjust this if your layout file has a different name -->
+@extends('layouts.provider')
 
 @section('content')
 <!-- MapLibre CSS -->
 <link href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
-    #map { height: 500px; width: 100%; border-radius: 0.5rem; border: 1px solid #e5e7eb; margin-top: 20px; }
+    #map { 
+        height: 500px; 
+        width: 100%; 
+        border-radius: 12px; 
+        border: 1px solid var(--l); 
+        margin-top: 16px;
+    }
 </style>
 
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Job Day: Location Sharing
-        </h2>
-        <p class="text-gray-600 mt-2">Keep this page open. Your location will be shared with the customer.</p>
+<h1>Job Day: Location Sharing</h1>
+<p class="m" style="margin-bottom: 16px;">Keep this page open. Your location will be shared with the customer.</p>
 
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-6 p-6">
-            <h3 class="text-lg font-medium text-gray-900">Tracking Status</h3>
-            <p id="statusText" class="text-gray-600 mt-1">Please allow location access in your browser settings.</p>
-            
-            <button id="trackBtn" class="mt-4 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                Stop Tracking
-            </button>
+<div class="card">
+    <h3>Tracking Status</h3>
+    <p id="statusText" class="m" style="margin-bottom: 12px;">Please allow location access in your browser settings.</p>
+    
+    <button id="trackBtn" class="btn">Stop Tracking</button>
 
-            <!-- The Map Container -->
-            <div id="map"></div>
-        </div>
-    </div>
+    <!-- The Map Container -->
+    <div id="map"></div>
 </div>
 
 <!-- MapLibre JS -->

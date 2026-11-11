@@ -21,13 +21,15 @@ class PaymentController extends Controller
         // 2. Sandbox URL
         $url = 'https://sandbox.payfast.co.za/eng/process';
 
-        // 3. Set up the data
+        // 3. Dynamically build the URLs based on the current domain (Local or Live)
+        $baseUrl = url('/'); 
+
         $data = [
             'merchant_id' => $merchantId,
             'merchant_key' => $merchantKey,
-            'return_url' => 'http://mrrel-portal.test/payment/success',
-            'cancel_url' => 'http://mrrel-portal.test/payment/cancel',
-            'notify_url' => 'http://mrrel-portal.test/payment/notify',
+            'return_url' => $baseUrl . '/payment/success',
+            'cancel_url' => $baseUrl . '/payment/cancel',
+            'notify_url' => $baseUrl . '/payment/notify', // Required by PayFast
             'name_first' => 'John',
             'name_last' => 'Doe',
             'email_address' => 'test@example.com',
@@ -36,19 +38,14 @@ class PaymentController extends Controller
             'item_name' => 'MrRel Service Payment',
         ];
 
-        // 4. Generate the PayFast signature (using PHP's urlencode)
+        // 4. Generate the PayFast signature
         $pfParamString = '';
         foreach ($data as $key => $val) {
             $pfParamString .= $key . '=' . urlencode(trim($val)) . '&';
         }
         
-        // Remove the last '&'
         $pfParamString = rtrim($pfParamString, '&');
-
-        // Add the passphrase
         $pfParamString .= '&passphrase=' . urlencode(trim($passphrase));
-
-        // Create the signature
         $data['signature'] = md5($pfParamString);
 
         // 5. Build the auto-submitting HTML form

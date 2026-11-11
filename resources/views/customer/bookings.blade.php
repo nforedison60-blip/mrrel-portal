@@ -148,6 +148,11 @@
                     <div style="margin-bottom: 12px;"><span class="chip ok">{{ $booking->status }}</span></div>
                     <div class="m sm" style="margin-bottom: 12px;">Receipt BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}-R1</div>
                     <button type="button" class="btn g w">Download receipt</button>
+
+                    <!-- PAY NOW BUTTON ADDED HERE -->
+                    <a href="{{ route('payment.checkout') }}" class="btn w" style="margin-top: 8px; text-align: center; text-decoration: none;">
+                        Pay Now
+                    </a>
                 </div>
 
                 <div class="card" style="margin-top: 16px;">

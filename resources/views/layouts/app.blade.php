@@ -68,8 +68,11 @@
         <nav class="sd" id="sd">
             <a href="{{ route('customer.dashboard') }}" class="{{ request()->routeIs('customer.dashboard') ? 'on' : '' }}">Dashboard</a>
             
-            <!-- CUSTOMER LIVE TRACKING LINK -->
+            <!-- LIVE TRACKING LINK -->
             <a href="{{ route('customer.tracking') }}" class="{{ request()->routeIs('customer.tracking') ? 'on' : '' }}">Live Tracking</a>
+            
+            <!-- PAYMENT LINK -->
+            <a href="{{ route('payment.checkout') }}" class="{{ request()->routeIs('payment.checkout') ? 'on' : '' }}">Make a Payment</a>
             
             <a href="{{ route('customer.search') }}" class="{{ request()->routeIs('customer.search') ? 'on' : '' }}">Find a place</a>
             <a href="{{ route('customer.requests') }}" class="{{ request()->routeIs('customer.requests') ? 'on' : '' }}">My requests</a>

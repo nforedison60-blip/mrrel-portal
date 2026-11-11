@@ -8,13 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('provider_locations', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->decimal('latitude', 10, 8);
-            $table->decimal('longitude', 11, 8);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('provider_locations')) {
+            Schema::create('provider_locations', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->decimal('latitude', 10, 8);
+                $table->decimal('longitude', 11, 8);
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

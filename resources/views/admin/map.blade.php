@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <link href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" rel="stylesheet" />
@@ -29,7 +29,7 @@
     const statusText = document.getElementById('statusText');
 
     function fetchProviderLocation() {
-        // We can reuse the customer endpoint because it just fetches the latest location
+        // Admin fetches the absolute latest location ping from ANY provider
         fetch('/customer/tracking/latest')
             .then(response => response.json())
             .then(data => {
@@ -47,9 +47,9 @@
                             .addTo(map);
                     }
 
-                    statusText.textContent = 'Provider location updated ' + data.updated_at;
+                    statusText.textContent = 'Latest provider location updated ' + data.updated_at;
                 } else {
-                    statusText.textContent = 'Provider is not currently sharing their location.';
+                    statusText.textContent = 'No providers are currently sharing their location.';
                 }
             })
             .catch(error => console.error("Error fetching location:", error));

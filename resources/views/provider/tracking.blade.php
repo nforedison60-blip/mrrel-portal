@@ -19,8 +19,10 @@
 
 <script src="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.js"></script>
 <script>
-    // Get the CSRF token that we just added to the layout
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // Grab the active booking ID from Laravel
+    const bookingId = {{ $booking ? $booking->id : 'null' }};
 
     const map = new maplibregl.Map({
         container: 'map',
@@ -49,6 +51,10 @@
             return;
         }
 
+        if (!bookingId) {
+            statusText.textContent = "Warning: No active booking found. GPS will send without a job ID.";
+        }
+
         trackBtn.textContent = 'Stop Tracking';
         statusText.textContent = 'Tracking active. Sending location...';
         
@@ -72,14 +78,17 @@
                         .addTo(map);
                 }
 
-                // Send to database
                 fetch('/provider/tracking/update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
                     },
-                    body: JSON.stringify({ latitude: lat, longitude: lng })
+                    body: JSON.stringify({ 
+                        latitude: lat, 
+                        longitude: lng,
+                        booking_id: bookingId // Send the booking ID!
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {

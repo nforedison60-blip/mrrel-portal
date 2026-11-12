@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ProviderLocation;
+use App\Models\Booking;
 
 class TrackingController extends Controller
 {
     // Provider Map
     public function providerMap()
     {
-        return view('provider.tracking');
+        // Find the provider's most recent active booking to track
+        $booking = Booking::where('status', '!=', 'Complete')->latest()->first();
+        return view('provider.tracking', ['booking' => $booking]);
     }
 
     // Save GPS from Provider
@@ -19,6 +22,7 @@ class TrackingController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'booking_id' => 'nullable|exists:bookings,id'
         ]);
 
         ProviderLocation::updateOrCreate(
@@ -26,6 +30,7 @@ class TrackingController extends Controller
             [
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
+                'booking_id' => $request->booking_id,
             ]
         );
 
@@ -35,13 +40,22 @@ class TrackingController extends Controller
     // Customer Map
     public function customerMap()
     {
-        return view('customer.tracking');
+        // Assuming the customer only has one active booking right now
+        $booking = Booking::where('status', '!=', 'Complete')->latest()->first();
+        return view('customer.tracking', ['booking' => $booking]);
     }
 
-    // Fetch Latest GPS for Customer
-    public function getLatestLocation()
+    // Fetch Latest GPS for Customer/Admin (Specific to a Booking)
+    public function getLatestLocation(Request $request)
     {
-        $location = ProviderLocation::latest('updated_at')->first();
+        $query = ProviderLocation::query();
+
+        // If a booking_id is passed, only get the location for that booking
+        if ($request->has('booking_id') && $request->booking_id != '') {
+            $query->where('booking_id', $request->booking_id);
+        }
+
+        $location = $query->latest('updated_at')->first();
 
         if ($location) {
             return response()->json([
@@ -54,7 +68,7 @@ class TrackingController extends Controller
         return response()->json(['status' => 'no_location_found']);
     }
 
-    // NEW: Admin Map
+    // Admin Map
     public function adminMap()
     {
         return view('admin.map');

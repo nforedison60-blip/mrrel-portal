@@ -1,4 +1,4 @@
-@extends('layouts.customer')
+@extends('layouts.app')
 
 @section('content')
 <link href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" rel="stylesheet" />
@@ -28,9 +28,19 @@
     let marker = null;
     const statusText = document.getElementById('statusText');
 
-    // Function to fetch the provider's location from the database
+    // Get the active booking ID from Laravel (passes null if no booking exists)
+    const bookingId = {{ $booking ? $booking->id : 'null' }};
+
+    // Function to fetch the provider's location
     function fetchProviderLocation() {
-        fetch('/customer/tracking/latest')
+        // If there is no booking, we can't track a specific provider
+        if (!bookingId) {
+            statusText.textContent = 'No active booking found to track.';
+            return;
+        }
+
+        // Fetch only the location for this specific booking
+        fetch('/customer/tracking/latest?booking_id=' + bookingId)
             .then(response => response.json())
             .then(data => {
                 if (data.latitude && data.longitude) {

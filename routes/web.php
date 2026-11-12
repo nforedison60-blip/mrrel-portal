@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
     Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+    Route::post('/payment/notify', [PaymentController::class, 'notify'])->name('payment.notify');
 
     // CUSTOMER ROUTES
     Route::get('/', function () {
@@ -274,15 +275,17 @@ Route::middleware(['auth'])->group(function () {
     // PROVIDER ROUTES
     Route::get('/provider/dashboard', function () {
         $user = auth()->user();
+        
+        // FIXED: Only create the provider if they don't exist. Use their real data!
         $provider = Provider::firstOrCreate(
             ['email' => $user->email],
             [
                 'name' => $user->name,
-                'company_name' => 'Sample Movers B',
-                'vehicle' => '1-ton bakkie',
-                'plate_number' => 'CA 000 000',
-                'verification_status' => 'Verified',
-                'rating' => 4.8,
+                'company_name' => null, // Leave blank until they fill it in
+                'vehicle' => null,
+                'plate_number' => null,
+                'verification_status' => 'Pending',
+                'rating' => 0,
             ]
         );
         
@@ -371,7 +374,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/provider/profile', function () {
         $user = auth()->user();
-        $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name, 'company_name' => 'Sample Movers B', 'vehicle' => '1-ton bakkie', 'plate_number' => 'CA 000 000', 'verification_status' => 'Verified', 'rating' => 4.8]);
+        $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name]);
         $reviews = Review::latest()->get();
         return view('provider.profile', ['provider' => $provider, 'reviews' => $reviews]);
     })->name('provider.profile');

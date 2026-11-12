@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ProviderLocation;
 use App\Models\Booking;
+use Carbon\Carbon;
 
 class TrackingController extends Controller
 {
     public function providerMap()
     {
-        // Get the latest booking so the provider can attach their GPS to it
         $booking = Booking::latest()->first();
         return view('provider.tracking', ['booking' => $booking]);
     }
@@ -23,13 +23,13 @@ class TrackingController extends Controller
             'booking_id' => 'nullable'
         ]);
 
-        // Save the location. If no booking_id is sent, it saves as null.
         ProviderLocation::updateOrCreate(
             ['user_id' => auth()->id()],
             [
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
                 'booking_id' => $request->booking_id,
+                'updated_at' => now(), // Force the timestamp to update
             ]
         );
 
@@ -44,10 +44,6 @@ class TrackingController extends Controller
 
     public function getLatestLocation(Request $request)
     {
-        // BULLETPROOF LOGIC: 
-        // 1. Try to find the location for the specific booking.
-        // 2. If that fails (or no booking ID is sent), fallback to the absolute latest GPS ping.
-        
         $location = null;
 
         if ($request->has('booking_id') && $request->booking_id != '' && $request->booking_id != 'null') {
@@ -59,10 +55,16 @@ class TrackingController extends Controller
         }
 
         if ($location) {
+            // Check if the last update was more than 2 minutes ago
+            $lastUpdate = Carbon::parse($location->updated_at);
+            if ($lastUpdate->diffInMinutes(now()) > 2) {
+                return response()->json(['status' => 'provider_offline']);
+            }
+
             return response()->json([
                 'latitude' => $location->latitude,
                 'longitude' => $location->longitude,
-                'updated_at' => $location->updated_at->diffForHumans(),
+                'updated_at' => $lastUpdate->diffForHumans(),
             ]);
         }
 

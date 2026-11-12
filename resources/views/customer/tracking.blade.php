@@ -30,10 +30,19 @@
     const bookingId = {{ $booking ? $booking->id : 'null' }};
 
     function fetchProviderLocation() {
-        // Pass the booking ID in the URL, even if it's null
         fetch('/customer/tracking/latest?booking_id=' + bookingId)
             .then(response => response.json())
             .then(data => {
+                // If the provider is offline (no ping for > 2 mins)
+                if (data.status === 'provider_offline') {
+                    statusText.textContent = 'Provider is currently offline.';
+                    if (marker) {
+                        marker.remove(); // Remove the pin from the map
+                        marker = null;
+                    }
+                    return;
+                }
+
                 if (data.latitude && data.longitude) {
                     const lat = parseFloat(data.latitude);
                     const lng = parseFloat(data.longitude);

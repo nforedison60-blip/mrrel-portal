@@ -1,4 +1,4 @@
-@extends('layouts.customer')
+@extends('layouts.app')
 
 @section('content')
 <link href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" rel="stylesheet" />
@@ -27,10 +27,16 @@
 
     let marker = null;
     const statusText = document.getElementById('statusText');
+    const bookingId = {{ $booking ? $booking->id : 'null' }};
 
     function fetchProviderLocation() {
-        // Fetch the latest location from the database
-        fetch('/customer/tracking/latest')
+        if (!bookingId) {
+            statusText.textContent = 'No active booking found to track.';
+            return;
+        }
+
+        // Fetch only the location for this specific booking
+        fetch('/customer/tracking/latest?booking_id=' + bookingId)
             .then(response => response.json())
             .then(data => {
                 if (data.latitude && data.longitude) {
@@ -58,7 +64,7 @@
             });
     }
 
-    fetchLocation();
+    fetchProviderLocation();
     setInterval(fetchProviderLocation, 10000);
 </script>
 @endsection

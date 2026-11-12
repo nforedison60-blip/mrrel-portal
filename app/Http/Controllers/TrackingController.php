@@ -1,64 +1,75 @@
-@extends('layouts.app')
+<?php
 
-@section('content')
-<link href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" rel="stylesheet" />
-<style>
-    #map { height: 500px; width: 100%; border-radius: 12px; border: 1px solid var(--l); margin-top: 16px; }
-</style>
+namespace App\Http\Controllers;
 
-<h1>Live Provider Tracking</h1>
-<p class="m" style="margin-bottom: 16px;">Watch your provider arrive in real-time.</p>
+use Illuminate\Http\Request;
+use App\Models\ProviderLocation;
+use App\Models\Booking;
 
-<div class="card">
-    <h3>Provider Status</h3>
-    <p id="statusText" class="m" style="margin-bottom: 12px;">Fetching location...</p>
-    
-    <div id="map"></div>
-</div>
-
-<script src="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.js"></script>
-<script>
-    const map = new maplibregl.Map({
-        container: 'map',
-        style: 'https://tiles.openfreemap.org/styles/liberty',
-        center: [28.0473, -26.2041], 
-        zoom: 13
-    });
-
-    let marker = null;
-    const statusText = document.getElementById('statusText');
-
-    function fetchProviderLocation() {
-        // Fetch the latest location from the database
-        fetch('/customer/tracking/latest')
-            .then(response => response.json())
-            .then(data => {
-                if (data.latitude && data.longitude) {
-                    const lat = parseFloat(data.latitude);
-                    const lng = parseFloat(data.longitude);
-
-                    map.flyTo({ center: [lng, lat], zoom: 16 });
-                    
-                    if (marker) {
-                        marker.setLngLat([lng, lat]);
-                    } else {
-                        marker = new maplibregl.Marker({ color: "#10b981" })
-                            .setLngLat([lng, lat])
-                            .addTo(map);
-                    }
-
-                    statusText.textContent = 'Provider location updated ' + data.updated_at;
-                } else {
-                    statusText.textContent = 'Provider is not currently sharing their location.';
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching location:", error);
-                statusText.textContent = "Error connecting to the server.";
-            });
+class TrackingController extends Controller
+{
+    // Provider Map
+    public function providerMap()
+    {
+        // Find the provider's most recent active booking
+        $booking = Booking::where('status', '!=', 'Complete')->latest()->first();
+        return view('provider.tracking', ['booking' => $booking]);
     }
 
-    fetchProviderLocation();
-    setInterval(fetchProviderLocation, 10000);
-</script>
-@endsection
+    // Save GPS from Provider
+    public function updateLocation(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'booking_id' => 'nullable|exists:bookings,id'
+        ]);
+
+        ProviderLocation::updateOrCreate(
+            ['user_id' => auth()->id()],
+            [
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'booking_id' => $request->booking_id,
+            ]
+        );
+
+        return response()->json(['status' => 'success']);
+    }
+
+    // Customer Map
+    public function customerMap()
+    {
+        $booking = Booking::where('status', '!=', 'Complete')->latest()->first();
+        return view('customer.tracking', ['booking' => $booking]);
+    }
+
+    // Fetch Latest GPS for Customer
+    public function getLatestLocation(Request $request)
+    {
+        $query = ProviderLocation::query();
+
+        // If a booking_id is passed, only get the location for that booking
+        if ($request->has('booking_id') && $request->booking_id != '' && $request->booking_id != 'null') {
+            $query->where('booking_id', $request->booking_id);
+        }
+
+        $location = $query->latest('updated_at')->first();
+
+        if ($location) {
+            return response()->json([
+                'latitude' => $location->latitude,
+                'longitude' => $location->longitude,
+                'updated_at' => $location->updated_at->diffForHumans(),
+            ]);
+        }
+
+        return response()->json(['status' => 'no_location_found']);
+    }
+
+    // Admin Map
+    public function adminMap()
+    {
+        return view('admin.map');
+    }
+}

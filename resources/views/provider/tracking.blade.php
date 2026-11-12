@@ -20,6 +20,10 @@
 <script src="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.js"></script>
 <script>
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // Grab the active booking ID from Laravel (or null if none exists)
+    const bookingId = {{ $booking ? $booking->id : 'null' }};
+
     const map = new maplibregl.Map({
         container: 'map',
         style: 'https://tiles.openfreemap.org/styles/liberty',
@@ -45,6 +49,10 @@
         if (!navigator.geolocation) {
             statusText.textContent = "Geolocation is not supported by your browser";
             return;
+        }
+
+        if (!bookingId) {
+            statusText.textContent = "Warning: No active booking found. GPS will send without a job ID.";
         }
 
         trackBtn.textContent = 'Stop Tracking';
@@ -76,7 +84,11 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken
                     },
-                    body: JSON.stringify({ latitude: lat, longitude: lng })
+                    body: JSON.stringify({ 
+                        latitude: lat, 
+                        longitude: lng,
+                        booking_id: bookingId // Send the booking ID!
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {

@@ -30,12 +30,7 @@
     const bookingId = {{ $booking ? $booking->id : 'null' }};
 
     function fetchProviderLocation() {
-        if (!bookingId) {
-            statusText.textContent = 'No active booking found to track.';
-            return;
-        }
-
-        // Fetch only the location for this specific booking
+        // Pass the booking ID in the URL, even if it's null
         fetch('/customer/tracking/latest?booking_id=' + bookingId)
             .then(response => response.json())
             .then(data => {

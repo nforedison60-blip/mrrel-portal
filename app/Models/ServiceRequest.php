@@ -10,19 +10,10 @@ class ServiceRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_name',
-        'services_needed',
-        'moving_from',
-        'moving_to',
-        'move_date',
-        'date_flexibility',
-        'item_size',
-        'access_pickup',
-        'access_delivery',
-        'status',
+        'customer_name', 'services_needed', 'moving_from', 'moving_to', 'move_date',
+        'date_flexibility', 'item_size', 'access_pickup', 'access_delivery', 'status',
     ];
 
-    // Tell Laravel that this request has many quotes
     public function quotes()
     {
         return $this->hasMany(Quote::class);

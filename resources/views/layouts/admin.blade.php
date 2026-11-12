@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MrRel Portal - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -55,7 +56,7 @@
             <a href="{{ route('admin.dashboard') }}" class="on">Admin</a>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-            <span style="opacity:.85;font-size:13px">Example data</span>
+            <!-- Example data removed -->
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                 @csrf
                 <button type="submit" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 14px; border-radius:99px; cursor:pointer; font:600 13px Figtree;">Log Out</button>
@@ -69,16 +70,18 @@
             <a href="{{ route('admin.approvals') }}" class="{{ request()->routeIs('admin.approvals') ? 'on' : '' }}">Approvals</a>
             <a href="{{ route('admin.providers') }}" class="{{ request()->routeIs('admin.providers') ? 'on' : '' }}">Providers</a>
             <a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'on' : '' }}">Users</a>
-            <a href="{{ route('admin.requests') }}" class="{{ request()->routeIs('admin.requests') ? 'on' : '' }}">Requests and quotes</a>
+            <a href="{{ route('admin.requests') }}" class="{{ request()->routeIs('admin.requests') ? 'on' : '' }}">Requests</a>
             <a href="{{ route('admin.bookings') }}" class="{{ request()->routeIs('admin.bookings') ? 'on' : '' }}">Bookings</a>
             <a href="{{ route('admin.messages') }}" class="{{ request()->routeIs('admin.messages') ? 'on' : '' }}">Messages</a>
-            <a href="{{ route('admin.matching') }}" class="{{ request()->routeIs('admin.matching') ? 'on' : '' }}">Tenant matching</a>
+            <a href="{{ route('admin.matching') }}" class="{{ request()->routeIs('admin.matching') ? 'on' : '' }}">Matching</a>
             <a href="{{ route('admin.properties') }}" class="{{ request()->routeIs('admin.properties') ? 'on' : '' }}">Properties</a>
-            <a href="{{ route('admin.payments') }}" class="{{ request()->routeIs('admin.payments') ? 'on' : '' }}">Payments and payouts</a>
+            <a href="{{ route('admin.payments') }}" class="{{ request()->routeIs('admin.payments') ? 'on' : '' }}">Payments</a>
             <a href="{{ route('admin.disputes') }}" class="{{ request()->routeIs('admin.disputes') ? 'on' : '' }}">Disputes</a>
             <a href="{{ route('admin.subscriptions') }}" class="{{ request()->routeIs('admin.subscriptions') ? 'on' : '' }}">Subscriptions</a>
-            <a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('admin.settings') ? 'on' : '' }}">Settings and reports</a>
-            <a href="{{ route('admin.map') }}" class="{{ request()->routeIs('admin.map') ? 'on' : '' }}">Portal map</a>
+            <a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('admin.settings') ? 'on' : '' }}">Settings</a>
+            
+            <!-- ADMIN LIVE TRACKING LINK -->
+            <a href="{{ route('admin.map') }}" class="{{ request()->routeIs('admin.map') ? 'on' : '' }}">Live Tracking Map</a>
         </nav>
         
         <main class="mn" id="mn">

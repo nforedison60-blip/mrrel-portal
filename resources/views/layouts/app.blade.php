@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- CRITICAL FOR MAPS -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MrRel Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -56,7 +56,7 @@
             <a href="{{ route('admin.dashboard') }}">Admin</a>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-            <span style="opacity:.85;font-size:13px">Example data</span>
+            <!-- Example data removed -->
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                 @csrf
                 <button type="submit" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 14px; border-radius:99px; cursor:pointer; font:600 13px Figtree;">Log Out</button>
@@ -67,13 +67,8 @@
     <div class="bd">
         <nav class="sd" id="sd">
             <a href="{{ route('customer.dashboard') }}" class="{{ request()->routeIs('customer.dashboard') ? 'on' : '' }}">Dashboard</a>
-            
-            <!-- LIVE TRACKING LINK -->
             <a href="{{ route('customer.tracking') }}" class="{{ request()->routeIs('customer.tracking') ? 'on' : '' }}">Live Tracking</a>
-            
-            <!-- PAYMENT LINK -->
             <a href="{{ route('payment.checkout') }}" class="{{ request()->routeIs('payment.checkout') ? 'on' : '' }}">Make a Payment</a>
-            
             <a href="{{ route('customer.search') }}" class="{{ request()->routeIs('customer.search') ? 'on' : '' }}">Find a place</a>
             <a href="{{ route('customer.requests') }}" class="{{ request()->routeIs('customer.requests') ? 'on' : '' }}">My requests</a>
             <a href="{{ route('customer.quotes') }}" class="{{ request()->routeIs('customer.quotes') ? 'on' : '' }}">Quotes</a>

@@ -7,6 +7,7 @@ use App\Models\Booking;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingPaidCustomer;
 use App\Mail\BookingPaidProvider;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -35,9 +36,9 @@ class PaymentController extends Controller
             'return_url' => $baseUrl . '/payment/success',
             'cancel_url' => $baseUrl . '/payment/cancel',
             'notify_url' => $baseUrl . '/payment/notify',
-            'name_first' => auth()->user()->name ?? 'Customer',
+            'name_first' => 'Customer', // Hardcoded safe fallback
             'name_last' => 'User',
-            'email_address' => auth()->user()->email ?? 'test@example.com',
+            'email_address' => 'nforedison60@gmail.com', // Your email to ensure it reaches you
             'm_payment_id' => 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT),
             'amount' => number_format($booking->total_price, 2, '.', ''),
             'item_name' => 'MrRel Service Payment for Booking #' . $booking->id,
@@ -64,18 +65,23 @@ class PaymentController extends Controller
 
     public function success()
     {
-        // Find the latest booking and mark it as Paid
         $booking = Booking::latest()->first();
         
         if ($booking) {
             $booking->update(['status' => 'Paid']);
 
-            // Send the emails
-            Mail::to('customer@example.com')->send(new BookingPaidCustomer($booking));
-            Mail::to('provider@example.com')->send(new BookingPaidProvider($booking));
+            // USE TRY/CATCH SO THE SERVER NEVER CRASHES
+            try {
+                // Send to your real email for testing
+                Mail::to('nforedison60@gmail.com')->send(new BookingPaidCustomer($booking));
+                Mail::to('nforedison60@gmail.com')->send(new BookingPaidProvider($booking));
+            } catch (\Exception $e) {
+                // If email fails, just log it, but don't break the page
+                Log::error('Email sending failed: ' . $e->getMessage());
+            }
         }
 
-        return "Payment Successful! Thank you. Check your log for the receipt emails.";
+        return "Payment Successful! Thank you. Check your email for the receipt.";
     }
 
     public function cancel()

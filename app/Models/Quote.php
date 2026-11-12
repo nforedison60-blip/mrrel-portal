@@ -19,4 +19,10 @@ class Quote extends Model
         'note',
         'service_request_id',
     ];
+
+    // Tell Laravel that this quote belongs to a specific ServiceRequest
+    public function serviceRequest()
+    {
+        return $this->belongsTo(ServiceRequest::class);
+    }
 }

@@ -49,12 +49,12 @@
         <h3>Your next provider</h3>
         <div class="row" style="margin-top: 12px;">
             <div style="display:flex; gap:12px; align-items:center;">
-                <div class="av" style="width:60px; height:60px; font-size:24px;">P</div>
+                <div class="av" style="width:60px; height:60px; font-size:24px;">{{ substr($nextBooking->quote->provider_name ?? 'P', 0, 1) }}</div>
                 <div style="width:100px; height:60px; background:#E3F1F2; border:1px dashed #B9C6D2; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--m); font-size:12px;">[Vehicle]</div>
             </div>
             <div>
-                <b>{{ $nextBooking->quote->provider_name ?? 'Pieter' }} · Sample Movers B</b>
-                <div class="m sm">{{ $nextBooking->created_at->format('D d M, H:i') }} · 1-ton bakkie · CA 000 000</div>
+                <b>{{ $nextBooking->quote->provider_name ?? 'Your Provider' }}</b>
+                <div class="m sm">{{ $nextBooking->created_at->format('D d M, H:i') }}</div>
                 <a href="{{ route('customer.bookings') }}" class="btn g" style="margin-top: 8px; padding: 6px 14px; font-size: 13px; text-decoration:none;">Track and chat</a>
             </div>
         </div>
@@ -64,8 +64,8 @@
     <div class="card" style="margin-top:16px;">
         <h3>Recent activity</h3>
         <ul>
-            <li>Quote received from Pieter (Sample Movers B)</li>
-            <li>Booking BKG-0101 confirmed. Your provider card is ready</li>
+            <li>Quote received from {{ $latestRequests->first()->services_needed ?? 'a provider' }}</li>
+            <li>Booking confirmed. Your provider card is ready</li>
             <li>MrRel shared a shortlist of {{ $propertiesCount }} places</li>
         </ul>
     </div>

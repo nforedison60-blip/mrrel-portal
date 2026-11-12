@@ -38,12 +38,12 @@
             </ul>
         </div>
         <div class="card">
-            <h3>This week</h3>
+            <h3>System Stats</h3>
             <ul>
-                <li>Tenants served: 9</li>
-                <li>Average time to first options: 1.5 days</li>
-                <li>Refund rate: 3%</li>
-                <li>Provider renewals: 8 of 10</li>
+                <li>Total Users: {{ \App\Models\User::count() }}</li>
+                <li>Total Bookings: {{ \App\Models\Booking::count() }}</li>
+                <li>Total Properties: {{ \App\Models\Property::count() }}</li>
+                <li>Total Revenue: R{{ number_format(\App\Models\Booking::sum('total_price'), 2) }}</li>
             </ul>
         </div>
     </div>
@@ -67,24 +67,20 @@
                 <table class="tb">
                     <tr>
                         <th>Booking</th>
-                        <th>Provider</th>
+                        <th>Customer</th>
                         <th>Status</th>
                     </tr>
-                    <tr>
-                        <td>BKG-0101</td>
-                        <td>Pieter</td>
-                        <td><span class="chip wn">In progress</span></td>
-                    </tr>
-                    <tr>
-                        <td>BKG-0104</td>
-                        <td>Thandi</td>
-                        <td><span class="chip wn">Waiting</span></td>
-                    </tr>
-                    <tr>
-                        <td>BKG-0107</td>
-                        <td>Lwazi</td>
-                        <td><span class="chip ok">Paid</span></td>
-                    </tr>
+                    @forelse(\App\Models\Booking::latest()->take(3)->get() as $booking)
+                        <tr>
+                            <td>BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</td>
+                            <td>{{ $booking->customer_name }}</td>
+                            <td><span class="chip {{ $booking->status == 'Paid' ? 'ok' : 'wn' }}">{{ $booking->status }}</span></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="m sm">No active bookings right now.</td>
+                        </tr>
+                    @endforelse
                 </table>
             </div>
         </div>

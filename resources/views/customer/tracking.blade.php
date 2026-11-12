@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.customer')
 
 @section('content')
 <link href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" rel="stylesheet" />
@@ -28,26 +28,15 @@
     let marker = null;
     const statusText = document.getElementById('statusText');
 
-    // Get the active booking ID from Laravel (passes null if no booking exists)
-    const bookingId = {{ $booking ? $booking->id : 'null' }};
-
-    // Function to fetch the provider's location
     function fetchProviderLocation() {
-        // If there is no booking, we can't track a specific provider
-        if (!bookingId) {
-            statusText.textContent = 'No active booking found to track.';
-            return;
-        }
-
-        // Fetch only the location for this specific booking
-        fetch('/customer/tracking/latest?booking_id=' + bookingId)
+        // Fetch the latest location from the database
+        fetch('/customer/tracking/latest')
             .then(response => response.json())
             .then(data => {
                 if (data.latitude && data.longitude) {
                     const lat = parseFloat(data.latitude);
                     const lng = parseFloat(data.longitude);
 
-                    // Move the map to the provider
                     map.flyTo({ center: [lng, lat], zoom: 16 });
                     
                     if (marker) {
@@ -69,10 +58,7 @@
             });
     }
 
-    // Fetch immediately when the page loads
-    fetchProviderLocation();
-
-    // Fetch again every 10 seconds to keep the map "live"
+    fetchLocation();
     setInterval(fetchProviderLocation, 10000);
 </script>
 @endsection

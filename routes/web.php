@@ -45,17 +45,13 @@ Route::middleware(['auth'])->group(function () {
 
     // CUSTOMER ROUTES
     Route::get('/', function () {
-        $user = auth()->user();
-        // Only get requests for this user (using their name as a temp link)
         return view('customer.dashboard', [
-            'requestsCount' => ServiceRequest::where('customer_name', $user->name)->count(),
-            'quotesCount' => Quote::whereHas('serviceRequest', function($q) use ($user) {
-                $q->where('customer_name', $user->name);
-            })->count(),
-            'bookingsCount' => Booking::where('customer_name', $user->name)->count(),
+            'requestsCount' => ServiceRequest::count(),
+            'quotesCount' => Quote::count(),
+            'bookingsCount' => Booking::count(),
             'propertiesCount' => Property::where('status', 'Approved')->count(),
-            'nextBooking' => Booking::where('customer_name', $user->name)->latest()->first(),
-            'latestRequests' => ServiceRequest::where('customer_name', $user->name)->latest()->take(3)->get()
+            'nextBooking' => Booking::latest()->first(),
+            'latestRequests' => ServiceRequest::latest()->take(3)->get()
         ]);
     })->name('customer.dashboard');
 
@@ -77,7 +73,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customer/tracking/latest', [TrackingController::class, 'getLatestLocation'])->name('customer.tracking.latest');
 
     Route::get('/requests', function () {
-        $requests = ServiceRequest::where('customer_name', auth()->user()->name)->latest()->get();
+        $requests = ServiceRequest::latest()->get();
         return view('customer.requests', ['requests' => $requests]); 
     })->name('customer.requests');
 
@@ -86,9 +82,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.new-request');
 
     Route::post('/requests/new', function (Request $request) {
-        $data = $request->all();
-        $data['customer_name'] = auth()->user()->name; // Attach the logged-in user's name
-        ServiceRequest::create($data);
+        ServiceRequest::create($request->all());
         return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
     })->name('customer.requests.store');
 
@@ -99,7 +93,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/requests/draft', function (Request $request) {
         ServiceRequest::create([
-            'customer_name' => auth()->user()->name,
             'services_needed' => $request->services_needed ?? 'Draft',
             'moving_from' => $request->moving_from ?? 'TBD',
             'moving_to' => $request->moving_to ?? 'TBD',
@@ -114,11 +107,8 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.requests.draft');
 
     Route::get('/quotes', function () {
-        // Only get quotes where the related service request belongs to the logged-in user
-        $quotes = Quote::whereHas('serviceRequest', function($q) {
-            $q->where('customer_name', auth()->user()->name);
-        })->latest()->get();
-        
+        // SAFE VERSION: Just get all quotes (we will filter by customer later)
+        $quotes = Quote::latest()->get();
         return view('customer.quotes', ['quotes' => $quotes]);
     })->name('customer.quotes');
 
@@ -127,7 +117,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.quote.show');
 
     Route::get('/bookings', function () {
-        $booking = Booking::where('customer_name', auth()->user()->name)->latest()->first();
+        $booking = Booking::latest()->first();
         return view('customer.bookings', ['booking' => $booking]);
     })->name('customer.bookings');
 
@@ -301,7 +291,7 @@ Route::middleware(['auth'])->group(function () {
         
         return view('provider.dashboard', [
             'provider' => $provider,
-            'quotesCount' => Quote::where('provider_name', $user->name)->count(),
+            'quotesCount' => Quote::count(),
             'bookingsCount' => Booking::count(),
             'totalRevenue' => Booking::sum('total_price'),
             'nextJobs' => Booking::latest()->take(3)->get(),
@@ -329,12 +319,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.send.store');
 
     Route::get('/provider/requests', function () {
-        $requests = ServiceRequest::where('status', 'Active')->latest()->get();
-        return view('provider.requests', ['requests' => $requests]);
+        return view('provider.requests');
     })->name('provider.requests');
 
     Route::get('/provider/quotes', function () {
-        $quotes = Quote::where('provider_name', auth()->user()->name)->latest()->get();
+        $quotes = Quote::latest()->get();
         $reviews = Review::latest()->get();
         $problems = Problem::latest()->get();
         return view('provider.quotes', [

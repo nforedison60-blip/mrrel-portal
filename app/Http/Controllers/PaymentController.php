@@ -24,10 +24,14 @@ class PaymentController extends Controller
             return redirect()->back()->with('error', 'No active booking found to pay for.');
         }
 
-        $merchantId = '10000100';
-        $merchantKey = '46f0cd694581a';
-        $passphrase = 'jt7NOE43FZPn'; 
-        $url = 'https://sandbox.payfast.co.za/eng/process';
+        // 1. Pull the real live credentials from Laravel Cloud Environment
+        $merchantId = env('PAYFAST_MERCHANT_ID');
+        $merchantKey = env('PAYFAST_MERCHANT_KEY');
+        $passphrase = env('PAYFAST_PASSPHRASE', null); 
+        
+        // 2. Use the REAL Live PayFast URL
+        $url = 'https://www.payfast.co.za/eng/process';
+        
         $baseUrl = url('/'); 
 
         $data = [
@@ -36,9 +40,9 @@ class PaymentController extends Controller
             'return_url' => $baseUrl . '/payment/success',
             'cancel_url' => $baseUrl . '/payment/cancel',
             'notify_url' => $baseUrl . '/payment/notify',
-            'name_first' => 'Customer', // Hardcoded safe fallback
+            'name_first' => auth()->user()->name ?? 'Customer',
             'name_last' => 'User',
-            'email_address' => 'nforedison60@gmail.com', // Your email to ensure it reaches you
+            'email_address' => auth()->user()->email ?? 'test@example.com',
             'm_payment_id' => 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT),
             'amount' => number_format($booking->total_price, 2, '.', ''),
             'item_name' => 'MrRel Service Payment for Booking #' . $booking->id,
@@ -50,7 +54,11 @@ class PaymentController extends Controller
         }
         
         $pfParamString = rtrim($pfParamString, '&');
-        $pfParamString .= '&passphrase=' . urlencode(trim($passphrase));
+        
+        if ($passphrase) {
+            $pfParamString .= '&passphrase=' . urlencode(trim($passphrase));
+        }
+        
         $data['signature'] = md5($pfParamString);
 
         $html = '<form id="payfast_form" action="' . $url . '" method="post">';
@@ -70,13 +78,11 @@ class PaymentController extends Controller
         if ($booking) {
             $booking->update(['status' => 'Paid']);
 
-            // USE TRY/CATCH SO THE SERVER NEVER CRASHES
             try {
-                // Send to your real email for testing
+                // Replace with the actual customer's email in the future
                 Mail::to('nforedison60@gmail.com')->send(new BookingPaidCustomer($booking));
                 Mail::to('nforedison60@gmail.com')->send(new BookingPaidProvider($booking));
             } catch (\Exception $e) {
-                // If email fails, just log it, but don't break the page
                 Log::error('Email sending failed: ' . $e->getMessage());
             }
         }

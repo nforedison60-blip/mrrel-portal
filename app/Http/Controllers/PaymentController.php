@@ -24,14 +24,11 @@ class PaymentController extends Controller
             return redirect()->back()->with('error', 'No active booking found to pay for.');
         }
 
-        // 1. Pull the real live credentials from Laravel Cloud Environment
         $merchantId = env('PAYFAST_MERCHANT_ID');
         $merchantKey = env('PAYFAST_MERCHANT_KEY');
         $passphrase = env('PAYFAST_PASSPHRASE', null); 
         
-        // 2. Use the REAL Live PayFast URL
         $url = 'https://www.payfast.co.za/eng/process';
-        
         $baseUrl = url('/'); 
 
         $data = [
@@ -39,7 +36,7 @@ class PaymentController extends Controller
             'merchant_key' => $merchantKey,
             'return_url' => $baseUrl . '/payment/success',
             'cancel_url' => $baseUrl . '/payment/cancel',
-            'notify_url' => $baseUrl . '/payment/notify',
+            'notify_url' => $baseUrl . '/payment/notify', // THIS IS THE WEBHOOK URL
             'name_first' => auth()->user()->name ?? 'Customer',
             'name_last' => 'User',
             'email_address' => auth()->user()->email ?? 'test@example.com',
@@ -73,25 +70,49 @@ class PaymentController extends Controller
 
     public function success()
     {
-        $booking = Booking::latest()->first();
-        
-        if ($booking) {
-            $booking->update(['status' => 'Paid']);
-
-            try {
-                // Replace with the actual customer's email in the future
-                Mail::to('nforedison60@gmail.com')->send(new BookingPaidCustomer($booking));
-                Mail::to('nforedison60@gmail.com')->send(new BookingPaidProvider($booking));
-            } catch (\Exception $e) {
-                Log::error('Email sending failed: ' . $e->getMessage());
-            }
-        }
-
+        // We now rely on the webhook to mark as paid. 
+        // This page just tells the user it went through.
         return "Payment Successful! Thank you. Check your email for the receipt.";
     }
 
     public function cancel()
     {
         return "Payment Cancelled.";
+    }
+
+    // THE PAYFAST WEBHOOK (ITN)
+    public function notify(Request $request)
+    {
+        // 1. Log the incoming ping so we can see it in laravel.log
+        Log::info('PayFast ITN Received: ', $request->all());
+
+        // 2. Get the data from PayFast
+        $paymentStatus = $request->input('payment_status');
+        $mPaymentId = $request->input('m_payment_id'); // E.g., BKG-0001
+        $pfPaymentId = $request->input('pf_payment_id');
+
+        if ($paymentStatus === 'COMPLETE') {
+            // 3. Extract the booking ID from the m_payment_id
+            $bookingId = str_replace('BKG-', '', $mPaymentId);
+            $booking = Booking::find($bookingId);
+
+            if ($booking) {
+                // 4. Mark as Paid
+                $booking->update(['status' => 'Paid']);
+
+                // 5. Send the emails
+                try {
+                    Mail::to('nforedison60@gmail.com')->send(new BookingPaidCustomer($booking));
+                    Mail::to('nforedison60@gmail.com')->send(new BookingPaidProvider($booking));
+                } catch (\Exception $e) {
+                    Log::error('Email sending failed: ' . $e->getMessage());
+                }
+
+                Log::info('Booking #' . $bookingId . ' marked as PAID via webhook.');
+            }
+        }
+
+        // 6. Always tell PayFast we received the ping successfully
+        return response('OK', 200);
     }
 }

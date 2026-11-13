@@ -339,7 +339,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('provider.quotes');
 
-    // UPDATED PROVIDER REVIEWS ROUTE
+    // THE PROVIDER REVIEWS ROUTE
     Route::get('/provider/reviews', function () {
         $reviews = Review::latest()->get();
         return view('provider.reviews', ['reviews' => $reviews]);

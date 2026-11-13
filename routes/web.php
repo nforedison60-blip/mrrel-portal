@@ -17,6 +17,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\PaymentController;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewQuoteReceived;
 
 require __DIR__.'/auth.php';
 
@@ -302,12 +304,13 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->name('provider.send');
 
+    // NOTIFICATION ADDED HERE
     Route::post('/provider/send-quote', function (Request $request) {
         try {
             $included = $request->has('included') ? implode(', ', (array)$request->input('included')) : '';
             $notIncluded = $request->has('not_included') ? implode(', ', (array)$request->input('not_included')) : '';
 
-            Quote::create([
+            $quote = Quote::create([
                 'provider_name' => auth()->user()->name,
                 'total_price' => $request->total_price ?? 0,
                 'price_type' => $request->price_type ?? 'Fixed',
@@ -317,6 +320,10 @@ Route::middleware(['auth'])->group(function () {
                 'note' => $request->note,
                 'service_request_id' => $request->service_request_id,
             ]);
+
+            // Send notification email
+            Mail::to('nforedison60@gmail.com')->send(new NewQuoteReceived($quote));
+
             return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully!');
         } catch (\Exception $e) {
             return back()->with('error', 'Database error: ' . $e->getMessage());
@@ -339,7 +346,6 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('provider.quotes');
 
-    // THE PROVIDER REVIEWS ROUTE
     Route::get('/provider/reviews', function () {
         $reviews = Review::latest()->get();
         return view('provider.reviews', ['reviews' => $reviews]);

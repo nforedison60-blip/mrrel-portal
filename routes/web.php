@@ -302,21 +302,28 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->name('provider.send');
 
+    // THE SAFE SEND QUOTE ROUTE
     Route::post('/provider/send-quote', function (Request $request) {
-        Quote::create([
-            'provider_name' => auth()->user()->name,
-            'total_price' => $request->total_price,
-            'price_type' => $request->price_type,
-            'included' => implode(', ', $request->input('included', [])),
-            'not_included' => implode(', ', $request->input('not_included', [])),
-            'validity' => $request->validity,
-            'note' => $request->note,
-            'service_request_id' => $request->service_request_id,
-        ]);
-        return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully!');
+        try {
+            $included = $request->has('included') ? implode(', ', (array)$request->input('included')) : '';
+            $notIncluded = $request->has('not_included') ? implode(', ', (array)$request->input('not_included')) : '';
+
+            Quote::create([
+                'provider_name' => auth()->user()->name,
+                'total_price' => $request->total_price ?? 0,
+                'price_type' => $request->price_type ?? 'Fixed',
+                'included' => $included,
+                'not_included' => $notIncluded,
+                'validity' => $request->validity ?? '48 hours',
+                'note' => $request->note,
+                'service_request_id' => $request->service_request_id,
+            ]);
+            return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Database error: ' . $e->getMessage());
+        }
     })->name('provider.send.store');
 
-    // FIXED PROVIDER REQUESTS ROUTE
     Route::get('/provider/requests', function () {
         $requests = ServiceRequest::where('status', 'Active')->latest()->get();
         return view('provider.requests', ['requests' => $requests]);

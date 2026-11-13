@@ -14,7 +14,7 @@
         <p><strong>{{ $quote->provider_name }}</strong> has sent you a quote for your move.</p>
         <p><strong>Total Price:</strong> R{{ number_format($quote->total_price, 2) }}</p>
         <p>Log in to your MrRel portal to review the quote, see what's included, and accept or decline it.</p>
-        <a href="{{ url('/customer/quotes') }}" class="btn">View Quote</a>
+        <a href="{{ url('/quotes') }}" class="btn">View Quote</a>
         <p style="margin-top: 20px; font-size: 12px; color: #51657A;">This is an automated message from MrRel.</p>
     </div>
 </body>

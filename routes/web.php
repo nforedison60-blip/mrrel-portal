@@ -302,7 +302,6 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->name('provider.send');
 
-    // THE SAFE SEND QUOTE ROUTE
     Route::post('/provider/send-quote', function (Request $request) {
         try {
             $included = $request->has('included') ? implode(', ', (array)$request->input('included')) : '';
@@ -340,8 +339,10 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('provider.quotes');
 
+    // UPDATED PROVIDER REVIEWS ROUTE
     Route::get('/provider/reviews', function () {
-        return view('provider.reviews');
+        $reviews = Review::latest()->get();
+        return view('provider.reviews', ['reviews' => $reviews]);
     })->name('provider.reviews');
 
     Route::get('/provider/subscription', function () {

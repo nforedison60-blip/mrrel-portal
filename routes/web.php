@@ -304,7 +304,6 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->name('provider.send');
 
-    // NOTIFICATION ADDED HERE
     Route::post('/provider/send-quote', function (Request $request) {
         try {
             $included = $request->has('included') ? implode(', ', (array)$request->input('included')) : '';
@@ -321,8 +320,8 @@ Route::middleware(['auth'])->group(function () {
                 'service_request_id' => $request->service_request_id,
             ]);
 
-            // Send notification email
-            Mail::to('nforedison60@gmail.com')->send(new NewQuoteReceived($quote));
+            $savedQuote = Quote::find($quote->id);
+            Mail::to('nforedison60@gmail.com')->send(new NewQuoteReceived($savedQuote));
 
             return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully!');
         } catch (\Exception $e) {

@@ -47,13 +47,16 @@ Route::middleware(['auth'])->group(function () {
 
     // CUSTOMER ROUTES
     Route::get('/', function () {
+        $userName = auth()->user()->name;
         return view('customer.dashboard', [
-            'requestsCount' => ServiceRequest::count(),
-            'quotesCount' => Quote::count(),
-            'bookingsCount' => Booking::count(),
+            'requestsCount' => ServiceRequest::where('customer_name', $userName)->count(),
+            'quotesCount' => Quote::whereHas('serviceRequest', function($q) use ($userName) {
+                $q->where('customer_name', $userName);
+            })->count(),
+            'bookingsCount' => Booking::where('customer_name', $userName)->count(),
             'propertiesCount' => Property::where('status', 'Approved')->count(),
-            'nextBooking' => Booking::latest()->first(),
-            'latestRequests' => ServiceRequest::latest()->take(3)->get()
+            'nextBooking' => Booking::where('customer_name', $userName)->latest()->first(),
+            'latestRequests' => ServiceRequest::where('customer_name', $userName)->latest()->take(3)->get()
         ]);
     })->name('customer.dashboard');
 
@@ -74,8 +77,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customer/tracking', [TrackingController::class, 'customerMap'])->name('customer.tracking');
     Route::get('/customer/tracking/latest', [TrackingController::class, 'getLatestLocation'])->name('customer.tracking.latest');
 
+    // Filtered by customer name
     Route::get('/requests', function () {
-        $requests = ServiceRequest::latest()->get();
+        $requests = ServiceRequest::where('customer_name', auth()->user()->name)->latest()->get();
         return view('customer.requests', ['requests' => $requests]); 
     })->name('customer.requests');
 
@@ -84,7 +88,9 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.new-request');
 
     Route::post('/requests/new', function (Request $request) {
-        ServiceRequest::create($request->all());
+        $data = $request->all();
+        $data['customer_name'] = auth()->user()->name;
+        ServiceRequest::create($data);
         return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
     })->name('customer.requests.store');
 
@@ -95,6 +101,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/requests/draft', function (Request $request) {
         ServiceRequest::create([
+            'customer_name' => auth()->user()->name,
             'services_needed' => $request->services_needed ?? 'Draft',
             'moving_from' => $request->moving_from ?? 'TBD',
             'moving_to' => $request->moving_to ?? 'TBD',
@@ -108,8 +115,12 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.dashboard')->with('success', 'Draft saved!');
     })->name('customer.requests.draft');
 
+    // Filtered quotes
     Route::get('/quotes', function () {
-        $quotes = Quote::latest()->get();
+        $userName = auth()->user()->name;
+        $quotes = Quote::whereHas('serviceRequest', function($q) use ($userName) {
+            $q->where('customer_name', $userName);
+        })->latest()->get();
         return view('customer.quotes', ['quotes' => $quotes]);
     })->name('customer.quotes');
 
@@ -118,7 +129,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.quote.show');
 
     Route::get('/bookings', function () {
-        $booking = Booking::latest()->first();
+        $booking = Booking::where('customer_name', auth()->user()->name)->latest()->first();
         return view('customer.bookings', ['booking' => $booking]);
     })->name('customer.bookings');
 
@@ -193,7 +204,7 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
     })->name('customer.profile.update');
 
-    // REAL CHAT ROUTES (CUSTOMER) - FIXED ORDER
+    // REAL CHAT ROUTES (CUSTOMER)
     Route::get('/customer/messages', function () {
         $messages = Message::oldest()->get();
         return view('customer.messages', ['messages' => $messages]);
@@ -371,7 +382,7 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.pbook', ['bookings' => $bookings, 'problems' => $problems]);
     })->name('provider.pbook');
 
-    // REAL CHAT ROUTES (PROVIDER) - FIXED ORDER
+    // REAL CHAT ROUTES (PROVIDER)
     Route::get('/provider/messages', function () {
         $messages = Message::oldest()->get();
         return view('provider.messages', ['messages' => $messages]);

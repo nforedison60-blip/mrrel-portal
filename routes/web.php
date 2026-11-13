@@ -77,7 +77,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customer/tracking', [TrackingController::class, 'customerMap'])->name('customer.tracking');
     Route::get('/customer/tracking/latest', [TrackingController::class, 'getLatestLocation'])->name('customer.tracking.latest');
 
-    // Filtered by customer name
     Route::get('/requests', function () {
         $requests = ServiceRequest::where('customer_name', auth()->user()->name)->latest()->get();
         return view('customer.requests', ['requests' => $requests]); 
@@ -115,7 +114,6 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.dashboard')->with('success', 'Draft saved!');
     })->name('customer.requests.draft');
 
-    // Filtered quotes
     Route::get('/quotes', function () {
         $userName = auth()->user()->name;
         $quotes = Quote::whereHas('serviceRequest', function($q) use ($userName) {
@@ -169,6 +167,7 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.bookings')->with('success', 'Thank you for your review!');
     })->name('customer.review.store');
 
+    // FILTERED SHORTLIST
     Route::get('/shortlist', function () {
         $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->latest()->get();
         return view('customer.shortlist', ['properties' => $properties]);
@@ -204,9 +203,9 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
     })->name('customer.profile.update');
 
-    // REAL CHAT ROUTES (CUSTOMER)
+    // FILTERED MESSAGES
     Route::get('/customer/messages', function () {
-        $messages = Message::oldest()->get();
+        $messages = Message::where('user_id', auth()->id())->orWhere('receiver_id', auth()->id())->oldest()->get();
         return view('customer.messages', ['messages' => $messages]);
     })->name('customer.messages');
 
@@ -224,8 +223,9 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.fees', ['properties' => $properties]);
     })->name('customer.fees');
 
+    // FILTERED PROBLEMS
     Route::get('/customer/problems', function () {
-        $problems = Problem::latest()->get();
+        $problems = Problem::where('user_id', auth()->id())->latest()->get();
         return view('customer.problems', ['problems' => $problems]);
     })->name('customer.problems');
 
@@ -240,6 +240,7 @@ Route::middleware(['auth'])->group(function () {
             'subject' => $request->subject,
             'description' => $request->description,
             'image_path' => $imagePath,
+            'user_id' => auth()->id(),
         ]);
         return redirect()->route('customer.problems')->with('success', 'Problem reported successfully!');
     })->name('customer.problems.store');
@@ -272,6 +273,7 @@ Route::middleware(['auth'])->group(function () {
             'deposit' => $request->deposit,
             'status' => 'Draft',
             'image_path' => $imagePath,
+            'user_id' => auth()->id(),
         ]);
         return redirect()->route('landlord.properties')->with('success', 'Property saved as draft!');
     })->name('landlord.properties.store');
@@ -382,9 +384,9 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.pbook', ['bookings' => $bookings, 'problems' => $problems]);
     })->name('provider.pbook');
 
-    // REAL CHAT ROUTES (PROVIDER)
+    // FILTERED CHAT
     Route::get('/provider/messages', function () {
-        $messages = Message::oldest()->get();
+        $messages = Message::where('user_id', auth()->id())->orWhere('receiver_id', auth()->id())->oldest()->get();
         return view('provider.messages', ['messages' => $messages]);
     })->name('provider.messages');
 

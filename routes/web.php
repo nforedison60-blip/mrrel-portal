@@ -167,7 +167,7 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.bookings')->with('success', 'Thank you for your review!');
     })->name('customer.review.store');
 
-    // FILTERED SHORTLIST
+    // FILTERED SHORTLIST (Only approved properties)
     Route::get('/shortlist', function () {
         $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->latest()->get();
         return view('customer.shortlist', ['properties' => $properties]);
@@ -218,6 +218,7 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.messages')->with('success', 'Message sent!');
     })->name('customer.messages.store');
 
+    // FILTERED FEES (Only approved properties)
     Route::get('/customer/fees', function () {
         $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->get();
         return view('customer.fees', ['properties' => $properties]);

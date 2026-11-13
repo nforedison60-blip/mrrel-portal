@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use App\Models\ServiceRequest;
 use App\Models\Quote;
 use App\Models\Booking;
@@ -11,10 +12,11 @@ use App\Models\Customer;
 use App\Models\Review;
 use App\Models\Message;
 use App\Models\Problem;
+use App\Models\ProviderLocation;
+use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\PaymentController;
-use Illuminate\Http\Request;
 
 require __DIR__.'/auth.php';
 
@@ -71,7 +73,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customer/tracking/latest', [TrackingController::class, 'getLatestLocation'])->name('customer.tracking.latest');
 
     Route::get('/requests', function () {
-        return view('customer.requests', ['requests' => ServiceRequest::latest()->get()]); 
+        $requests = ServiceRequest::latest()->get();
+        return view('customer.requests', ['requests' => $requests]); 
     })->name('customer.requests');
 
     Route::get('/requests/new', function () {
@@ -313,8 +316,10 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully!');
     })->name('provider.send.store');
 
+    // FIXED PROVIDER REQUESTS ROUTE
     Route::get('/provider/requests', function () {
-        return view('provider.requests');
+        $requests = ServiceRequest::where('status', 'Active')->latest()->get();
+        return view('provider.requests', ['requests' => $requests]);
     })->name('provider.requests');
 
     Route::get('/provider/quotes', function () {

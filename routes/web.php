@@ -193,9 +193,9 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
     })->name('customer.profile.update');
 
-    // REAL CHAT ROUTES
+    // REAL CHAT ROUTES (CUSTOMER) - FIXED ORDER
     Route::get('/customer/messages', function () {
-        $messages = Message::latest()->get();
+        $messages = Message::oldest()->get();
         return view('customer.messages', ['messages' => $messages]);
     })->name('customer.messages');
 
@@ -371,9 +371,9 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.pbook', ['bookings' => $bookings, 'problems' => $problems]);
     })->name('provider.pbook');
 
-    // REAL CHAT ROUTES (PROVIDER)
+    // REAL CHAT ROUTES (PROVIDER) - FIXED ORDER
     Route::get('/provider/messages', function () {
-        $messages = Message::latest()->get();
+        $messages = Message::oldest()->get();
         return view('provider.messages', ['messages' => $messages]);
     })->name('provider.messages');
 

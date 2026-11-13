@@ -195,7 +195,7 @@ Route::middleware(['auth'])->group(function () {
 
     // REAL CHAT ROUTES
     Route::get('/customer/messages', function () {
-        $messages = Message::where('user_id', auth()->id())->orWhere('receiver_id', auth()->id())->latest()->get();
+        $messages = Message::latest()->get();
         return view('customer.messages', ['messages' => $messages]);
     })->name('customer.messages');
 
@@ -204,7 +204,6 @@ Route::middleware(['auth'])->group(function () {
             'sender_name' => auth()->user()->name, 
             'message' => $request->message,
             'user_id' => auth()->id(),
-            'receiver_id' => 2, // Hardcoded to the provider for now (User ID 2)
         ]);
         return redirect()->route('customer.messages')->with('success', 'Message sent!');
     })->name('customer.messages.store');
@@ -374,7 +373,7 @@ Route::middleware(['auth'])->group(function () {
 
     // REAL CHAT ROUTES (PROVIDER)
     Route::get('/provider/messages', function () {
-        $messages = Message::where('user_id', auth()->id())->orWhere('receiver_id', auth()->id())->latest()->get();
+        $messages = Message::latest()->get();
         return view('provider.messages', ['messages' => $messages]);
     })->name('provider.messages');
 
@@ -383,7 +382,6 @@ Route::middleware(['auth'])->group(function () {
             'sender_name' => auth()->user()->name, 
             'message' => $request->message,
             'user_id' => auth()->id(),
-            'receiver_id' => 1, // Hardcoded to the customer for now
         ]);
         return redirect()->route('provider.messages')->with('success', 'Message sent!');
     })->name('provider.messages.store');

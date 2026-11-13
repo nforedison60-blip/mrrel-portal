@@ -11,19 +11,18 @@
 
 <div class="card">
     <h3>Tracking Status</h3>
-    <p id="statusText" class="m" style="margin-bottom: 12px;">Please allow location access in your browser settings.</p>
+    <p id="statusText" class="m" style="margin-bottom: 12px; color: #eab308;">Waiting for GPS...</p>
     
-    <button id="trackBtn" class="btn">Stop Tracking</button>
+    <button id="trackBtn" class="btn" style="background: #ef4444; color: white; margin-bottom: 16px; display: none;">
+        Stop Tracking
+    </button>
+    
     <div id="map"></div>
 </div>
 
 <script src="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.js"></script>
 <script>
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    // Grab the active booking ID from Laravel (or null if none exists)
-    const bookingId = {{ $booking ? $booking->id : 'null' }};
-
+    // 1. Setup Map
     const map = new maplibregl.Map({
         container: 'map',
         style: 'https://tiles.openfreemap.org/styles/liberty',
@@ -35,41 +34,34 @@
     let trackingInterval = null;
     const trackBtn = document.getElementById('trackBtn');
     const statusText = document.getElementById('statusText');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    startTracking();
-
-    trackBtn.addEventListener('click', () => {
-        clearInterval(trackingInterval);
-        trackingInterval = null;
-        trackBtn.textContent = 'Start Tracking';
-        statusText.textContent = 'Tracking stopped.';
-    });
-
+    // 2. Start Tracking automatically
     function startTracking() {
         if (!navigator.geolocation) {
-            statusText.textContent = "Geolocation is not supported by your browser";
+            statusText.textContent = "Geolocation is not supported by your browser.";
             return;
         }
 
-        if (!bookingId) {
-            statusText.textContent = "Warning: No active booking found. GPS will send without a job ID.";
-        }
-
-        trackBtn.textContent = 'Stop Tracking';
-        statusText.textContent = 'Tracking active. Sending location...';
+        statusText.textContent = "Tracking active. Waiting for first GPS ping...";
+        trackBtn.style.display = 'inline-block';
         
+        // Send immediately
         updateLocation();
+        
+        // Then send every 10 seconds
         trackingInterval = setInterval(updateLocation, 10000); 
     }
 
+    // 3. Get location and send to Laravel
     function updateLocation() {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
 
+                // Move map and place pin
                 map.flyTo({ center: [lng, lat], zoom: 16 });
-                
                 if (marker) {
                     marker.setLngLat([lng, lat]);
                 } else {
@@ -78,6 +70,7 @@
                         .addTo(map);
                 }
 
+                // Send to database
                 fetch('/provider/tracking/update', {
                     method: 'POST',
                     headers: {
@@ -86,22 +79,39 @@
                     },
                     body: JSON.stringify({ 
                         latitude: lat, 
-                        longitude: lng,
-                        booking_id: bookingId // Send the booking ID!
+                        longitude: lng 
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Server error');
+                    return response.json();
+                })
                 .then(data => {
                     statusText.textContent = 'Tracking active. Last sent: ' + new Date().toLocaleTimeString();
                 })
-                .catch(error => console.error("Error saving location:", error));
+                .catch(error => {
+                    statusText.textContent = 'Error saving location to database.';
+                    console.error(error);
+                });
             },
             (error) => {
-                console.error("Error: ", error);
-                statusText.textContent = "Please allow location access to track.";
+                // If the user blocks location or it times out
+                statusText.textContent = "Please allow location access in your browser settings to track.";
+                console.error("GPS Error:", error);
             },
-            { enableHighAccuracy: true }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }
+
+    // 4. Stop button logic
+    trackBtn.addEventListener('click', () => {
+        clearInterval(trackingInterval);
+        trackingInterval = null;
+        trackBtn.style.display = 'none';
+        statusText.textContent = 'Tracking stopped.';
+    });
+
+    // Initialize
+    startTracking();
 </script>
 @endsection

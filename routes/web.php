@@ -411,7 +411,6 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.profile', ['provider' => $provider, 'reviews' => $reviews]);
     })->name('provider.profile');
 
-    // UPDATED PROVIDER PROFILE STORE (Handles file uploads)
     Route::post('/provider/profile', function (Request $request) {
         $request->validate([
             'image' => 'nullable|image|max:5120', 

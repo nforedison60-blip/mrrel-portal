@@ -167,7 +167,6 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.bookings')->with('success', 'Thank you for your review!');
     })->name('customer.review.store');
 
-    // FILTERED SHORTLIST (Only approved properties)
     Route::get('/shortlist', function () {
         $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->latest()->get();
         return view('customer.shortlist', ['properties' => $properties]);
@@ -203,7 +202,6 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
     })->name('customer.profile.update');
 
-    // FILTERED MESSAGES
     Route::get('/customer/messages', function () {
         $messages = Message::where('user_id', auth()->id())->orWhere('receiver_id', auth()->id())->oldest()->get();
         return view('customer.messages', ['messages' => $messages]);
@@ -218,13 +216,11 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.messages')->with('success', 'Message sent!');
     })->name('customer.messages.store');
 
-    // FILTERED FEES (Only approved properties)
     Route::get('/customer/fees', function () {
         $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->get();
         return view('customer.fees', ['properties' => $properties]);
     })->name('customer.fees');
 
-    // FILTERED PROBLEMS
     Route::get('/customer/problems', function () {
         $problems = Problem::where('user_id', auth()->id())->latest()->get();
         return view('customer.problems', ['problems' => $problems]);
@@ -385,7 +381,6 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.pbook', ['bookings' => $bookings, 'problems' => $problems]);
     })->name('provider.pbook');
 
-    // FILTERED CHAT
     Route::get('/provider/messages', function () {
         $messages = Message::where('user_id', auth()->id())->orWhere('receiver_id', auth()->id())->oldest()->get();
         return view('provider.messages', ['messages' => $messages]);
@@ -416,17 +411,46 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.profile', ['provider' => $provider, 'reviews' => $reviews]);
     })->name('provider.profile');
 
+    // UPDATED PROVIDER PROFILE STORE (Handles file uploads)
     Route::post('/provider/profile', function (Request $request) {
-        $request->validate(['image' => 'nullable|image|max:5120', 'vehicle_image' => 'nullable|image|max:5120', 'id_image' => 'nullable|image|max:5120']);
+        $request->validate([
+            'image' => 'nullable|image|max:5120', 
+            'vehicle_image' => 'nullable|image|max:5120', 
+            'id_image' => 'nullable|image|max:5120',
+            'id_document' => 'nullable|file|mimes:pdf,jpg,png|max:5120',
+            'vehicle_document' => 'nullable|file|mimes:pdf,jpg,png|max:5120'
+        ]);
+        
         $user = auth()->user();
         $provider = Provider::where('email', $user->email)->first();
+        
         $imagePath = $provider->image_path;
         if ($request->hasFile('image')) $imagePath = $request->file('image')->store('providers', 's3');
+        
         $vehicleImagePath = $provider->vehicle_image_path;
         if ($request->hasFile('vehicle_image')) $vehicleImagePath = $request->file('vehicle_image')->store('providers', 's3');
+        
         $idImagePath = $provider->id_image_path;
         if ($request->hasFile('id_image')) $idImagePath = $request->file('id_image')->store('providers', 's3');
-        $provider->update(['name' => $request->name, 'company_name' => $request->company_name, 'vehicle' => $request->vehicle, 'plate_number' => $request->plate_number, 'image_path' => $imagePath, 'vehicle_image_path' => $vehicleImagePath, 'id_image_path' => $idImagePath]);
+
+        $idDocumentPath = $provider->id_document;
+        if ($request->hasFile('id_document')) $idDocumentPath = $request->file('id_document')->store('providers', 's3');
+
+        $vehicleDocumentPath = $provider->vehicle_document;
+        if ($request->hasFile('vehicle_document')) $vehicleDocumentPath = $request->file('vehicle_document')->store('providers', 's3');
+        
+        $provider->update([
+            'name' => $request->name, 
+            'company_name' => $request->company_name, 
+            'vehicle' => $request->vehicle, 
+            'plate_number' => $request->plate_number, 
+            'image_path' => $imagePath, 
+            'vehicle_image_path' => $vehicleImagePath, 
+            'id_image_path' => $idImagePath,
+            'id_document' => $idDocumentPath,
+            'vehicle_document' => $vehicleDocumentPath,
+        ]);
+        
         return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
     })->name('provider.profile.update');
 

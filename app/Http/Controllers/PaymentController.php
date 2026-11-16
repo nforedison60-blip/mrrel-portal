@@ -24,54 +24,60 @@ class PaymentController extends Controller
             return redirect()->back()->with('error', 'No active booking found to pay for.');
         }
 
-        $merchantId = env('PAYFAST_MERCHANT_ID');
-        $merchantKey = env('PAYFAST_MERCHANT_KEY');
-        $passphrase = env('PAYFAST_PASSPHRASE', null); 
+        // Ozow Credentials from Environment
+        $siteCode = env('OZOW_SITE_CODE');
+        $privateKey = env('OZOW_PRIVATE_KEY');
+        $apiKey = env('OZOW_API_KEY');
         
-        $url = 'https://www.payfast.co.za/eng/process';
-        $baseUrl = url('/'); 
+        // This now strictly follows your Laravel Cloud Environment setting
+        $isTest = env('OZOW_IS_TEST', 'false') === 'true' ? 'true' : 'false';
 
-        $data = [
-            'merchant_id' => $merchantId,
-            'merchant_key' => $merchantKey,
-            'return_url' => $baseUrl . '/payment/success',
-            'cancel_url' => $baseUrl . '/payment/cancel',
-            'notify_url' => $baseUrl . '/payment/notify', // THIS IS THE WEBHOOK URL
-            'name_first' => auth()->user()->name ?? 'Customer',
-            'name_last' => 'User',
-            'email_address' => auth()->user()->email ?? 'test@example.com',
-            'm_payment_id' => 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT),
-            'amount' => number_format($booking->total_price, 2, '.', ''),
-            'item_name' => 'MrRel Service Payment for Booking #' . $booking->id,
-        ];
+        // Payment Details
+        $amount = number_format($booking->total_price, 2, '.', '');
+        $reference = 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT);
+        $bankReference = 'MrRel'; 
+        
+        // URLs
+        $successUrl = url('/payment/success');
+        $cancelUrl = url('/payment/cancel');
+        $errorUrl = url('/payment/cancel');
+        $notifyUrl = url('/payment/notify');
 
-        $pfParamString = '';
-        foreach ($data as $key => $val) {
-            $pfParamString .= $key . '=' . urlencode(trim($val)) . '&';
-        }
-        
-        $pfParamString = rtrim($pfParamString, '&');
-        
-        if ($passphrase) {
-            $pfParamString .= '&passphrase=' . urlencode(trim($passphrase));
-        }
-        
-        $data['signature'] = md5($pfParamString);
+        // Generate Hash (SHA512)
+        $hashString = $siteCode . 'ZA' . 'ZAR' . $amount . $reference . $bankReference . $privateKey;
+        $hashCheck = hash('sha512', $hashString);
 
-        $html = '<form id="payfast_form" action="' . $url . '" method="post">';
-        foreach ($data as $key => $val) {
-            $html .= '<input type="hidden" name="' . $key . '" value="' . htmlspecialchars($val) . '">';
-        }
+        // Build the auto-submitting form to Ozow
+        // Use the Production URL for real money
+        $url = 'https://pay.ozow.com/';
+        
+        $html = '<form id="ozow_form" action="' . $url . '" method="post">';
+        $html .= '<input type="hidden" name="SiteCode" value="' . $siteCode . '">';
+        $html .= '<input type="hidden" name="CountryCode" value="ZA">';
+        $html .= '<input type="hidden" name="CurrencyCode" value="ZAR">';
+        $html .= '<input type="hidden" name="Amount" value="' . $amount . '">';
+        $html .= '<input type="hidden" name="TransactionReference" value="' . $reference . '">';
+        $html .= '<input type="hidden" name="BankReference" value="' . $bankReference . '">';
+        $html .= '<input type="hidden" name="HashCheck" value="' . $hashCheck . '">';
+        $html .= '<input type="hidden" name="SuccessUrl" value="' . $successUrl . '">';
+        $html .= '<input type="hidden" name="CancelUrl" value="' . $cancelUrl . '">';
+        $html .= '<input type="hidden" name="ErrorUrl" value="' . $errorUrl . '">';
+        $html .= '<input type="hidden" name="NotifyUrl" value="' . $notifyUrl . '">';
+        $html .= '<input type="hidden" name="IsTest" value="' . $isTest . '">';
         $html .= '</form>';
-        $html .= '<script>document.getElementById("payfast_form").submit();</script>';
+        $html .= '<script>document.getElementById("ozow_form").submit();</script>';
 
         return $html;
     }
 
     public function success()
     {
-        // We now rely on the webhook to mark as paid. 
-        // This page just tells the user it went through.
+        $booking = Booking::latest()->first();
+        
+        if ($booking) {
+            $booking->update(['status' => 'Paid']);
+        }
+
         return "Payment Successful! Thank you. Check your email for the receipt.";
     }
 
@@ -80,39 +86,30 @@ class PaymentController extends Controller
         return "Payment Cancelled.";
     }
 
-    // THE PAYFAST WEBHOOK (ITN)
+    // OZOW WEBHOOK
     public function notify(Request $request)
     {
-        // 1. Log the incoming ping so we can see it in laravel.log
-        Log::info('PayFast ITN Received: ', $request->all());
+        Log::info('Ozow Webhook Received: ', $request->all());
 
-        // 2. Get the data from PayFast
-        $paymentStatus = $request->input('payment_status');
-        $mPaymentId = $request->input('m_payment_id'); // E.g., BKG-0001
-        $pfPaymentId = $request->input('pf_payment_id');
+        $status = $request->input('Status');
+        $reference = $request->input('TransactionReference');
 
-        if ($paymentStatus === 'COMPLETE') {
-            // 3. Extract the booking ID from the m_payment_id
-            $bookingId = str_replace('BKG-', '', $mPaymentId);
+        if ($status === 'Complete') {
+            $bookingId = str_replace('BKG-', '', $reference);
             $booking = Booking::find($bookingId);
 
-            if ($booking) {
-                // 4. Mark as Paid
+            if ($booking && $booking->status !== 'Paid') {
                 $booking->update(['status' => 'Paid']);
 
-                // 5. Send the emails
                 try {
                     Mail::to('nforedison60@gmail.com')->send(new BookingPaidCustomer($booking));
                     Mail::to('nforedison60@gmail.com')->send(new BookingPaidProvider($booking));
                 } catch (\Exception $e) {
                     Log::error('Email sending failed: ' . $e->getMessage());
                 }
-
-                Log::info('Booking #' . $bookingId . ' marked as PAID via webhook.');
             }
         }
 
-        // 6. Always tell PayFast we received the ping successfully
         return response('OK', 200);
     }
 }

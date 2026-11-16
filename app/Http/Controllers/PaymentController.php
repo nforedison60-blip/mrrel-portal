@@ -32,13 +32,17 @@ class PaymentController extends Controller
         $reference = 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT);
         $bankReference = 'MrRel'; 
         
+        // URLs must be defined BEFORE the hash string
         $successUrl = url('/payment/success');
         $cancelUrl = url('/payment/cancel');
         $errorUrl = url('/payment/cancel');
         $notifyUrl = url('/payment/notify');
 
-        // THE FIX: Lowercase the entire string before hashing
-        $hashString = $siteCode . 'ZA' . 'ZAR' . $amount . $reference . $bankReference . $privateKey;
+        // THE FIX: Exact field order required by Ozow for a payment request
+        // SiteCode + CountryCode + CurrencyCode + Amount + TransactionReference + BankReference + CancelUrl + ErrorUrl + SuccessUrl + NotifyUrl + IsTest + PrivateKey
+        $hashString = $siteCode . 'ZA' . 'ZAR' . $amount . $reference . $bankReference . $cancelUrl . $errorUrl . $successUrl . $notifyUrl . $isTest . $privateKey;
+        
+        // Lowercase the ENTIRE string before hashing
         $hashString = strtolower($hashString);
         $hashCheck = hash('sha512', $hashString);
 

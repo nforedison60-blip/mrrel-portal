@@ -49,15 +49,18 @@ Route::middleware(['auth'])->group(function () {
     // CUSTOMER ROUTES
     Route::get('/', function () {
         $userId = auth()->id();
+        $quotes = Quote::whereHas('serviceRequest', function($q) use ($userId) {
+            $q->where('user_id', $userId)->orWhere('customer_name', auth()->user()->name);
+        })->latest()->get();
+
         return view('customer.dashboard', [
-            'requestsCount' => ServiceRequest::where('user_id', $userId)->count(),
-            'quotesCount' => Quote::whereHas('serviceRequest', function($q) use ($userId) {
-                $q->where('user_id', $userId);
-            })->count(),
+            'requestsCount' => ServiceRequest::where('user_id', $userId)->orWhere('customer_name', auth()->user()->name)->count(),
+            'quotesCount' => $quotes->count(),
             'bookingsCount' => Booking::where('customer_name', auth()->user()->name)->count(),
             'propertiesCount' => Property::where('status', 'Approved')->count(),
             'nextBooking' => Booking::where('customer_name', auth()->user()->name)->latest()->first(),
-            'latestRequests' => ServiceRequest::where('user_id', $userId)->latest()->take(3)->get()
+            'latestRequests' => ServiceRequest::where('user_id', $userId)->orWhere('customer_name', auth()->user()->name)->latest()->take(3)->get(),
+            'latestQuotes' => $quotes->take(3)
         ]);
     })->name('customer.dashboard');
 
@@ -79,7 +82,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customer/tracking/latest', [TrackingController::class, 'getLatestLocation'])->name('customer.tracking.latest');
 
     Route::get('/requests', function () {
-        $requests = ServiceRequest::where('user_id', auth()->id())->latest()->get();
+        $requests = ServiceRequest::where('user_id', auth()->id())->orWhere('customer_name', auth()->user()->name)->latest()->get();
         return view('customer.requests', ['requests' => $requests]); 
     })->name('customer.requests');
 
@@ -90,7 +93,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/requests/new', function (Request $request) {
         $data = $request->all();
         $data['customer_name'] = auth()->user()->name;
-        $data['user_id'] = auth()->id(); // Save the user ID
+        $data['user_id'] = auth()->id();
         ServiceRequest::create($data);
         return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
     })->name('customer.requests.store');
@@ -121,7 +124,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/quotes', function () {
         $userId = auth()->id();
         $quotes = Quote::whereHas('serviceRequest', function($q) use ($userId) {
-            $q->where('user_id', $userId);
+            $q->where('user_id', $userId)->orWhere('customer_name', auth()->user()->name);
         })->latest()->get();
         return view('customer.quotes', ['quotes' => $quotes]);
     })->name('customer.quotes');
@@ -341,7 +344,6 @@ Route::middleware(['auth'])->group(function () {
 
             $serviceRequest = ServiceRequest::find($request->service_request_id);
             
-            // Get the customer's email
             $customerUser = User::find($serviceRequest->user_id);
             $customerEmail = $customerUser ? $customerUser->email : 'nforedison60@gmail.com';
 

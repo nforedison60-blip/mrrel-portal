@@ -24,31 +24,24 @@ class PaymentController extends Controller
             return redirect()->back()->with('error', 'No active booking found to pay for.');
         }
 
-        // Ozow Credentials from Environment
         $siteCode = env('OZOW_SITE_CODE');
         $privateKey = env('OZOW_PRIVATE_KEY');
-        $apiKey = env('OZOW_API_KEY');
-        
-        // This now strictly follows your Laravel Cloud Environment setting
         $isTest = env('OZOW_IS_TEST', 'false') === 'true' ? 'true' : 'false';
 
-        // Payment Details
         $amount = number_format($booking->total_price, 2, '.', '');
         $reference = 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT);
         $bankReference = 'MrRel'; 
         
-        // URLs
         $successUrl = url('/payment/success');
         $cancelUrl = url('/payment/cancel');
         $errorUrl = url('/payment/cancel');
         $notifyUrl = url('/payment/notify');
 
-        // Generate Hash (SHA512)
+        // THE FIX: Lowercase the entire string before hashing
         $hashString = $siteCode . 'ZA' . 'ZAR' . $amount . $reference . $bankReference . $privateKey;
+        $hashString = strtolower($hashString);
         $hashCheck = hash('sha512', $hashString);
 
-        // Build the auto-submitting form to Ozow
-        // Use the Production URL for real money
         $url = 'https://pay.ozow.com/';
         
         $html = '<form id="ozow_form" action="' . $url . '" method="post">';
@@ -86,7 +79,6 @@ class PaymentController extends Controller
         return "Payment Cancelled.";
     }
 
-    // OZOW WEBHOOK
     public function notify(Request $request)
     {
         Log::info('Ozow Webhook Received: ', $request->all());

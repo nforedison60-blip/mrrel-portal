@@ -13,6 +13,7 @@ use App\Models\Review;
 use App\Models\Message;
 use App\Models\Problem;
 use App\Models\ProviderLocation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrackingController;
@@ -319,11 +320,13 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->name('provider.send');
 
+    // THE FIXED SEND QUOTE ROUTE
     Route::post('/provider/send-quote', function (Request $request) {
         try {
             $included = $request->has('included') ? implode(', ', (array)$request->input('included')) : '';
             $notIncluded = $request->has('not_included') ? implode(', ', (array)$request->input('not_included')) : '';
 
+            // 1. Save the quote
             $quote = Quote::create([
                 'provider_name' => auth()->user()->name,
                 'total_price' => $request->total_price ?? 0,
@@ -335,10 +338,16 @@ Route::middleware(['auth'])->group(function () {
                 'service_request_id' => $request->service_request_id,
             ]);
 
-            $savedQuote = Quote::find($quote->id);
-            Mail::to('nforedison60@gmail.com')->send(new NewQuoteReceived($savedQuote));
+            // 2. Find the customer's email from the service request
+            $serviceRequest = ServiceRequest::find($request->service_request_id);
+            $customerUser = User::where('name', $serviceRequest->customer_name)->first();
+            $customerEmail = $customerUser ? $customerUser->email : 'nforedison60@gmail.com';
 
-            return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully!');
+            // 3. Fetch the freshly saved quote so the email has the correct price
+            $savedQuote = Quote::find($quote->id);
+            Mail::to($customerEmail)->send(new NewQuoteReceived($savedQuote));
+
+            return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully to ' . $customerEmail);
         } catch (\Exception $e) {
             return back()->with('error', 'Database error: ' . $e->getMessage());
         }
@@ -423,32 +432,20 @@ Route::middleware(['auth'])->group(function () {
         $user = auth()->user();
         $provider = Provider::where('email', $user->email)->first();
         
-        $imagePath = $provider->image_path;
-        if ($request->hasFile('image')) $imagePath = $request->file('image')->store('providers', 's3');
-        
-        $vehicleImagePath = $provider->vehicle_image_path;
-        if ($request->hasFile('vehicle_image')) $vehicleImagePath = $request->file('vehicle_image')->store('providers', 's3');
-        
-        $idImagePath = $provider->id_image_path;
-        if ($request->hasFile('id_image')) $idImagePath = $request->file('id_image')->store('providers', 's3');
+        $data = [
+            'name' => $request->name,
+            'company_name' => $request->company_name,
+            'vehicle' => $request->vehicle,
+            'plate_number' => $request->plate_number,
+        ];
 
-        $idDocumentPath = $provider->id_document;
-        if ($request->hasFile('id_document')) $idDocumentPath = $request->file('id_document')->store('providers', 's3');
-
-        $vehicleDocumentPath = $provider->vehicle_document;
-        if ($request->hasFile('vehicle_document')) $vehicleDocumentPath = $request->file('vehicle_document')->store('providers', 's3');
+        if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store('providers', 's3');
+        if ($request->hasFile('vehicle_image')) $data['vehicle_image_path'] = $request->file('vehicle_image')->store('providers', 's3');
+        if ($request->hasFile('id_image')) $data['id_image_path'] = $request->file('id_image')->store('providers', 's3');
+        if ($request->hasFile('id_document')) $data['id_document'] = $request->file('id_document')->store('providers', 's3');
+        if ($request->hasFile('vehicle_document')) $data['vehicle_document'] = $request->file('vehicle_document')->store('providers', 's3');
         
-        $provider->update([
-            'name' => $request->name, 
-            'company_name' => $request->company_name, 
-            'vehicle' => $request->vehicle, 
-            'plate_number' => $request->plate_number, 
-            'image_path' => $imagePath, 
-            'vehicle_image_path' => $vehicleImagePath, 
-            'id_image_path' => $idImagePath,
-            'id_document' => $idDocumentPath,
-            'vehicle_document' => $vehicleDocumentPath,
-        ]);
+        $provider->update($data);
         
         return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
     })->name('provider.profile.update');

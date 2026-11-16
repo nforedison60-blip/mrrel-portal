@@ -48,16 +48,16 @@ Route::middleware(['auth'])->group(function () {
 
     // CUSTOMER ROUTES
     Route::get('/', function () {
-        $userName = auth()->user()->name;
+        $userId = auth()->id();
         return view('customer.dashboard', [
-            'requestsCount' => ServiceRequest::where('customer_name', $userName)->count(),
-            'quotesCount' => Quote::whereHas('serviceRequest', function($q) use ($userName) {
-                $q->where('customer_name', $userName);
+            'requestsCount' => ServiceRequest::where('user_id', $userId)->count(),
+            'quotesCount' => Quote::whereHas('serviceRequest', function($q) use ($userId) {
+                $q->where('user_id', $userId);
             })->count(),
-            'bookingsCount' => Booking::where('customer_name', $userName)->count(),
+            'bookingsCount' => Booking::where('customer_name', auth()->user()->name)->count(),
             'propertiesCount' => Property::where('status', 'Approved')->count(),
-            'nextBooking' => Booking::where('customer_name', $userName)->latest()->first(),
-            'latestRequests' => ServiceRequest::where('customer_name', $userName)->latest()->take(3)->get()
+            'nextBooking' => Booking::where('customer_name', auth()->user()->name)->latest()->first(),
+            'latestRequests' => ServiceRequest::where('user_id', $userId)->latest()->take(3)->get()
         ]);
     })->name('customer.dashboard');
 
@@ -79,7 +79,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customer/tracking/latest', [TrackingController::class, 'getLatestLocation'])->name('customer.tracking.latest');
 
     Route::get('/requests', function () {
-        $requests = ServiceRequest::where('customer_name', auth()->user()->name)->latest()->get();
+        $requests = ServiceRequest::where('user_id', auth()->id())->latest()->get();
         return view('customer.requests', ['requests' => $requests]); 
     })->name('customer.requests');
 
@@ -90,6 +90,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/requests/new', function (Request $request) {
         $data = $request->all();
         $data['customer_name'] = auth()->user()->name;
+        $data['user_id'] = auth()->id(); // Save the user ID
         ServiceRequest::create($data);
         return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
     })->name('customer.requests.store');
@@ -102,6 +103,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/requests/draft', function (Request $request) {
         ServiceRequest::create([
             'customer_name' => auth()->user()->name,
+            'user_id' => auth()->id(),
             'services_needed' => $request->services_needed ?? 'Draft',
             'moving_from' => $request->moving_from ?? 'TBD',
             'moving_to' => $request->moving_to ?? 'TBD',
@@ -115,10 +117,11 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.dashboard')->with('success', 'Draft saved!');
     })->name('customer.requests.draft');
 
+    // FILTERED QUOTES
     Route::get('/quotes', function () {
-        $userName = auth()->user()->name;
-        $quotes = Quote::whereHas('serviceRequest', function($q) use ($userName) {
-            $q->where('customer_name', $userName);
+        $userId = auth()->id();
+        $quotes = Quote::whereHas('serviceRequest', function($q) use ($userId) {
+            $q->where('user_id', $userId);
         })->latest()->get();
         return view('customer.quotes', ['quotes' => $quotes]);
     })->name('customer.quotes');
@@ -320,13 +323,11 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->name('provider.send');
 
-    // THE FIXED SEND QUOTE ROUTE
     Route::post('/provider/send-quote', function (Request $request) {
         try {
             $included = $request->has('included') ? implode(', ', (array)$request->input('included')) : '';
             $notIncluded = $request->has('not_included') ? implode(', ', (array)$request->input('not_included')) : '';
 
-            // 1. Save the quote
             $quote = Quote::create([
                 'provider_name' => auth()->user()->name,
                 'total_price' => $request->total_price ?? 0,
@@ -338,12 +339,12 @@ Route::middleware(['auth'])->group(function () {
                 'service_request_id' => $request->service_request_id,
             ]);
 
-            // 2. Find the customer's email from the service request
             $serviceRequest = ServiceRequest::find($request->service_request_id);
-            $customerUser = User::where('name', $serviceRequest->customer_name)->first();
+            
+            // Get the customer's email
+            $customerUser = User::find($serviceRequest->user_id);
             $customerEmail = $customerUser ? $customerUser->email : 'nforedison60@gmail.com';
 
-            // 3. Fetch the freshly saved quote so the email has the correct price
             $savedQuote = Quote::find($quote->id);
             Mail::to($customerEmail)->send(new NewQuoteReceived($savedQuote));
 

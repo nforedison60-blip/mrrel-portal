@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>MrRel Portal</title>
+    <title>MrRel Portal - Customer</title>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root{--n:#10243A;--t:#0E7C86;--tl:#E3F1F2;--td:#0A5C64;--a:#F4B731;--m:#51657A;--l:#D5DEE6;--bg:#F5F8FA;--wn:#FDF1CC}
@@ -51,12 +51,15 @@
         <div class="logo"><i></i>MrRel</div>
         <div class="sw" id="sw">
             <a href="{{ route('customer.dashboard') }}" class="on">Customer</a>
-            <a href="{{ route('landlord.properties') }}">Landlord</a>
-            <a href="{{ route('provider.dashboard') }}">Provider</a>
-            <a href="{{ route('admin.dashboard') }}">Admin</a>
+            @if(auth()->user()->role == 'Provider')
+                <a href="{{ route('provider.dashboard') }}">Provider</a>
+            @endif
+            @if(auth()->user()->role == 'Admin')
+                <a href="{{ route('admin.dashboard') }}">Admin</a>
+            @endif
+            <!-- Landlord link can stay or be removed -->
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-            <!-- Example data removed -->
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                 @csrf
                 <button type="submit" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 14px; border-radius:99px; cursor:pointer; font:600 13px Figtree;">Log Out</button>
@@ -86,11 +89,8 @@
                     {{ session('success') }}
                 </div>
             @endif
-
             @yield('content')
         </main>
     </div>
-
-    <div id="toast"></div>
 </body>
 </html>

@@ -51,12 +51,12 @@
         <div class="logo"><i></i>MrRel</div>
         <div class="sw" id="sw">
             <a href="{{ route('customer.dashboard') }}">Customer</a>
-            <a href="{{ route('landlord.properties') }}">Landlord</a>
             <a href="{{ route('provider.dashboard') }}" class="on">Provider</a>
-            <a href="{{ route('admin.dashboard') }}">Admin</a>
+            @if(auth()->user()->role == 'Admin')
+                <a href="{{ route('admin.dashboard') }}">Admin</a>
+            @endif
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-            <!-- Example data removed -->
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                 @csrf
                 <button type="submit" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 14px; border-radius:99px; cursor:pointer; font:600 13px Figtree;">Log Out</button>
@@ -85,11 +85,8 @@
                     {{ session('success') }}
                 </div>
             @endif
-
             @yield('content')
         </main>
     </div>
-
-    <div id="toast"></div>
 </body>
 </html>

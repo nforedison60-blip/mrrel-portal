@@ -28,9 +28,6 @@ class RegisteredUserController extends Controller
             'role' => ['required', 'string', 'in:Customer,Provider,Landlord'],
         ]);
 
-        // THIS WILL PAUSE THE PAGE AND SHOW US THE DATA
-        dd($request->all()); 
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -39,6 +36,7 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
         Auth::login($user);
 
         if ($user->role === 'Provider') {

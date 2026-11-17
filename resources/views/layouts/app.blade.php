@@ -50,14 +50,8 @@
     <div class="top">
         <div class="logo"><i></i>MrRel</div>
         <div class="sw" id="sw">
+            <!-- ONLY SHOW CUSTOMER TAB -->
             <a href="{{ route('customer.dashboard') }}" class="on">Customer</a>
-            @if(auth()->user()->role == 'Provider')
-                <a href="{{ route('provider.dashboard') }}">Provider</a>
-            @endif
-            @if(auth()->user()->role == 'Admin')
-                <a href="{{ route('admin.dashboard') }}">Admin</a>
-            @endif
-            <!-- Landlord link can stay or be removed -->
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">

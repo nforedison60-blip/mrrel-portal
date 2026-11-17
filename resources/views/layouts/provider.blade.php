@@ -50,11 +50,8 @@
     <div class="top">
         <div class="logo"><i></i>MrRel</div>
         <div class="sw" id="sw">
-            <a href="{{ route('customer.dashboard') }}">Customer</a>
+            <!-- ONLY SHOW PROVIDER TAB -->
             <a href="{{ route('provider.dashboard') }}" class="on">Provider</a>
-            @if(auth()->user()->role == 'Admin')
-                <a href="{{ route('admin.dashboard') }}">Admin</a>
-            @endif
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">

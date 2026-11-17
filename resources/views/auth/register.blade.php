@@ -1,28 +1,26 @@
 <x-guest-layout>
-    <div class="card" style="max-width: 500px; margin: 40px auto;">
+    <div class="card" style="max-width: 500px; margin: 40px auto; padding: 30px;">
         <h3 style="text-align: center; font-size: 24px; margin-bottom: 20px;">Create your MrRel Account</h3>
 
         <form method="POST" action="{{ route('register') }}">
             @csrf
 
-            <!-- Name -->
-            <div class="f">
+            <div class="f" style="margin-bottom: 16px;">
                 <label class="k">Full Name
                     <input type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name">
                 </label>
                 @error('name') <div class="m sm" style="color: red;">{{ $message }}</div> @enderror
             </div>
 
-            <!-- Email -->
-            <div class="f">
+            <div class="f" style="margin-bottom: 16px;">
                 <label class="k">Email Address
                     <input type="email" name="email" value="{{ old('email') }}" required autocomplete="username">
                 </label>
                 @error('email') <div class="m sm" style="color: red;">{{ $message }}</div> @enderror
             </div>
 
-            <!-- Role Selection -->
-            <div class="f">
+            <!-- THIS IS THE ROLE DROPDOWN -->
+            <div class="f" style="margin-bottom: 16px;">
                 <label class="k">I want to join as a:
                     <select name="role" required>
                         <option value="Customer" {{ old('role') == 'Customer' ? 'selected' : '' }}>Customer (I need a service)</option>
@@ -33,16 +31,14 @@
                 @error('role') <div class="m sm" style="color: red;">{{ $message }}</div> @enderror
             </div>
 
-            <!-- Password -->
-            <div class="f">
+            <div class="f" style="margin-bottom: 16px;">
                 <label class="k">Password
                     <input type="password" name="password" required autocomplete="new-password">
                 </label>
                 @error('password') <div class="m sm" style="color: red;">{{ $message }}</div> @enderror
             </div>
 
-            <!-- Confirm Password -->
-            <div class="f">
+            <div class="f" style="margin-bottom: 16px;">
                 <label class="k">Confirm Password
                     <input type="password" name="password_confirmation" required autocomplete="new-password">
                 </label>

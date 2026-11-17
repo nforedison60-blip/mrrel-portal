@@ -1,39 +1,57 @@
 <x-guest-layout>
-    <h2>Create an account</h2>
-    <div class="m">Join MrRel today</div>
+    <div class="card" style="max-width: 500px; margin: 40px auto;">
+        <h3 style="text-align: center; font-size: 24px; margin-bottom: 20px;">Create your MrRel Account</h3>
 
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
-        <div class="f">
-            <label>Name
-                <input type="text" name="name" value="{{ old('name') }}" required autofocus>
-            </label>
+        <form method="POST" action="{{ route('register') }}">
+            @csrf
 
-            <label>Email
-                <input type="email" name="email" value="{{ old('email') }}" required>
-            </label>
+            <!-- Name -->
+            <div class="f">
+                <label class="k">Full Name
+                    <input type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name">
+                </label>
+                @error('name') <div class="m sm" style="color: red;">{{ $message }}</div> @enderror
+            </div>
 
-            <label>I am registering as a...
-                <select name="role" required>
-                    <option value="Customer" {{ old('role') == 'Customer' ? 'selected' : '' }}>Customer (Looking for services / a place)</option>
-                    <option value="Landlord" {{ old('role') == 'Landlord' ? 'selected' : '' }}>Landlord (Listing a property)</option>
-                    <option value="Provider" {{ old('role') == 'Provider' ? 'selected' : '' }}>Provider (Offering moving / services)</option>
-                </select>
-            </label>
+            <!-- Email -->
+            <div class="f">
+                <label class="k">Email Address
+                    <input type="email" name="email" value="{{ old('email') }}" required autocomplete="username">
+                </label>
+                @error('email') <div class="m sm" style="color: red;">{{ $message }}</div> @enderror
+            </div>
 
-            <label>Password
-                <input type="password" name="password" required>
-            </label>
+            <!-- Role Selection -->
+            <div class="f">
+                <label class="k">I want to join as a:
+                    <select name="role" required>
+                        <option value="Customer" {{ old('role') == 'Customer' ? 'selected' : '' }}>Customer (I need a service)</option>
+                        <option value="Provider" {{ old('role') == 'Provider' ? 'selected' : '' }}>Provider (I offer services)</option>
+                        <option value="Landlord" {{ old('role') == 'Landlord' ? 'selected' : '' }}>Landlord (I have properties)</option>
+                    </select>
+                </label>
+                @error('role') <div class="m sm" style="color: red;">{{ $message }}</div> @enderror
+            </div>
 
-            <label>Confirm Password
-                <input type="password" name="password_confirmation" required>
-            </label>
-        </div>
+            <!-- Password -->
+            <div class="f">
+                <label class="k">Password
+                    <input type="password" name="password" required autocomplete="new-password">
+                </label>
+                @error('password') <div class="m sm" style="color: red;">{{ $message }}</div> @enderror
+            </div>
 
-        <button type="submit" class="btn">Register</button>
+            <!-- Confirm Password -->
+            <div class="f">
+                <label class="k">Confirm Password
+                    <input type="password" name="password_confirmation" required autocomplete="new-password">
+                </label>
+            </div>
 
-        <div class="links">
-            Already registered? <a href="{{ route('login') }}">Log in here</a>
-        </div>
-    </form>
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <a href="{{ route('login') }}" style="font-size: 14px; color: var(--t); text-decoration: none;">Already registered?</a>
+                <button type="submit" class="btn">Register</button>
+            </div>
+        </form>
+    </div>
 </x-guest-layout>

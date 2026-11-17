@@ -14,31 +14,46 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
+    /**
+     * Display the registration view.
+     */
     public function create(): View
     {
         return view('auth.register');
     }
 
+    /**
+     * Handle an incoming registration request.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'string', 'in:Customer,Landlord,Provider'], // NEW
+            'role' => ['required', 'string', 'in:Customer,Provider,Landlord'], // Add role validation
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role, // NEW
+            'role' => $request->role, // Save the selected role
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Redirect based on role
+        if ($user->role === 'Provider') {
+            return redirect()->route('provider.dashboard');
+        } elseif ($user->role === 'Landlord') {
+            return redirect()->route('landlord.properties');
+        } else {
+            return redirect()->route('customer.dashboard');
+        }
     }
 }

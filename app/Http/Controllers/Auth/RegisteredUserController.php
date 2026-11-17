@@ -28,18 +28,17 @@ class RegisteredUserController extends Controller
             'role' => ['required', 'string', 'in:Customer,Provider,Landlord'],
         ]);
 
-        // TEMPORARY DEBUG: This will show us what the form is sending
-        // dd($request->all()); 
+        // THIS WILL PAUSE THE PAGE AND SHOW US THE DATA
+        dd($request->all()); 
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role, // Force the role from the form
+            'role' => $request->role,
         ]);
 
         event(new Registered($user));
-
         Auth::login($user);
 
         if ($user->role === 'Provider') {

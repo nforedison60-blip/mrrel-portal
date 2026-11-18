@@ -345,7 +345,7 @@ Route::middleware(['auth'])->group(function () {
             
             // THIS IS THE FIX: Find the customer who owns this request
             $customerUser = User::find($serviceRequest->user_id);
-            $customerEmail = $customerUser ? $customerUser->email : 'nforedison60@gmail.com';
+            $customerEmail = $customerUser ? $customerUser->email : 'error@mrrel.co.za';
 
             $savedQuote = Quote::find($quote->id);
             Mail::to($customerEmail)->send(new NewQuoteReceived($savedQuote));

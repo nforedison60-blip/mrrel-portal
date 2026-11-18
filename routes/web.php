@@ -296,6 +296,8 @@ Route::middleware(['auth'])->group(function () {
     // PROVIDER ROUTES
     Route::get('/provider/dashboard', function () {
         $user = auth()->user();
+        
+        // THIS IS THE FIX: Only create if not exists, no fake data
         $provider = Provider::firstOrCreate(
             ['email' => $user->email],
             [

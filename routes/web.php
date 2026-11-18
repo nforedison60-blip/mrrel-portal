@@ -324,6 +324,7 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->name('provider.send');
 
+    // THE FIXED SEND QUOTE ROUTE
     Route::post('/provider/send-quote', function (Request $request) {
         try {
             $included = $request->has('included') ? implode(', ', (array)$request->input('included')) : '';
@@ -342,6 +343,7 @@ Route::middleware(['auth'])->group(function () {
 
             $serviceRequest = ServiceRequest::find($request->service_request_id);
             
+            // THIS IS THE FIX: Find the customer who owns this request
             $customerUser = User::find($serviceRequest->user_id);
             $customerEmail = $customerUser ? $customerUser->email : 'nforedison60@gmail.com';
 

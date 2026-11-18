@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MrRel Portal - Landlord</title>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -49,10 +50,8 @@
     <div class="top">
         <div class="logo"><i></i>MrRel</div>
         <div class="sw" id="sw">
-            <a href="{{ route('customer.dashboard') }}">Customer</a>
+            <!-- ONLY SHOW LANDLORD TAB -->
             <a href="{{ route('landlord.properties') }}" class="on">Landlord</a>
-            <a href="{{ route('provider.dashboard') }}">Provider</a>
-            <a href="{{ route('admin.dashboard') }}">Admin</a>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
             <span style="opacity:.85;font-size:13px">Example data</span>
@@ -77,11 +76,8 @@
                     {{ session('success') }}
                 </div>
             @endif
-
             @yield('content')
         </main>
     </div>
-
-    <div id="toast"></div>
 </body>
 </html>

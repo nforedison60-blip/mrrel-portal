@@ -2,19 +2,30 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
+use App\Models\User;
 use Illuminate\Console\Command;
 
-#[Signature('app:make-admin')]
-#[Description('Command description')]
 class MakeAdmin extends Command
 {
-    /**
-     * Execute the console command.
-     */
+    // THE FIX: This line tells Laravel to expect an email argument
+    protected $signature = 'app:make-admin {email}';
+
+    protected $description = 'Give an existing user the Admin role';
+
     public function handle()
     {
-        //
+        $email = $this->argument('email');
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            $this->error("No user found with the email: {$email}. Please register on the site first.");
+            return self::FAILURE;
+        }
+
+        $user->role = 'Admin';
+        $user->save();
+
+        $this->info("✅ {$user->email} is now an Admin.");
+        return self::SUCCESS;
     }
 }

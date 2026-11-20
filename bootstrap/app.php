@@ -11,12 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // THIS IS THE FIX: Use the EnsureRole middleware you created
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
-        ]);
-
-        $middleware->validateCsrfTokens(except: [
-            'payment/notify',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

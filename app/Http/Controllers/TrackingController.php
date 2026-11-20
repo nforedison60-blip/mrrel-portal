@@ -9,9 +9,10 @@ use Carbon\Carbon;
 
 class TrackingController extends Controller
 {
+    // PROVIDER: sees only THEIR OWN latest booking
     public function providerMap()
     {
-        $booking = Booking::latest()->first();
+        $booking = Booking::forProvider(auth()->id())->latest()->first();
         return view('provider.tracking', ['booking' => $booking]);
     }
 
@@ -23,52 +24,63 @@ class TrackingController extends Controller
             'booking_id' => 'nullable'
         ]);
 
-        ProviderLocation::updateOrCreate(
-            ['user_id' => auth()->id()],
-            [
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
-                'booking_id' => $request->booking_id,
-                'updated_at' => now(), // Force the timestamp to update
-            ]
-        );
+        // Only accept a booking id that really belongs to this provider
+        $bookingId = null;
+        if ($request->filled('booking_id') && $request->booking_id !== 'null') {
+            $bookingId = Booking::forProvider(auth()->id())
+                ->where('id', $request->booking_id)
+                ->value('id');
+        }
+
+        $location = ProviderLocation::firstOrNew(['user_id' => auth()->id()]);
+        $location->latitude = $request->latitude;
+        $location->longitude = $request->longitude;
+        $location->booking_id = $bookingId;
+        $location->updated_at = now();
+        $location->save();
 
         return response()->json(['status' => 'success']);
     }
 
+    // CUSTOMER: sees only THEIR OWN latest booking
     public function customerMap()
     {
-        $booking = Booking::latest()->first();
+        $booking = Booking::where('user_id', auth()->id())->latest()->first();
         return view('customer.tracking', ['booking' => $booking]);
     }
 
     public function getLatestLocation(Request $request)
     {
-        $location = null;
+        // Find the customer's own booking (never someone else's)
+        $bookingQuery = Booking::where('user_id', auth()->id());
 
-        if ($request->has('booking_id') && $request->booking_id != '' && $request->booking_id != 'null') {
-            $location = ProviderLocation::where('booking_id', $request->booking_id)->latest('updated_at')->first();
+        if ($request->filled('booking_id') && $request->booking_id !== 'null') {
+            $bookingQuery->where('id', $request->booking_id);
         }
+
+        $booking = $bookingQuery->latest()->first();
+
+        if (!$booking) {
+            return response()->json(['status' => 'no_location_found']);
+        }
+
+        $location = ProviderLocation::where('booking_id', $booking->id)->latest('updated_at')->first();
 
         if (!$location) {
-            $location = ProviderLocation::latest('updated_at')->first();
+            return response()->json(['status' => 'no_location_found']);
         }
 
-        if ($location) {
-            // Check if the last update was more than 2 minutes ago
-            $lastUpdate = Carbon::parse($location->updated_at);
-            if ($lastUpdate->diffInMinutes(now()) > 2) {
-                return response()->json(['status' => 'provider_offline']);
-            }
-
-            return response()->json([
-                'latitude' => $location->latitude,
-                'longitude' => $location->longitude,
-                'updated_at' => $lastUpdate->diffForHumans(),
-            ]);
+        // Check if the last update was more than 2 minutes ago
+        $lastUpdate = Carbon::parse($location->updated_at);
+        if ($lastUpdate->diffInMinutes(now()) > 2) {
+            return response()->json(['status' => 'provider_offline']);
         }
 
-        return response()->json(['status' => 'no_location_found']);
+        return response()->json([
+            'latitude' => $location->latitude,
+            'longitude' => $location->longitude,
+            'updated_at' => $lastUpdate->diffForHumans(),
+        ]);
     }
 
     public function adminMap()

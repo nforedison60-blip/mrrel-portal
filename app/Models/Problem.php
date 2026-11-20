@@ -10,6 +10,7 @@ class Problem extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'booking_id',
         'customer_name',
         'subject',

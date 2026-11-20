@@ -10,6 +10,7 @@ class Property extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'title',
         'description',
         'property_type',

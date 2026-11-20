@@ -10,8 +10,20 @@ class ServiceRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_name', 'services_needed', 'moving_from', 'moving_to', 'move_date',
-        'date_flexibility', 'item_size', 'access_pickup', 'access_delivery', 'status',
+        'user_id',
+        'customer_name',
+        'services_needed',
+        'moving_from',
+        'moving_to',
+        'move_date',
+        'date_flexibility',
+        'item_size',
+        'items_count',
+        'budget',
+        'access_pickup',
+        'access_delivery',
+        'details',
+        'status',
     ];
 
     public function quotes()

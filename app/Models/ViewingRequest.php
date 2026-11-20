@@ -11,6 +11,7 @@ class ViewingRequest extends Model
 
     protected $fillable = [
         'property_id',
+        'user_id',
         'customer_name',
         'status',
         'message',

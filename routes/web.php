@@ -56,9 +56,9 @@ Route::middleware(['auth'])->group(function () {
             'quotesCount' => Quote::whereHas('serviceRequest', function($q) use ($userId) {
                 $q->where('user_id', $userId);
             })->count(),
-            'bookingsCount' => Booking::where('customer_name', auth()->user()->name)->count(),
+            'bookingsCount' => Booking::where('user_id', $userId)->count(),
             'propertiesCount' => Property::where('status', 'Approved')->count(),
-            'nextBooking' => Booking::where('customer_name', auth()->user()->name)->latest()->first(),
+            'nextBooking' => Booking::where('user_id', $userId)->latest()->first(),
             'latestRequests' => ServiceRequest::where('user_id', $userId)->latest()->take(3)->get()
         ]);
     })->name('customer.dashboard');
@@ -90,14 +90,20 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.new-request');
 
     Route::post('/requests/new', function (Request $request) {
-        $data = $request->all();
+        $data = $request->only([
+            'services_needed', 'moving_from', 'moving_to', 'move_date',
+            'date_flexibility', 'item_size', 'items_count', 'budget',
+            'access_pickup', 'access_delivery', 'details',
+        ]);
         $data['customer_name'] = auth()->user()->name;
         $data['user_id'] = auth()->id();
+        $data['status'] = $request->has('is_draft') ? 'Draft' : 'Active';
         ServiceRequest::create($data);
         return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
     })->name('customer.requests.store');
 
     Route::post('/requests/{serviceRequest}/publish', function (ServiceRequest $serviceRequest) {
+        abort_unless($serviceRequest->user_id === auth()->id(), 403);
         $serviceRequest->update(['status' => 'Active']);
         return redirect()->route('customer.requests')->with('success', 'Request submitted! Providers will now send quotes.');
     })->name('customer.requests.publish');
@@ -129,19 +135,27 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.quotes');
 
     Route::get('/quote/{quote}', function (Quote $quote) {
+        // A customer may only open quotes for their OWN requests
+        abort_unless(optional($quote->serviceRequest)->user_id === auth()->id(), 403);
         return view('customer.quote-detail', ['quote' => $quote]);
     })->name('customer.quote.show');
 
     Route::get('/bookings', function () {
-        $booking = Booking::where('customer_name', auth()->user()->name)->latest()->first();
+        $booking = Booking::where('user_id', auth()->id())->latest()->first();
         return view('customer.bookings', ['booking' => $booking]);
     })->name('customer.bookings');
 
     Route::post('/bookings', function (Request $request) {
+        // Only allow quotes that belong to this customer's own requests
+        $quote = Quote::whereHas('serviceRequest', function ($q) {
+            $q->where('user_id', auth()->id());
+        })->findOrFail($request->quote_id);
+
         Booking::create([
-            'quote_id' => $request->quote_id,
+            'quote_id' => $quote->id,
+            'user_id' => auth()->id(),
             'customer_name' => auth()->user()->name,
-            'total_price' => $request->total_price,
+            'total_price' => $quote->total_price, // price comes from the quote, not from the form
             'status' => 'Paid',
             'tracking_status' => 'On my way',
         ]);
@@ -149,23 +163,30 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.bookings.store');
 
     Route::post('/bookings/{booking}/confirm', function (Booking $booking) {
+        abort_unless($booking->user_id === auth()->id(), 403);
         $booking->update(['job_confirmed' => true]);
         return redirect()->route('customer.bookings')->with('success', 'Job confirmed! Thank you.');
     })->name('customer.bookings.confirm');
 
     Route::post('/bookings/{booking}/extras/approve', function (Booking $booking) {
+        abort_unless($booking->user_id === auth()->id(), 403);
         $booking->update(['extras_status' => 'Approved']);
         return redirect()->route('customer.bookings')->with('success', 'Extra charge approved and paid.');
     })->name('customer.extras.approve');
 
     Route::post('/bookings/{booking}/extras/decline', function (Booking $booking) {
+        abort_unless($booking->user_id === auth()->id(), 403);
         $booking->update(['extras_status' => 'Declined']);
         return redirect()->route('customer.bookings')->with('success', 'Extra charge declined.');
     })->name('customer.extras.decline');
 
     Route::post('/review', function (Request $request) {
+        // Find the provider from this customer's latest booking
+        $booking = Booking::where('user_id', auth()->id())->with('quote')->latest()->first();
+
         Review::create([
-            'provider_id' => 1,
+            'provider_user_id' => optional(optional($booking)->quote)->provider_user_id,
+            'user_id' => auth()->id(),
             'customer_name' => auth()->user()->name,
             'rating' => $request->rating,
             'comment' => $request->comment,
@@ -190,6 +211,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/viewing-request', function (Request $request) {
         ViewingRequest::create([
             'property_id' => $request->property_id,
+            'user_id' => auth()->id(),
             'customer_name' => auth()->user()->name,
             'status' => 'Pending',
             'message' => $request->message,
@@ -198,13 +220,17 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.viewing.store');
 
     Route::get('/customer/profile', function () {
-        $customer = Customer::firstOrCreate(['id' => 1], ['name' => auth()->user()->name, 'email' => auth()->user()->email, 'phone' => '082 000 0000']);
+        // Each customer gets THEIR OWN profile row
+        $customer = Customer::firstOrCreate(
+            ['user_id' => auth()->id()],
+            ['name' => auth()->user()->name, 'email' => auth()->user()->email, 'phone' => '']
+        );
         return view('customer.profile', ['customer' => $customer]);
     })->name('customer.profile');
 
     Route::post('/customer/profile', function (Request $request) {
-        $customer = Customer::find(1);
-        $customer->update(['name' => $request->name, 'email' => $request->email, 'phone' => $request->phone]);
+        $customer = Customer::where('user_id', auth()->id())->firstOrFail();
+        $customer->update($request->only('name', 'email', 'phone'));
         return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
     })->name('customer.profile.update');
 
@@ -254,7 +280,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:Landlord')->group(function () {
 
     Route::get('/landlord/properties', function () {
-        $properties = Property::latest()->get();
+        $properties = Property::where('user_id', auth()->id())->latest()->get();
         return view('landlord.properties', ['properties' => $properties]);
     })->name('landlord.properties');
 
@@ -286,11 +312,15 @@ Route::middleware(['auth'])->group(function () {
     })->name('landlord.properties.store');
 
     Route::get('/landlord/viewing-requests', function () {
-        $viewingRequests = ViewingRequest::latest()->get();
+        // Only viewing requests for THIS landlord's properties
+        $viewingRequests = ViewingRequest::whereHas('property', function ($q) {
+            $q->where('user_id', auth()->id());
+        })->latest()->get();
         return view('landlord.viewing-requests', ['viewingRequests' => $viewingRequests]);
     })->name('landlord.viewing-requests');
 
     Route::post('/landlord/viewing/{viewingRequest}/resolve', function (ViewingRequest $viewingRequest) {
+        abort_unless(optional($viewingRequest->property)->user_id === auth()->id(), 403);
         $viewingRequest->update(['status' => 'Completed']);
         return redirect()->route('landlord.viewing-requests')->with('success', 'Viewing request marked as completed!');
     })->name('landlord.viewing.resolve');
@@ -321,10 +351,10 @@ Route::middleware(['auth'])->group(function () {
         
         return view('provider.dashboard', [
             'provider' => $provider,
-            'quotesCount' => Quote::count(),
-            'bookingsCount' => Booking::count(),
-            'totalRevenue' => Booking::sum('total_price'),
-            'nextJobs' => Booking::latest()->take(3)->get(),
+            'quotesCount' => Quote::where('provider_user_id', $user->id)->count(),
+            'bookingsCount' => Booking::forProvider($user->id)->count(),
+            'totalRevenue' => Booking::forProvider($user->id)->sum('total_price'),
+            'nextJobs' => Booking::forProvider($user->id)->latest()->take(3)->get(),
             'requests' => ServiceRequest::where('status', 'Active')->latest()->take(5)->get()
         ]);
     })->name('provider.dashboard');
@@ -342,6 +372,7 @@ Route::middleware(['auth'])->group(function () {
 
             $quote = Quote::create([
                 'provider_name' => auth()->user()->name,
+                'provider_user_id' => auth()->id(),
                 'total_price' => $request->total_price ?? 0,
                 'price_type' => $request->price_type ?? 'Fixed',
                 'included' => $included,
@@ -372,9 +403,9 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.requests');
 
     Route::get('/provider/quotes', function () {
-        $quotes = Quote::latest()->get();
-        $reviews = Review::latest()->get();
-        $problems = Problem::latest()->get();
+        $quotes = Quote::where('provider_user_id', auth()->id())->latest()->get();
+        $reviews = Review::where('provider_user_id', auth()->id())->latest()->get();
+        $problems = Problem::whereIn('booking_id', Booking::forProvider(auth()->id())->pluck('id'))->latest()->get();
         return view('provider.quotes', [
             'quotes' => $quotes,
             'reviews' => $reviews,
@@ -383,7 +414,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.quotes');
 
     Route::get('/provider/reviews', function () {
-        $reviews = Review::latest()->get();
+        $reviews = Review::where('provider_user_id', auth()->id())->latest()->get();
         return view('provider.reviews', ['reviews' => $reviews]);
     })->name('provider.reviews');
 
@@ -393,13 +424,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/provider/problems', function () {
         return view('provider.problems', [
-            'problems' => Problem::latest()->get()
+            'problems' => Problem::whereIn('booking_id', Booking::forProvider(auth()->id())->pluck('id'))->latest()->get()
         ]);
     })->name('provider.problems');
 
     Route::get('/provider/bookings', function () {
-        $bookings = Booking::latest()->get();
-        $problems = Problem::latest()->get();
+        $bookings = Booking::forProvider(auth()->id())->latest()->get();
+        $problems = Problem::whereIn('booking_id', $bookings->pluck('id'))->latest()->get();
         return view('provider.pbook', ['bookings' => $bookings, 'problems' => $problems]);
     })->name('provider.pbook');
 
@@ -418,6 +449,8 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.messages.store');
 
     Route::post('/provider/booking/{booking}/status', function (Request $request, Booking $booking) {
+        // Provider may only update THEIR OWN bookings
+        abort_unless(Booking::forProvider(auth()->id())->where('id', $booking->id)->exists(), 403);
         $booking->update(['tracking_status' => $request->status]);
         return redirect()->route('provider.dashboard')->with('success', 'Tracking status updated!');
     })->name('provider.booking.status');
@@ -429,7 +462,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/provider/profile', function () {
         $user = auth()->user();
         $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name]);
-        $reviews = Review::latest()->get();
+        $reviews = Review::where('provider_user_id', $user->id)->latest()->get();
         return view('provider.profile', ['provider' => $provider, 'reviews' => $reviews]);
     })->name('provider.profile');
 
@@ -443,7 +476,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
         
         $user = auth()->user();
-        $provider = Provider::where('email', $user->email)->first();
+        $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name]);
         
         $data = [
             'name' => $request->name,

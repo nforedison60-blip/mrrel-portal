@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Tell Laravel to allow PayFast to ping our webhook without a CSRF token
+        $middleware->alias([
+            'role' => \App\Http\Middleware\EnsureRole::class,
+        ]);
+
         $middleware->validateCsrfTokens(except: [
             'payment/notify',
         ]);

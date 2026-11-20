@@ -47,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/payment/notify', [PaymentController::class, 'notify'])->name('payment.notify');
 
     // CUSTOMER ROUTES
+    Route::middleware('role:Customer')->group(function () {
+
     Route::get('/', function () {
         $userId = auth()->id();
         return view('customer.dashboard', [
@@ -246,7 +248,11 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('customer.problems')->with('success', 'Problem reported successfully!');
     })->name('customer.problems.store');
 
+    }); // end Customer
+
     // LANDLORD ROUTES
+    Route::middleware('role:Landlord')->group(function () {
+
     Route::get('/landlord/properties', function () {
         $properties = Property::latest()->get();
         return view('landlord.properties', ['properties' => $properties]);
@@ -293,7 +299,11 @@ Route::middleware(['auth'])->group(function () {
         return view('landlord.profile');
     })->name('landlord.profile');
 
+    }); // end Landlord
+
     // PROVIDER ROUTES
+    Route::middleware('role:Provider')->group(function () {
+
     Route::get('/provider/dashboard', function () {
         $user = auth()->user();
         
@@ -457,7 +467,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/provider/tracking', [TrackingController::class, 'providerMap'])->name('provider.tracking');
     Route::post('/provider/tracking/update', [TrackingController::class, 'updateLocation'])->name('provider.tracking.update');
 
+    }); // end Provider
+
     // ADMIN ROUTES
+    Route::middleware('role:Admin')->group(function () {
+
     Route::get('/admin/dashboard', function (Request $request) {
         return view('admin.dashboard', [
             'providerApplications' => Provider::where('verification_status', 'Pending')->count(),
@@ -546,4 +560,5 @@ Route::middleware(['auth'])->group(function () {
 
     // ADMIN LIVE TRACKING ROUTE
     Route::get('/admin/map', [TrackingController::class, 'adminMap'])->name('admin.map');
+    }); // end Admin
 });

@@ -21,17 +21,12 @@ class TrackingController extends Controller
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'booking_id' => 'nullable'
         ]);
 
-        // Only accept a booking id that really belongs to this provider
-        $bookingId = null;
-        if ($request->filled('booking_id') && $request->booking_id !== 'null') {
-            $bookingId = Booking::forProvider(auth()->id())
-                ->where('id', $request->booking_id)
-                ->value('id');
-        }
+        // The provider's own latest booking (optional, only for reference)
+        $bookingId = Booking::forProvider(auth()->id())->latest()->value('id');
 
+        // One location row per provider, updated on every ping
         $location = ProviderLocation::firstOrNew(['user_id' => auth()->id()]);
         $location->latitude = $request->latitude;
         $location->longitude = $request->longitude;
@@ -58,13 +53,16 @@ class TrackingController extends Controller
             $bookingQuery->where('id', $request->booking_id);
         }
 
-        $booking = $bookingQuery->latest()->first();
+        $booking = $bookingQuery->with('quote')->latest()->first();
 
-        if (!$booking) {
+        // The provider who sent the accepted quote for this booking
+        $providerUserId = optional(optional($booking)->quote)->provider_user_id;
+
+        if (!$providerUserId) {
             return response()->json(['status' => 'no_location_found']);
         }
 
-        $location = ProviderLocation::where('booking_id', $booking->id)->latest('updated_at')->first();
+        $location = ProviderLocation::where('user_id', $providerUserId)->latest('updated_at')->first();
 
         if (!$location) {
             return response()->json(['status' => 'no_location_found']);

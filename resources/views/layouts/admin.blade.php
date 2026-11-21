@@ -43,7 +43,26 @@
         .pl{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.pl label{display:flex;gap:6px;align-items:center;border:1px solid var(--l);border-radius:99px;padding:5px 12px;font-size:14px;font-weight:500;cursor:pointer;margin:0}
         .star{cursor:pointer}.star.on{background:var(--a);border-color:var(--a)}
         #toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);background:var(--n);color:#fff;padding:12px 22px;border-radius:99px;font-weight:600;transition:.4s;z-index:50;opacity:0}#toast.s{transform:translate(-50%,0);opacity:1}
-        @media(max-width:860px){.bd{grid-template-columns:1fr}.sd{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;display:flex;overflow-x:auto;padding:0;border-top:1px solid var(--l);z-index:30}.sd a{white-space:nowrap;border-left:0;border-top:3px solid transparent;padding:12px 14px}.sd a.on{border-top-color:var(--t)}.g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}.mn{padding:20px 16px 90px}.st{position:static}}
+        .sd a:focus-visible,.mb a:focus-visible,.stb a:focus-visible,.sw a:focus-visible{outline:3px solid var(--t);outline-offset:-3px}
+        .sd a{padding:12px 22px;font-weight:600}
+        .stb{display:flex;gap:8px;margin:0 0 20px;overflow-x:auto;padding-bottom:2px}
+        .stb a{white-space:nowrap;text-decoration:none;color:var(--n);background:#fff;border:1px solid var(--l);border-radius:99px;padding:8px 16px;font:600 14px Figtree;transition:.2s}
+        .stb a:hover{border-color:var(--t)}
+        .stb a.on{background:var(--a);border-color:var(--a);color:var(--n)}
+        .mb{display:none}
+        .bdg{display:inline-block;min-width:20px;padding:1px 7px;margin-left:8px;border-radius:99px;background:#B3402F;color:#fff;font:700 12px Figtree;text-align:center;line-height:1.5}
+        .mb .bdg{margin-left:4px;padding:0 5px;font-size:11px;min-width:16px}
+        @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+        @media(max-width:860px){
+            .top{padding:8px 16px}
+            .bd{grid-template-columns:1fr}
+            .sd{display:none}
+            .mb{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--l);z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+            .mb a{flex:1;min-width:0;text-align:center;padding:13px 2px;border-top:3px solid transparent;color:var(--n);font:600 13px Figtree;text-decoration:none}
+            .mb a.on{border-top-color:var(--t);color:var(--td);background:var(--tl)}
+            .g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}
+            .mn{padding:20px 16px 90px}.st{position:static}
+        }
     </style>
 </head>
 <body>
@@ -51,7 +70,6 @@
         <div class="logo"><i></i>MrRel</div>
         <div class="sw" id="sw">
             <a href="{{ route('admin.dashboard') }}" class="on">Admin</a>
-            <!-- Hide customer/provider links for admins if they shouldn't see them -->
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
@@ -61,25 +79,79 @@
         </div>
     </div>
 
+
     <div class="bd">
-        <nav class="sd" id="sd">
-            <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'on' : '' }}">Dashboard</a>
-            <a href="{{ route('admin.approvals') }}" class="{{ request()->routeIs('admin.approvals') ? 'on' : '' }}">Approvals</a>
-            <a href="{{ route('admin.providers') }}" class="{{ request()->routeIs('admin.providers') ? 'on' : '' }}">Providers</a>
-            <a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'on' : '' }}">Users</a>
-            <a href="{{ route('admin.requests') }}" class="{{ request()->routeIs('admin.requests') ? 'on' : '' }}">Requests</a>
-            <a href="{{ route('admin.bookings') }}" class="{{ request()->routeIs('admin.bookings') ? 'on' : '' }}">Bookings</a>
-            <a href="{{ route('admin.messages') }}" class="{{ request()->routeIs('admin.messages') ? 'on' : '' }}">Messages</a>
-            <a href="{{ route('admin.matching') }}" class="{{ request()->routeIs('admin.matching') ? 'on' : '' }}">Matching</a>
-            <a href="{{ route('admin.properties') }}" class="{{ request()->routeIs('admin.properties') ? 'on' : '' }}">Properties</a>
-            <a href="{{ route('admin.payments') }}" class="{{ request()->routeIs('admin.payments') ? 'on' : '' }}">Payments</a>
-            <a href="{{ route('admin.disputes') }}" class="{{ request()->routeIs('admin.disputes') ? 'on' : '' }}">Disputes</a>
-            <a href="{{ route('admin.subscriptions') }}" class="{{ request()->routeIs('admin.subscriptions') ? 'on' : '' }}">Subscriptions</a>
-            <a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('admin.settings') ? 'on' : '' }}">Settings</a>
-            <a href="{{ route('admin.map') }}" class="{{ request()->routeIs('admin.map') ? 'on' : '' }}">Live Tracking Map</a>
+        @php
+            $isOn = fn($patterns) => request()->routeIs(...$patterns);
+
+            // Red badges: things waiting for an admin (same counts the dashboard uses)
+            try {
+                $pending  = \App\Models\Provider::where('verification_status', 'Pending')->count()
+                          + \App\Models\Property::where('status', 'Draft')->count();
+                $disputes = \App\Models\Problem::where('status', 'In progress')->count();
+            } catch (\Throwable $e) {
+                $pending = 0; $disputes = 0;
+            }
+
+            // 5 main tabs. Tabs with "subs" show a row of sub-tabs at the top of each page.
+            // Each sub is: [label, route name, route patterns that count as "on"]
+            $tabs = [
+                ['label' => 'Overview', 'short' => 'Home', 'route' => 'admin.dashboard', 'match' => [], 'subs' => [
+                    ['Dashboard', 'admin.dashboard', ['admin.dashboard']],
+                    ['Live map', 'admin.map', ['admin.map*']],
+                ]],
+                ['label' => 'Approvals', 'short' => 'Approve', 'route' => 'admin.approvals', 'match' => ['admin.approvals*'], 'subs' => [], 'badge' => $pending],
+                ['label' => 'People', 'short' => 'People', 'route' => 'admin.providers', 'match' => [], 'subs' => [
+                    ['Providers', 'admin.providers', ['admin.providers*']],
+                    ['Users', 'admin.users', ['admin.users*']],
+                ]],
+                ['label' => 'Operations', 'short' => 'Work', 'route' => 'admin.requests', 'match' => [], 'subs' => [
+                    ['Requests', 'admin.requests', ['admin.requests*']],
+                    ['Matching', 'admin.matching', ['admin.matching*']],
+                    ['Bookings', 'admin.bookings', ['admin.bookings*']],
+                    ['Properties', 'admin.properties', ['admin.properties*']],
+                ]],
+                ['label' => 'Money', 'short' => 'Money', 'route' => 'admin.payments', 'match' => [], 'subs' => [
+                    ['Payments', 'admin.payments', ['admin.payments*']],
+                    ['Subscriptions', 'admin.subscriptions', ['admin.subscriptions*']],
+                ]],
+                ['label' => 'Support & settings', 'short' => 'Support', 'route' => 'admin.disputes', 'match' => [], 'subs' => [
+                    ['Disputes', 'admin.disputes', ['admin.disputes*']],
+                    ['Messages', 'admin.messages', ['admin.messages*']],
+                    ['Settings', 'admin.settings', ['admin.settings*']],
+                ], 'badge' => $disputes],
+            ];
+
+            // Find which main tab the current page belongs to
+            $active = null;
+            foreach ($tabs as $i => $t) {
+                $hit = $isOn($t['match']);
+                foreach ($t['subs'] as $s) { if ($isOn($s[2])) { $hit = true; } }
+                if ($hit) { $active = $i; break; }
+            }
+        @endphp
+
+        <nav class="sd" id="sd" aria-label="Main menu">
+            @foreach($tabs as $i => $t)
+                <a href="{{ route($t['route']) }}" class="{{ $active === $i ? 'on' : '' }}">{{ $t['label'] }}@if(!empty($t['badge']))<span class="bdg" title="{{ $t['badge'] }} waiting">{{ $t['badge'] }}</span>@endif</a>
+            @endforeach
         </nav>
-        
+
+        <div class="mb" id="mb">
+            @foreach($tabs as $i => $t)
+                <a href="{{ route($t['route']) }}" class="{{ $active === $i ? 'on' : '' }}">{{ $t['short'] }}@if(!empty($t['badge']))<span class="bdg" title="{{ $t['badge'] }} waiting">{{ $t['badge'] }}</span>@endif</a>
+            @endforeach
+        </div>
+
         <main class="mn" id="mn">
+            @if($active !== null && count($tabs[$active]['subs']) > 1)
+                <nav class="stb" aria-label="{{ $tabs[$active]['label'] }} sections">
+                    @foreach($tabs[$active]['subs'] as $s)
+                        <a href="{{ route($s[1]) }}" class="{{ $isOn($s[2]) ? 'on' : '' }}">{{ $s[0] }}</a>
+                    @endforeach
+                </nav>
+            @endif
+
             @if(session('success'))
                 <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
                     {{ session('success') }}

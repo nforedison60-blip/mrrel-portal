@@ -1,23 +1,19 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    // This migration used to delete data with truncate(), which fails on the live
+    // database (foreign keys) and would also be dangerous to run again.
+    // It now does nothing. To clear test data, run:  php artisan app:clear-data --force
     public function up(): void
     {
-        // Clear all fake data from the live database
-        DB::table('providers')->truncate();
-        DB::table('service_requests')->truncate();
-        DB::table('quotes')->truncate();
-        DB::table('bookings')->truncate();
-        DB::table('properties')->truncate();
-        DB::table('problems')->truncate();
+        //
     }
 
     public function down(): void
     {
-        // Nothing to reverse
+        //
     }
 };

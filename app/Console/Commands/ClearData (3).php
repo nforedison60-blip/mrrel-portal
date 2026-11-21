@@ -24,16 +24,24 @@ class ClearData extends Command
             'bookings', 'quotes', 'service_requests', 'properties', 'customers', 'providers',
         ];
 
-        Schema::disableForeignKeyConstraints();
+        // Only the tables that really exist
+        $tables = array_values(array_filter($tables, fn ($t) => Schema::hasTable($t)));
 
-        foreach ($tables as $table) {
-            if (Schema::hasTable($table)) {
+        if (DB::getDriverName() === 'pgsql') {
+            // PostgreSQL: truncate everything in one statement
+            DB::statement('TRUNCATE TABLE ' . implode(', ', $tables) . ' RESTART IDENTITY CASCADE');
+        } else {
+            // MySQL / SQLite: switch foreign keys off while clearing
+            Schema::disableForeignKeyConstraints();
+            foreach ($tables as $table) {
                 DB::table($table)->truncate();
-                $this->line("Cleared: {$table}");
             }
+            Schema::enableForeignKeyConstraints();
         }
 
-        Schema::enableForeignKeyConstraints();
+        foreach ($tables as $table) {
+            $this->line("Cleared: {$table}");
+        }
 
         $this->info('Done. Users were not touched.');
         return self::SUCCESS;

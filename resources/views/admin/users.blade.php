@@ -1,71 +1,70 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1>Admin: other screens</h1>
-    <div class="m">Pages not shown elsewhere.</div>
+@php
+    $users = \App\Models\User::latest()->get();
+    $roleCounts = $users->groupBy('role')->map->count();
+    $providersByEmail = $providers->keyBy('email');
+@endphp
 
-    <!-- USERS SECTION -->
-    <h2 style="margin-top: 20px;">Users</h2>
-    <div class="card">
-        <h3>Accounts</h3>
-        <table class="tb">
-            <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-            @foreach($customers as $customer)
-            <tr>
-                <td>{{ $customer->name }}</td>
-                <td>Customer</td>
-                <td><span class="chip ok">Active</span></td>
-                <td>
-                    <button type="button" class="btn g" style="padding: 4px 12px; font-size: 12px; margin:0 4px 0 0;">Export</button>
-                    <button type="button" class="btn g" style="padding: 4px 12px; font-size: 12px; margin:0;">Suspend</button>
-                </td>
-            </tr>
-            @endforeach
-            @foreach($providers as $provider)
-            <tr>
-                <td>{{ $provider->name }}</td>
-                <td>Provider</td>
-                <td><span class="chip {{ $provider->verification_status == 'Verified' ? 'ok' : 'wn' }}">{{ $provider->verification_status == 'Verified' ? 'Active' : 'Pending' }}</span></td>
-                <td>
-                    @if($provider->verification_status == 'Verified')
-                        <button type="button" class="btn g" style="padding: 4px 12px; font-size: 12px; margin:0 4px 0 0;">Export</button>
-                        <button type="button" class="btn g" style="padding: 4px 12px; font-size: 12px; margin:0;">Suspend</button>
-                    @else
-                        <button type="button" class="btn" style="padding: 4px 12px; font-size: 12px; margin:0;">Approve</button>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
-        </table>
-        <p class="m sm" style="margin-top: 16px;">Includes data export and deletion requests.</p>
+    <h1>Users</h1>
+    <div class="m">Everyone with an account on MrRel.</div>
+
+    <div class="row" style="margin:16px 0;flex-wrap:wrap;">
+        <span class="chip">All ({{ $users->count() }})</span>
+        @foreach($roleCounts as $role => $count)
+            <span class="chip">{{ $role ?: 'No role' }} ({{ $count }})</span>
+        @endforeach
     </div>
 
-    <!-- REQUESTS & QUOTES SECTION -->
-    <h2 style="margin-top: 30px;">Requests and quotes</h2>
     <div class="card">
-        <h3>Requests</h3>
-        <table class="tb">
-            <tr>
-                <th>Request</th>
-                <th>Services</th>
-                <th>Quotes</th>
-                <th>Action</th>
-            </tr>
-            @foreach($requests as $req)
-            <tr>
-                <td>REQ-{{ str_pad($req->id, 4, '0', STR_PAD_LEFT) }}</td>
-                <td>{{ $req->services_needed }}</td>
-                <td>{{ $quotes->where('service_request_id', $req->id)->count() }}</td>
-                <td>
-                    <button type="button" class="btn g" style="padding: 4px 12px; font-size: 12px; margin:0;">Invite providers</button>
-                </td>
-            </tr>
-            @endforeach
-        </table>
+        <h3>Accounts</h3>
+        @if($users->isEmpty())
+            <p class="m">No accounts yet. People appear here after they register.</p>
+        @else
+            <div style="overflow-x:auto;">
+            <table class="tb">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Action</th>
+                </tr>
+                @foreach($users as $user)
+                    @php $provider = $user->role === 'Provider' ? $providersByEmail->get($user->email) : null; @endphp
+                    <tr>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->role }}</td>
+                        <td>
+                            @if($user->role === 'Provider')
+                                @if(!$provider)
+                                    <span class="chip">No provider profile yet</span>
+                                @elseif($provider->verification_status === 'Verified')
+                                    <span class="chip ok">Verified</span>
+                                @else
+                                    <span class="chip wn">Waiting for verification</span>
+                                @endif
+                            @else
+                                <span class="chip ok">Active</span>
+                            @endif
+                        </td>
+                        <td class="m sm">{{ optional($user->created_at)->format('d M Y') }}</td>
+                        <td>
+                            @if($provider && $provider->verification_status !== 'Verified')
+                                <form method="POST" action="{{ route('admin.providers.verify', $provider->id) }}" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn" style="padding:4px 12px;font-size:12px;margin:0 4px 0 0;">Verify</button>
+                                </form>
+                                <a href="{{ route('admin.providers') }}" class="btn g" style="padding:4px 12px;font-size:12px;margin:0;text-decoration:none;">See documents</a>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </table>
+            </div>
+        @endif
     </div>
 @endsection

@@ -1,95 +1,68 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1>Payments and payouts</h1>
-    <div class="m">Manual payouts at launch. Record each one.</div>
+@php
+    $bookings->load('quote');
+    $paid = $bookings->where('status', 'Paid');
+    $thisMonth = $paid->filter(fn($b) => $b->created_at && $b->created_at->isCurrentMonth());
+    $confirmed = $paid->where('job_confirmed', true);
+@endphp
 
-    <!-- Stat Cards -->
-    <div class="g4" style="margin-top: 20px;">
-        <div class="card"><div class="m sm">Received this month</div><div class="big">R48,200</div></div>
-        <div class="card"><div class="m sm">Ready for payout</div><div class="big">R12,600</div></div>
-        <div class="card"><div class="m sm">Paid out</div><div class="big">R30,400</div></div>
-        <div class="card"><div class="m sm">Subscriptions and rental fees</div><div class="big">R9,800</div></div>
-    </div>
+    <h1>Payments</h1>
+    <div class="m">Money paid by customers, and which jobs they have confirmed. Payouts to providers are made by hand for now.</div>
 
-    <!-- Ledger -->
-    <div class="card" style="margin-top: 20px;">
-        <h3>Ledger</h3>
-        
-        <div class="pl" style="margin-bottom: 16px;">
-            <label><input type="radio" name="filter" checked> All</label>
-            <label><input type="radio" name="filter"> Ready for payout</label>
-            <label><input type="radio" name="filter"> Waiting for customer</label>
-            <label><input type="radio" name="filter"> Paid out</label>
-            <label><input type="radio" name="filter"> Disputed</label>
+    <div class="g4" style="margin-top:20px;">
+        <div class="card">
+            <div class="m sm">Received this month</div>
+            <div class="big">R{{ number_format($thisMonth->sum('total_price'), 2) }}</div>
+            <div class="m sm">{{ $thisMonth->count() }} {{ \Illuminate\Support\Str::plural('booking', $thisMonth->count()) }}</div>
         </div>
-
-        <table class="tb">
-            <tr>
-                <th>Booking</th>
-                <th>Provider</th>
-                <th>Customer paid</th>
-                <th>Job complete</th>
-                <th>Ready</th>
-                <th>Paid out</th>
-                <th>Amount</th>
-                <th>Reference</th>
-            </tr>
-            <tr>
-                <td>BKG-0101</td>
-                <td>Pieter</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>No</td>
-                <td>R600</td>
-                <td>[ref]</td>
-            </tr>
-            <tr>
-                <td>BKG-0102</td>
-                <td>Thandi</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>Yes</td>
-                <td>R450</td>
-                <td>[ref]</td>
-            </tr>
-            <tr>
-                <td>BKG-0103</td>
-                <td>Lwazi</td>
-                <td>Yes</td>
-                <td>No</td>
-                <td>No</td>
-                <td>No</td>
-                <td>R1,200</td>
-                <td>[ref]</td>
-            </tr>
-        </table>
+        <div class="card">
+            <div class="m sm">Received in total</div>
+            <div class="big">R{{ number_format($paid->sum('total_price'), 2) }}</div>
+            <div class="m sm">{{ $paid->count() }} {{ \Illuminate\Support\Str::plural('booking', $paid->count()) }}</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Confirmed by customers</div>
+            <div class="big">R{{ number_format($confirmed->sum('total_price'), 2) }}</div>
+            <div class="m sm">{{ $confirmed->count() }} {{ \Illuminate\Support\Str::plural('job', $confirmed->count()) }} done</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Waiting for confirmation</div>
+            <div class="big">R{{ number_format($paid->sum('total_price') - $confirmed->sum('total_price'), 2) }}</div>
+            <div class="m sm">{{ $paid->count() - $confirmed->count() }} {{ \Illuminate\Support\Str::plural('job', $paid->count() - $confirmed->count()) }} open</div>
+        </div>
     </div>
 
-    <!-- Record a payout -->
-    <div class="card" style="margin-top: 20px; max-width: 800px;">
-        <h3>Record a payout</h3>
-        <form method="POST" action="#">
-            @csrf
-            <div class="f">
-                <label>Booking
-                    <select>
-                        <option>BKG-0101</option>
-                    </select>
-                </label>
-                <label>Amount (R)
-                    <input type="number" placeholder="e.g. 600">
-                </label>
-                <label>Date
-                    <input type="date">
-                </label>
-                <label>Reference
-                    <input type="text" placeholder="e.g. EFT-12345">
-                </label>
+    <div class="card" style="margin-top:20px;">
+        <h3>Bookings</h3>
+        @if($bookings->isEmpty())
+            <p class="m">No bookings yet. They appear here when a customer books a quote.</p>
+        @else
+            <div style="overflow-x:auto;">
+            <table class="tb">
+                <tr>
+                    <th>Booking</th>
+                    <th>Provider</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Job confirmed</th>
+                    <th>Date</th>
+                </tr>
+                @foreach($bookings as $b)
+                    <tr>
+                        <td>BKG-{{ str_pad($b->id, 4, '0', STR_PAD_LEFT) }}</td>
+                        <td>{{ optional($b->quote)->provider_name ?: '—' }}</td>
+                        <td>{{ $b->customer_name }}</td>
+                        <td>R{{ number_format($b->total_price, 2) }}</td>
+                        <td><span class="chip {{ $b->status === 'Paid' ? 'ok' : 'wn' }}">{{ $b->status }}</span></td>
+                        <td><span class="chip {{ $b->job_confirmed ? 'ok' : '' }}">{{ $b->job_confirmed ? 'Yes' : 'Not yet' }}</span></td>
+                        <td class="m sm">{{ optional($b->created_at)->format('d M Y') }}</td>
+                    </tr>
+                @endforeach
+            </table>
             </div>
-            <button type="submit" class="btn">Record payout</button>
-        </form>
+        @endif
     </div>
 @endsection

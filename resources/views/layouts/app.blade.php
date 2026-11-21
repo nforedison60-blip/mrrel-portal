@@ -43,7 +43,26 @@
         .pl{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.pl label{display:flex;gap:6px;align-items:center;border:1px solid var(--l);border-radius:99px;padding:5px 12px;font-size:14px;font-weight:500;cursor:pointer;margin:0}
         .star{cursor:pointer}.star.on{background:var(--a);border-color:var(--a)}
         #toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);background:var(--n);color:#fff;padding:12px 22px;border-radius:99px;font-weight:600;transition:.4s;z-index:50;opacity:0}#toast.s{transform:translate(-50%,0);opacity:1}
-        @media(max-width:860px){.bd{grid-template-columns:1fr}.sd{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;display:flex;overflow-x:auto;padding:0;border-top:1px solid var(--l);z-index:30}.sd a{white-space:nowrap;border-left:0;border-top:3px solid transparent;padding:12px 14px}.sd a.on{border-top-color:var(--t)}.g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}.mn{padding:20px 16px 90px}.st{position:static}}
+        .sd .gh{padding:16px 22px 4px;font:700 12px Figtree;color:var(--m);letter-spacing:.02em}
+        .sd .gh:first-of-type{padding-top:6px}
+        .sd .gl{border-top:1px solid #EEF2F5;margin:10px 0 0}
+        .sd a:focus-visible,.mb a:focus-visible,.mb button:focus-visible,.sw a:focus-visible{outline:3px solid var(--t);outline-offset:-3px}
+        .mb,.sc{display:none}
+        @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+        @media(max-width:860px){
+            .top{padding:8px 16px}
+            .bd{grid-template-columns:1fr}
+            .mb{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--l);z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+            .mb a,.mb button{flex:1;min-width:0;text-align:center;padding:13px 4px;border:0;border-top:3px solid transparent;background:none;color:var(--n);font:600 13px Figtree;text-decoration:none;cursor:pointer}
+            .mb a.on,.mb button.on{border-top-color:var(--t);color:var(--td);background:var(--tl)}
+            .sd{position:fixed;left:0;right:0;bottom:49px;top:auto;height:auto;max-height:70vh;overflow:auto;border-right:0;border-top:1px solid var(--l);border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(16,36,58,.18);padding:10px 0 14px;z-index:40;transform:translateY(110%);visibility:hidden;transition:transform .25s,visibility .25s}
+            body.menu-open .sd{transform:none;visibility:visible}
+            .sc{display:block;position:fixed;inset:0;background:rgba(16,36,58,.35);z-index:35;opacity:0;pointer-events:none;transition:opacity .25s}
+            body.menu-open .sc{opacity:1;pointer-events:auto}
+            .sd a{padding:13px 22px}
+            .g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}
+            .mn{padding:20px 16px 90px}.st{position:static}
+        }
     </style>
 </head>
 <body>
@@ -62,20 +81,52 @@
     </div>
 
     <div class="bd">
-        <nav class="sd" id="sd">
-            <a href="{{ route('customer.dashboard') }}" class="{{ request()->routeIs('customer.dashboard') ? 'on' : '' }}">Dashboard</a>
-            <a href="{{ route('customer.tracking') }}" class="{{ request()->routeIs('customer.tracking') ? 'on' : '' }}">Live Tracking</a>
-            <a href="{{ route('payment.checkout') }}" class="{{ request()->routeIs('payment.checkout') ? 'on' : '' }}">Make a Payment</a>
-            <a href="{{ route('customer.search') }}" class="{{ request()->routeIs('customer.search') ? 'on' : '' }}">Find a place</a>
-            <a href="{{ route('customer.requests') }}" class="{{ request()->routeIs('customer.requests') ? 'on' : '' }}">My requests</a>
-            <a href="{{ route('customer.quotes') }}" class="{{ request()->routeIs('customer.quotes') ? 'on' : '' }}">Quotes</a>
-            <a href="{{ route('customer.bookings') }}" class="{{ request()->routeIs('customer.bookings') ? 'on' : '' }}">Bookings</a>
-            <a href="{{ route('customer.messages') }}" class="{{ request()->routeIs('customer.messages') ? 'on' : '' }}">Messages</a>
-            <a href="{{ route('customer.shortlist') }}" class="{{ request()->routeIs('customer.shortlist') ? 'on' : '' }}">My shortlist</a>
-            <a href="{{ route('customer.fees') }}" class="{{ request()->routeIs('customer.fees') ? 'on' : '' }}">Rental fees</a>
-            <a href="{{ route('customer.problems') }}" class="{{ request()->routeIs('customer.problems') ? 'on' : '' }}">Problems</a>
-            <a href="{{ route('customer.profile') }}" class="{{ request()->routeIs('customer.profile') ? 'on' : '' }}">Profile</a>
+        @php
+            $groups = [
+                'Moving' => [
+                    ['customer.tracking', 'Live tracking', ['customer.tracking*']],
+                    ['customer.requests', 'My requests', ['customer.requests*', 'customer.new-request']],
+                    ['customer.quotes', 'Quotes', ['customer.quotes', 'customer.quote.*']],
+                    ['customer.bookings', 'Bookings', ['customer.bookings*', 'customer.extras.*']],
+                    ['customer.messages', 'Messages', ['customer.messages*']],
+                ],
+                'Renting' => [
+                    ['customer.search', 'Find a place', ['customer.search', 'customer.viewing.*']],
+                    ['customer.shortlist', 'My shortlist', ['customer.shortlist*']],
+                    ['customer.fees', 'Rental fees', ['customer.fees']],
+                ],
+                'Account' => [
+                    ['payment.checkout', 'Make a payment', ['payment.*']],
+                    ['customer.problems', 'Problems', ['customer.problems*']],
+                    ['customer.profile', 'Profile', ['customer.profile*']],
+                ],
+            ];
+            $isOn = fn($patterns) => request()->routeIs(...$patterns);
+            // The phone's bottom bar shows Home/Requests/Quotes/Bookings; everything else is under "Menu"
+            $onPrimary = $isOn(['customer.dashboard'])
+                || $isOn(['customer.requests*', 'customer.new-request'])
+                || $isOn(['customer.quotes', 'customer.quote.*'])
+                || $isOn(['customer.bookings*', 'customer.extras.*']);
+        @endphp
+
+        <nav class="sd" id="sd" aria-label="Main menu">
+            <a href="{{ route('customer.dashboard') }}" class="{{ $isOn(['customer.dashboard']) ? 'on' : '' }}">Dashboard</a>
+            @foreach($groups as $label => $links)
+                <div class="gh">{{ $label }}</div>
+                @foreach($links as [$route, $text, $patterns])
+                    <a href="{{ route($route) }}" class="{{ $isOn($patterns) ? 'on' : '' }}">{{ $text }}</a>
+                @endforeach
+            @endforeach
         </nav>
+        <div class="sc" id="sc"></div>
+
+        <div class="mb" id="mb">
+            <a href="{{ route('customer.dashboard') }}" class="{{ $isOn(['customer.dashboard']) ? 'on' : '' }}">Home</a>
+            <a href="{{ route('customer.requests') }}" class="{{ $isOn(['customer.requests*', 'customer.new-request']) ? 'on' : '' }}">Requests</a>
+            <a href="{{ route('customer.quotes') }}" class="{{ $isOn(['customer.quotes', 'customer.quote.*']) ? 'on' : '' }}">Quotes</a>
+            <a href="{{ route('customer.bookings') }}" class="{{ $isOn(['customer.bookings*', 'customer.extras.*']) ? 'on' : '' }}">Bookings</a>
+            <button type="button" id="menuBtn" class="{{ $onPrimary ? '' : 'on' }}" aria-expanded="false" aria-controls="sd">Menu</button>
+        </div>
         
         <main class="mn" id="mn">
             @if(session('success'))
@@ -86,5 +137,15 @@
             @yield('content')
         </main>
     </div>
+    <script>
+        (function () {
+            var b = document.body, btn = document.getElementById('menuBtn');
+            if (!btn) return;
+            function set(open) { b.classList.toggle('menu-open', open); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+            btn.addEventListener('click', function () { set(!b.classList.contains('menu-open')); });
+            document.getElementById('sc').addEventListener('click', function () { set(false); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+        })();
+    </script>
 </body>
 </html>

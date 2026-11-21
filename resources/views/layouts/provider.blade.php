@@ -43,7 +43,24 @@
         .pl{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.pl label{display:flex;gap:6px;align-items:center;border:1px solid var(--l);border-radius:99px;padding:5px 12px;font-size:14px;font-weight:500;cursor:pointer;margin:0}
         .star{cursor:pointer}.star.on{background:var(--a);border-color:var(--a)}
         #toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);background:var(--n);color:#fff;padding:12px 22px;border-radius:99px;font-weight:600;transition:.4s;z-index:50;opacity:0}#toast.s{transform:translate(-50%,0);opacity:1}
-        @media(max-width:860px){.bd{grid-template-columns:1fr}.sd{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;display:flex;overflow-x:auto;padding:0;border-top:1px solid var(--l);z-index:30}.sd a{white-space:nowrap;border-left:0;border-top:3px solid transparent;padding:12px 14px}.sd a.on{border-top-color:var(--t)}.g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}.mn{padding:20px 16px 90px}.st{position:static}}
+        .sd a:focus-visible,.mb a:focus-visible,.stb a:focus-visible,.sw a:focus-visible{outline:3px solid var(--t);outline-offset:-3px}
+        .sd a{padding:12px 22px;font-weight:600}
+        .stb{display:flex;gap:8px;margin:0 0 20px;overflow-x:auto;padding-bottom:2px}
+        .stb a{white-space:nowrap;text-decoration:none;color:var(--n);background:#fff;border:1px solid var(--l);border-radius:99px;padding:8px 16px;font:600 14px Figtree;transition:.2s}
+        .stb a:hover{border-color:var(--t)}
+        .stb a.on{background:var(--a);border-color:var(--a);color:var(--n)}
+        .mb{display:none}
+        @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+        @media(max-width:860px){
+            .top{padding:8px 16px}
+            .bd{grid-template-columns:1fr}
+            .sd{display:none}
+            .mb{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--l);z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+            .mb a{flex:1;min-width:0;text-align:center;padding:13px 2px;border-top:3px solid transparent;color:var(--n);font:600 13px Figtree;text-decoration:none}
+            .mb a.on{border-top-color:var(--t);color:var(--td);background:var(--tl)}
+            .g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}
+            .mn{padding:20px 16px 90px}.st{position:static}
+        }
     </style>
 </head>
 <body>
@@ -61,22 +78,61 @@
         </div>
     </div>
 
+
     <div class="bd">
-        <nav class="sd" id="sd">
-            <a href="{{ route('provider.dashboard') }}" class="{{ request()->routeIs('provider.dashboard') ? 'on' : '' }}">Dashboard</a>
-            <a href="{{ route('provider.tracking') }}" class="{{ request()->routeIs('provider.tracking') ? 'on' : '' }}">Live Tracking</a>
-            <a href="{{ route('provider.requests') }}" class="{{ request()->routeIs('provider.requests') ? 'on' : '' }}">Requests</a>
-            <a href="{{ route('provider.quotes') }}" class="{{ request()->routeIs('provider.quotes') ? 'on' : '' }}">My quotes</a>
-            <a href="{{ route('provider.pbook') }}" class="{{ request()->routeIs('provider.pbook') ? 'on' : '' }}">Bookings and payouts</a>
-            <a href="{{ route('provider.messages') }}" class="{{ request()->routeIs('provider.messages') ? 'on' : '' }}">Messages</a>
-            <a href="{{ route('provider.reviews') }}" class="{{ request()->routeIs('provider.reviews') ? 'on' : '' }}">Reviews</a>
-            <a href="{{ route('provider.rate') }}" class="{{ request()->routeIs('provider.rate') ? 'on' : '' }}">Rate card</a>
-            <a href="{{ route('provider.profile') }}" class="{{ request()->routeIs('provider.profile') ? 'on' : '' }}">Profile and verification</a>
-            <a href="{{ route('provider.subscription') }}" class="{{ request()->routeIs('provider.subscription') ? 'on' : '' }}">Subscription</a>
-            <a href="{{ route('provider.problems') }}" class="{{ request()->routeIs('provider.problems') ? 'on' : '' }}">Problems</a>
+        @php
+            $isOn = fn($patterns) => request()->routeIs(...$patterns);
+
+            // 5 main tabs. Tabs with "subs" show a row of sub-tabs at the top of each page.
+            // Each sub is: [label, route name, route patterns that count as "on"]
+            $tabs = [
+                ['label' => 'Home', 'short' => 'Home', 'route' => 'provider.dashboard', 'match' => ['provider.dashboard'], 'subs' => []],
+                ['label' => 'Jobs', 'short' => 'Jobs', 'route' => 'provider.requests', 'match' => [], 'subs' => [
+                    ['Requests', 'provider.requests', ['provider.requests', 'provider.send', 'provider.send.*']],
+                    ['My quotes', 'provider.quotes', ['provider.quotes']],
+                    ['Bookings', 'provider.pbook', ['provider.pbook', 'provider.booking.*']],
+                    ['Live tracking', 'provider.tracking', ['provider.tracking*']],
+                ]],
+                ['label' => 'Messages', 'short' => 'Messages', 'route' => 'provider.messages', 'match' => ['provider.messages*'], 'subs' => []],
+                ['label' => 'Subscription', 'short' => 'Plan', 'route' => 'provider.subscription', 'match' => ['provider.subscription*'], 'subs' => []],
+                ['label' => 'My business', 'short' => 'Business', 'route' => 'provider.profile', 'match' => [], 'subs' => [
+                    ['Profile & verification', 'provider.profile', ['provider.profile*']],
+                    ['Rate card', 'provider.rate', ['provider.rate*']],
+                    ['Reviews', 'provider.reviews', ['provider.reviews*']],
+                    ['Problems', 'provider.problems', ['provider.problems*']],
+                ]],
+            ];
+
+            // Find which main tab the current page belongs to
+            $active = null;
+            foreach ($tabs as $i => $t) {
+                $hit = $isOn($t['match']);
+                foreach ($t['subs'] as $s) { if ($isOn($s[2])) { $hit = true; } }
+                if ($hit) { $active = $i; break; }
+            }
+        @endphp
+
+        <nav class="sd" id="sd" aria-label="Main menu">
+            @foreach($tabs as $i => $t)
+                <a href="{{ route($t['route']) }}" class="{{ $active === $i ? 'on' : '' }}">{{ $t['label'] }}</a>
+            @endforeach
         </nav>
-        
+
+        <div class="mb" id="mb">
+            @foreach($tabs as $i => $t)
+                <a href="{{ route($t['route']) }}" class="{{ $active === $i ? 'on' : '' }}">{{ $t['short'] }}</a>
+            @endforeach
+        </div>
+
         <main class="mn" id="mn">
+            @if($active !== null && count($tabs[$active]['subs']) > 1)
+                <nav class="stb" aria-label="{{ $tabs[$active]['label'] }} sections">
+                    @foreach($tabs[$active]['subs'] as $s)
+                        <a href="{{ route($s[1]) }}" class="{{ $isOn($s[2]) ? 'on' : '' }}">{{ $s[0] }}</a>
+                    @endforeach
+                </nav>
+            @endif
+
             @if(session('success'))
                 <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
                     {{ session('success') }}

@@ -195,12 +195,19 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.review.store');
 
     Route::get('/shortlist', function () {
-        $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->latest()->get();
+        // Open properties for everyone, plus the ones THIS customer accepted
+        $properties = Property::where('status', 'Approved')
+            ->orWhere(function ($q) {
+                $q->where('status', 'Under Offer')->where('accepted_by', auth()->id());
+            })
+            ->latest()->get();
         return view('customer.shortlist', ['properties' => $properties]);
     })->name('customer.shortlist');
 
     Route::post('/shortlist/{property}/accept', function (Property $property) {
-        $property->update(['status' => 'Under Offer']);
+        // Only a property that is still open can be accepted, and we remember who accepted it
+        abort_unless($property->status === 'Approved', 403);
+        $property->update(['status' => 'Under Offer', 'accepted_by' => auth()->id()]);
         return redirect()->route('customer.shortlist')->with('success', 'You accepted the property! MrRel will contact you to finalize the lease.');
     })->name('customer.shortlist.accept');
 
@@ -249,7 +256,8 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.messages.store');
 
     Route::get('/customer/fees', function () {
-        $properties = Property::whereIn('status', ['Approved', 'Under Offer'])->get();
+        // Only the properties THIS customer accepted
+        $properties = Property::where('accepted_by', auth()->id())->get();
         return view('customer.fees', ['properties' => $properties]);
     })->name('customer.fees');
 

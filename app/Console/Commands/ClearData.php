@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Schema;
 
 class ClearData extends Command
 {
-    protected $signature = 'app:clear-data';
+    protected $signature = 'app:clear-data {--force : Skip the confirmation question}';
 
     protected $description = 'Delete all test data (requests, quotes, bookings, properties...) but KEEP user accounts';
 
     public function handle()
     {
-        if (! $this->confirm('This deletes ALL requests, quotes, bookings, properties, messages, reviews and problems. User accounts are kept. Continue?')) {
+        if (! $this->option('force') && ! $this->confirm('This deletes ALL requests, quotes, bookings, properties, messages, reviews and problems. User accounts are kept. Continue?')) {
             $this->info('Cancelled. Nothing was deleted.');
             return self::SUCCESS;
         }

@@ -19,9 +19,7 @@
                         <div class="av" style="width: 80px; height: 80px; font-size: 24px; border-radius: 50%;">P</div>
                     </div>
                     <div style="flex: 1; margin-left: 16px;">
-                        <b>Pieter</b> <span class="chip ok">Verified</span>
-                        <div class="m sm">Sample Movers B</div>
-                        <div class="m sm">Registration: [number] · 4.8 rating (120 jobs)</div>
+                        <b>{{ $quote->provider_name }}</b>
                         <div class="m sm">Contact details are shared once you book. Photo is for identification only.</div>
                     </div>
                      <div style="text-align: center;">
@@ -33,10 +31,10 @@
                                 <circle cx="60" cy="32" r="5" fill="#51657A"/>
                             </svg>
                         </div>
-                        <div class="m sm" style="margin-top: 4px;">1-ton bakkie<br>CA 000 000</div>
+                        <div class="m sm" style="margin-top: 4px;">Vehicle details shared once you book</div>
                     </div>
                 </div>
-                <p class="m sm" style="margin-top: 12px;">This service is provided by Sample Movers B. MrRel provides the platform that connects you.</p>
+                <p class="m sm" style="margin-top: 12px;">This service is provided by {{ $quote->provider_name }}. MrRel provides the platform that connects you.</p>
             </div>
 
             <!-- The Job -->

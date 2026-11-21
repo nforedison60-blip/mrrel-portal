@@ -31,14 +31,11 @@
                     <div class="row" style="margin-top: 16px;">
                         <span class="av" style="width: 48px; height: 48px; font-size: 18px;">P</span>
                         <div>
-                            <b>Pieter</b> <span class="chip ok">Verified</span>
-                            <div class="m sm">Sample Movers B · 1-ton bakkie</div>
-                            <div class="m sm">4.8 rating</div>
+                            <b>{{ optional($booking->quote)->provider_name ?? 'Your provider' }}</b>
                         </div>
                     </div>
                     <p class="sm" style="margin-top: 12px;">
-                        <b>Vehicle:</b> White 1-ton bakkie · <b>Number plate:</b> CA 000 000<br>
-                        <b>Arrival:</b> Sat 31 Oct, 08:00 to 10:00
+                        Your provider will confirm vehicle details and arrival time with you.
                     </p>
                     <div class="m sm">If someone else arrives, don’t hand anything over and call us.</div>
                 </div>
@@ -55,7 +52,7 @@
                         </div>
                     </div>
 
-                    <p class="sm"><b>Pieter is on his way.</b> Status: {{ $booking->tracking_status }}</p>
+                    <p class="sm"><b>{{ optional($booking->quote)->provider_name ?? 'Your provider' }}</b> · Status: {{ $booking->tracking_status }}</p>
                     <div class="pl" style="margin-top: 8px;">
                         <span class="chip {{ $booking->tracking_status == 'On my way' ? 'ok' : '' }}">On my way</span>
                         <span class="chip {{ $booking->tracking_status == 'Arrived' ? 'ok' : '' }}">Arrived</span>
@@ -67,11 +64,11 @@
                 </div>
 
                 <div class="card" style="margin-top: 16px;">
-                    <h3>Chat with Pieter</h3>
+                    <h3>Chat with {{ optional($booking->quote)->provider_name ?? 'your provider' }}</h3>
                     <div class="row" style="margin-bottom: 12px;">
                         <span class="av" style="width: 40px; height: 40px; font-size: 16px;">P</span>
                         <div>
-                            <b>Pieter</b> <span class="chip ok">Verified</span>
+                            <b>{{ optional($booking->quote)->provider_name ?? 'Your provider' }}</b>
                             <div class="m sm">Booking BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</div>
                         </div>
                     </div>
@@ -104,13 +101,11 @@
 
                 <div class="card" style="margin-top: 16px;">
                     <h3>Extras on the day</h3>
-                    <p class="sm">Pieter proposes an extra: <b>Extra stairs, R150</b></p>
-                    
                     @if($booking->extras_status == 'Approved')
                         <div style="margin-top: 12px;"><span class="chip ok">Approved and paid</span></div>
                     @elseif($booking->extras_status == 'Declined')
                         <div style="margin-top: 12px;"><span class="chip wn">Declined</span></div>
-                    @else
+                    @elseif($booking->extras_status == 'Proposed')
                         <div style="display: flex; gap: 8px; margin-top: 12px;">
                             <form method="POST" action="{{ route('customer.extras.approve', $booking->id) }}" style="margin:0;">
                                 @csrf
@@ -121,6 +116,8 @@
                                 <button type="submit" class="btn g">Decline</button>
                             </form>
                         </div>
+                    @else
+                        <p class="m sm">No extras have been proposed for this job.</p>
                     @endif
                 </div>
 

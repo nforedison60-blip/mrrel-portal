@@ -105,11 +105,31 @@
                     <h3>Verification status</h3>
                     <table class="tb" style="margin-top: 12px;">
                         <tr><th>Check</th><th>Status</th></tr>
-                        <tr><td>Photo matches ID</td><td><span class="chip ok">Verified</span></td></tr>
-                        <tr><td>ID</td><td><span class="chip ok">Verified</span></td></tr>
-                        <tr><td>Vehicle and plate</td><td><span class="chip ok">Verified</span></td></tr>
-                        <tr><td>Insurance document</td><td><span class="chip wn">Pending</span></td></tr>
-                        <tr><td>References</td><td><span class="chip ok">Verified</span></td></tr>
+                        @php
+                            $isVerified = $provider->verification_status === 'Verified';
+                            $hasId = $provider->id_document || $provider->id_image_path;
+                            $checks = [
+                                'Photo matches ID' => $provider->image_path && $hasId,
+                                'ID' => $hasId,
+                                'Vehicle and plate' => $provider->vehicle_image_path && $provider->plate_number,
+                            ];
+                        @endphp
+                        @foreach($checks as $label => $uploaded)
+                            <tr>
+                                <td>{{ $label }}</td>
+                                <td>
+                                    @if(!$uploaded)
+                                        <span class="chip wn">Missing</span>
+                                    @elseif($isVerified)
+                                        <span class="chip ok">Verified</span>
+                                    @else
+                                        <span class="chip wn">Under review</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                        <tr><td>Insurance document</td><td><span class="chip {{ $isVerified ? 'ok' : 'wn' }}">{{ $isVerified ? 'Verified' : 'Pending' }}</span></td></tr>
+                        <tr><td>References</td><td><span class="chip {{ $isVerified ? 'ok' : 'wn' }}">{{ $isVerified ? 'Verified' : 'Pending' }}</span></td></tr>
                     </table>
                     <div class="m sm" style="margin-top: 12px;">Changes to photo or vehicle may need re-approval.</div>
                 </div>

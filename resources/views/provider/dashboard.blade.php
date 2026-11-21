@@ -3,10 +3,10 @@
 @section('content')
     <!-- Profile Header -->
     <div class="row" style="margin-bottom: 20px;">
-        <div class="av" style="width: 80px; height: 80px; font-size: 32px;">P</div>
+        <div class="av" style="width: 80px; height: 80px; font-size: 32px;">{{ strtoupper(substr($provider->name, 0, 1)) }}</div>
         <div>
-            <h1 style="margin-bottom: 4px;">Welcome back, Pieter</h1>
-            <div class="m">Sample Movers B</div>
+            <h1 style="margin-bottom: 4px;">Welcome back, {{ $provider->name }}</h1>
+            <div class="m">{{ $provider->company_name ?: 'Add your business name under Profile and verification' }}</div>
         </div>
     </div>
 
@@ -14,23 +14,23 @@
     <div class="g4" style="margin-top: 20px;">
         <div class="card">
             <div class="m sm">Subscription</div>
-            <div class="big">Pro</div>
-            <div class="m sm">Active · next billing [date]</div>
+            <div class="big">None</div>
+            <div class="m sm">No active plan</div>
         </div>
         <div class="card">
             <div class="m sm">Verification</div>
-            <div class="big">Verified</div>
+            <div class="big">{{ $provider->verification_status ?: 'Pending' }}</div>
             <div class="m sm">Photo, vehicle, plate, documents</div>
         </div>
         <div class="card">
-            <div class="m sm">Requests this month</div>
-            <div class="big">12</div>
-            <div class="m sm">4 quotes sent</div>
+            <div class="m sm">Open requests</div>
+            <div class="big">{{ $requests->count() }}</div>
+            <div class="m sm">{{ $quotesCount }} quotes sent</div>
         </div>
         <div class="card">
             <div class="m sm">Rating</div>
-            <div class="big">4.8</div>
-            <div class="m sm">120 jobs · 94% on time</div>
+            <div class="big">{{ $provider->rating > 0 ? number_format($provider->rating, 1) : '–' }}</div>
+            <div class="m sm">{{ $bookingsCount }} jobs</div>
         </div>
     </div>
 

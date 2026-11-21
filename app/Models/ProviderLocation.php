@@ -11,6 +11,7 @@ class ProviderLocation extends Model
 
     protected $fillable = [
         'user_id',
+        'booking_id',
         'latitude',
         'longitude',
     ];

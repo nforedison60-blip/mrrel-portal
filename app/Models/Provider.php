@@ -11,6 +11,7 @@ class Provider extends Model
 
     protected $fillable = [
         'name',
+        'email',
         'company_name',
         'vehicle',
         'plate_number',
@@ -19,5 +20,7 @@ class Provider extends Model
         'image_path',
         'vehicle_image_path',
         'id_image_path',
+        'id_document',
+        'vehicle_document',
     ];
 }

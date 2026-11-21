@@ -18,7 +18,7 @@ class PaymentController extends Controller
 
     public function process(Request $request)
     {
-        $booking = Booking::latest()->first();
+        $booking = Booking::where('user_id', auth()->id())->latest()->first();
 
         if (!$booking) {
             return redirect()->back()->with('error', 'No active booking found to pay for.');
@@ -69,7 +69,7 @@ class PaymentController extends Controller
 
     public function success()
     {
-        $booking = Booking::latest()->first();
+        $booking = Booking::where('user_id', auth()->id())->latest()->first();
         
         if ($booking) {
             $booking->update(['status' => 'Paid']);

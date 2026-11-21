@@ -11,6 +11,7 @@ class Booking extends Model
 
     protected $fillable = [
         'quote_id',
+        'user_id',
         'customer_name',
         'total_price',
         'status',
@@ -22,5 +23,13 @@ class Booking extends Model
     public function quote()
     {
         return $this->belongsTo(Quote::class);
+    }
+
+    // Only bookings whose quote was sent by this provider login
+    public function scopeForProvider($query, $userId)
+    {
+        return $query->whereHas('quote', function ($q) use ($userId) {
+            $q->where('provider_user_id', $userId);
+        });
     }
 }

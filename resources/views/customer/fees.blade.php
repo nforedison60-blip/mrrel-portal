@@ -2,63 +2,32 @@
 
 @section('content')
     <h1>Rental fees</h1>
-    <div class="m">Your upcoming payments and invoices.</div>
+    <div class="m">What it costs to move into the places you accepted.</div>
 
-    <div class="g4" style="margin-top: 20px;">
-        <div class="card">
-            <div class="m sm">Next Payment Due</div>
-            <div class="big">R{{ number_format($properties->sum('rent'), 0) }}</div>
-            <div class="m sm">Due on 01 Nov 2026</div>
+    @if($properties->isEmpty())
+        <div class="card empty" style="margin-top: 20px;">
+            <h3>No accepted places yet</h3>
+            <p class="m" style="margin-bottom: 12px;">When you accept a place, the rent and deposit show here.</p>
+            <a href="{{ route('customer.search') }}" class="btn">Find a place</a>
         </div>
-        <div class="card">
-            <div class="m sm">Deposit Paid</div>
-            <div class="big">R{{ number_format($properties->sum('deposit'), 0) }}</div>
-            <div class="m sm"><span class="chip ok">Paid</span></div>
+    @else
+        <div class="g2" style="margin-top: 20px;">
+            @foreach($properties as $property)
+                <div class="card">
+                    <h3 style="margin-bottom: 2px;">{{ $property->title }}</h3>
+                    <div class="m sm" style="margin-bottom: 12px;">{{ $property->suburb }}, {{ $property->city }}</div>
+                    <table class="tb">
+                        <tr><td>Monthly rent</td><td style="text-align:right;">R{{ number_format($property->rent, 2) }}</td></tr>
+                        <tr><td>Deposit</td><td style="text-align:right;">R{{ number_format($property->deposit, 2) }}</td></tr>
+                        <tr><td><b>To move in</b> <span class="m sm">(first month + deposit)</span></td><td style="text-align:right;"><b>R{{ number_format($property->rent + $property->deposit, 2) }}</b></td></tr>
+                    </table>
+                </div>
+            @endforeach
         </div>
-        <div class="card">
-            <div class="m sm">Service Fee</div>
-            <div class="big">R1,500</div>
-            <div class="m sm"><span class="chip ok">Paid</span></div>
-        </div>
-    </div>
 
-    <div class="card" style="margin-top: 20px;">
-        <h3>Payment Schedule</h3>
-        @if($properties->isEmpty())
-            <p class="m">You have no accepted properties yet, so there are no rental fees.</p>
-        @else
-            <table class="tb">
-                <tr>
-                    <th>Description</th>
-                    <th>Property</th>
-                    <th>Due Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-                @foreach($properties as $property)
-                <tr>
-                    <td>First Month's Rent</td>
-                    <td>{{ $property->title }}</td>
-                    <td>01 Nov 2026</td>
-                    <td>R{{ number_format($property->rent, 0) }}</td>
-                    <td><span class="chip wn">Upcoming</span></td>
-                </tr>
-                <tr>
-                    <td>Security Deposit</td>
-                    <td>{{ $property->title }}</td>
-                    <td>25 Oct 2026</td>
-                    <td>R{{ number_format($property->deposit, 0) }}</td>
-                    <td><span class="chip ok">Paid</span></td>
-                </tr>
-                @endforeach
-                <tr>
-                    <td>MrRel Service Fee</td>
-                    <td>—</td>
-                    <td>25 Oct 2026</td>
-                    <td>R1,500.00</td>
-                    <td><span class="chip ok">Paid</span></td>
-                </tr>
-            </table>
-        @endif
-    </div>
+        <div class="card" style="margin-top: 20px;">
+            <h3>How you pay</h3>
+            <p class="sm">Rent and deposit are paid directly to the landlord. MrRel will tell you how and when once the lease is finalised. Nothing is charged here.</p>
+        </div>
+    @endif
 @endsection

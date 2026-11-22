@@ -81,6 +81,24 @@ class TrackingController extends Controller
         ]);
     }
 
+    // ADMIN: every provider that is sharing a location
+    public function adminLocations()
+    {
+        $locations = ProviderLocation::with('user:id,name')->get()->map(function ($l) {
+            $last = Carbon::parse($l->updated_at);
+            return [
+                'id' => $l->user_id,
+                'name' => optional($l->user)->name ?? 'Provider',
+                'latitude' => $l->latitude,
+                'longitude' => $l->longitude,
+                'updated_at' => $last->diffForHumans(),
+                'online' => $last->diffInMinutes(now()) <= 2,
+            ];
+        })->values();
+
+        return response()->json($locations);
+    }
+
     public function adminMap()
     {
         return view('admin.map');

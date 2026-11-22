@@ -25,37 +25,62 @@
         zoom: 13
     });
 
-    let marker = null;
+    const markers = {};
+    let firstFit = true;
     const statusText = document.getElementById('statusText');
 
-    function fetchProviderLocation() {
-        // Admin fetches the absolute latest location ping from ANY provider
-        fetch('/customer/tracking/latest')
-            .then(response => response.json())
-            .then(data => {
-                if (data.latitude && data.longitude) {
-                    const lat = parseFloat(data.latitude);
-                    const lng = parseFloat(data.longitude);
+    function fetchProviderLocations() {
+        fetch('/admin/tracking/locations', { headers: { 'Accept': 'application/json' } })
+            .then(response => {
+                if (!response.ok) throw new Error('Server error ' + response.status);
+                return response.json();
+            })
+            .then(list => {
+                const online = list.filter(p => p.online);
 
-                    map.flyTo({ center: [lng, lat], zoom: 16 });
-                    
-                    if (marker) {
-                        marker.setLngLat([lng, lat]);
+                // Remove pins of providers that are no longer online
+                Object.keys(markers).forEach(id => {
+                    if (!online.find(p => String(p.id) === id)) {
+                        markers[id].remove();
+                        delete markers[id];
+                    }
+                });
+
+                online.forEach(p => {
+                    const lngLat = [parseFloat(p.longitude), parseFloat(p.latitude)];
+                    if (markers[p.id]) {
+                        markers[p.id].setLngLat(lngLat);
                     } else {
-                        marker = new maplibregl.Marker({ color: "#10b981" })
-                            .setLngLat([lng, lat])
+                        markers[p.id] = new maplibregl.Marker({ color: "#10b981" })
+                            .setLngLat(lngLat)
+                            .setPopup(new maplibregl.Popup({ offset: 25 }).setText(p.name))
                             .addTo(map);
                     }
+                });
 
-                    statusText.textContent = 'Latest provider location updated ' + data.updated_at;
-                } else {
+                if (online.length === 0) {
                     statusText.textContent = 'No providers are currently sharing their location.';
+                    return;
+                }
+
+                statusText.textContent = online.length + ' provider(s) online: ' +
+                    online.map(p => p.name + ' (' + p.updated_at + ')').join(', ');
+
+                // Zoom to the providers once, so the map does not jump every 10 seconds
+                if (firstFit) {
+                    firstFit = false;
+                    const bounds = new maplibregl.LngLatBounds();
+                    online.forEach(p => bounds.extend([parseFloat(p.longitude), parseFloat(p.latitude)]));
+                    map.fitBounds(bounds, { padding: 80, maxZoom: 15 });
                 }
             })
-            .catch(error => console.error("Error fetching location:", error));
+            .catch(error => {
+                statusText.textContent = 'Could not load provider locations.';
+                console.error("Error fetching locations:", error);
+            });
     }
 
-    fetchProviderLocation();
-    setInterval(fetchProviderLocation, 10000);
+    map.on('load', fetchProviderLocations);
+    setInterval(fetchProviderLocations, 10000);
 </script>
 @endsection

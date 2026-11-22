@@ -74,7 +74,12 @@ Route::middleware(['auth'])->group(function () {
         if ($request->filled('max_price')) {
             $query->where('rent', '<=', $request->input('max_price'));
         }
-        return view('customer.search', ['properties' => $query->latest()->get()]);
+        if ($request->filled('bedrooms')) {
+            $query->whereRaw('CAST(bedrooms AS DECIMAL(10,0)) >= ?', [(int) $request->input('bedrooms')]);
+        }
+        // Which places this customer already asked to view
+        $viewings = ViewingRequest::where('user_id', auth()->id())->get()->keyBy('property_id');
+        return view('customer.search', ['properties' => $query->latest()->get(), 'viewings' => $viewings]);
     })->name('customer.search');
 
     Route::get('/customer/tracking', [TrackingController::class, 'customerMap'])->name('customer.tracking');
@@ -247,33 +252,49 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.review.store');
 
     Route::get('/shortlist', function () {
-        // Open properties for everyone, plus the ones THIS customer accepted
-        $properties = Property::where('status', 'Approved')
-            ->orWhere(function ($q) {
-                $q->where('status', 'Under Offer')->where('accepted_by', auth()->id());
-            })
+        // Only places THIS customer showed interest in: accepted, or a viewing requested
+        $userId = auth()->id();
+        $viewings = ViewingRequest::where('user_id', $userId)->get()->keyBy('property_id');
+        $properties = Property::where('accepted_by', $userId)
+            ->orWhereIn('id', $viewings->keys())
             ->latest()->get();
-        return view('customer.shortlist', ['properties' => $properties]);
+        return view('customer.shortlist', ['properties' => $properties, 'viewings' => $viewings]);
     })->name('customer.shortlist');
 
     Route::post('/shortlist/{property}/accept', function (Property $property) {
-        // Only a property that is still open can be accepted, and we remember who accepted it
-        abort_unless($property->status === 'Approved', 403);
+        if ((int) $property->accepted_by === (int) auth()->id()) {
+            return redirect()->route('customer.shortlist')->with('success', 'You already accepted this place.');
+        }
+        // Only a place that is still open can be accepted, and we remember who accepted it
+        if ($property->status !== 'Approved') {
+            return redirect()->back()->with('error', 'Sorry, this place is no longer available.');
+        }
         $property->update(['status' => 'Under Offer', 'accepted_by' => auth()->id()]);
-        return redirect()->route('customer.shortlist')->with('success', 'You accepted the property! MrRel will contact you to finalize the lease.');
+        return redirect()->route('customer.shortlist')->with('success', 'You accepted the place! MrRel will contact you to finalise the lease.');
     })->name('customer.shortlist.accept');
 
-    Route::post('/shortlist/{property}/decline', function (Property $property) {
-        return redirect()->route('customer.shortlist')->with('success', 'You declined the property.');
-    })->name('customer.shortlist.decline');
-
     Route::post('/viewing-request', function (Request $request) {
+        $data = $request->validate([
+            'property_id' => 'required|integer|exists:properties,id',
+            'message'     => 'nullable|string|max:500',
+        ]);
+        $property = Property::findOrFail($data['property_id']);
+        if ($property->status !== 'Approved') {
+            return redirect()->back()->with('error', 'Sorry, this place is no longer available.');
+        }
+        $already = ViewingRequest::where('user_id', auth()->id())
+            ->where('property_id', $property->id)
+            ->where('status', 'Pending')
+            ->exists();
+        if ($already) {
+            return redirect()->route('customer.shortlist')->with('success', 'You already asked to view this place. The landlord will respond soon.');
+        }
         ViewingRequest::create([
-            'property_id' => $request->property_id,
+            'property_id' => $property->id,
             'user_id' => auth()->id(),
             'customer_name' => auth()->user()->name,
             'status' => 'Pending',
-            'message' => $request->message,
+            'message' => $data['message'] ?? null,
         ]);
         return redirect()->route('customer.shortlist')->with('success', 'Viewing request sent to the landlord!');
     })->name('customer.viewing.store');
@@ -288,23 +309,73 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.profile');
 
     Route::post('/customer/profile', function (Request $request) {
+        $data = $request->validate([
+            'name'  => 'required|string|max:100',
+            'phone' => 'nullable|string|max:30',
+        ]);
         $customer = Customer::where('user_id', auth()->id())->firstOrFail();
-        $customer->update($request->only('name', 'email', 'phone'));
-        return redirect()->route('customer.profile')->with('success', 'Profile updated successfully!');
+        $customer->update(['name' => $data['name'], 'phone' => $data['phone'] ?? '']);
+        auth()->user()->update(['name' => $data['name']]);
+        return redirect()->route('customer.profile')->with('success', 'Profile updated.');
     })->name('customer.profile.update');
 
-    Route::get('/customer/messages', function () {
-        $messages = Message::where('user_id', auth()->id())->orWhere('receiver_id', auth()->id())->oldest()->get();
-        return view('customer.messages', ['messages' => $messages]);
+    // The providers this customer has booked (the only people they can chat with)
+    $myProviders = function () {
+        return Booking::where('user_id', auth()->id())->with('quote')->latest()->get()
+            ->map(function ($b) {
+                return ['id' => optional($b->quote)->provider_user_id, 'name' => optional($b->quote)->provider_name];
+            })
+            ->filter(fn ($p) => !empty($p['id']))
+            ->unique('id')
+            ->values();
+    };
+
+    Route::get('/customer/messages', function (Request $request) use ($myProviders) {
+        $userId = auth()->id();
+        $providers = $myProviders();
+
+        $first = $providers->first();
+        $with = (int) $request->input('with', $first['id'] ?? 0);
+        if (!$providers->contains('id', $with)) {
+            $with = (int) ($first['id'] ?? 0);
+        }
+
+        $messages = collect();
+        if ($with) {
+            $messages = Message::where(function ($outer) use ($userId, $with) {
+                $outer->where(function ($q) use ($userId, $with) {
+                    $q->where('user_id', $userId)->where('receiver_id', $with);
+                })->orWhere(function ($q) use ($userId, $with) {
+                    $q->where('user_id', $with)->where('receiver_id', $userId);
+                });
+            })->oldest()->get();
+        }
+
+        $match = $providers->firstWhere('id', $with);
+
+        return view('customer.messages', [
+            'messages' => $messages,
+            'providers' => $providers,
+            'with' => $with,
+            'withName' => $match['name'] ?? null,
+        ]);
     })->name('customer.messages');
 
-    Route::post('/customer/messages', function (Request $request) {
-        Message::create([
-            'sender_name' => auth()->user()->name, 
-            'message' => $request->message,
-            'user_id' => auth()->id(),
+    Route::post('/customer/messages', function (Request $request) use ($myProviders) {
+        $data = $request->validate([
+            'message' => 'required|string|max:1000',
+            'with'    => 'required|integer',
         ]);
-        return redirect()->route('customer.messages')->with('success', 'Message sent!');
+        if (!$myProviders()->contains('id', (int) $data['with'])) {
+            return redirect()->route('customer.messages')->with('error', 'You can only message a provider you have booked.');
+        }
+        Message::create([
+            'sender_name' => auth()->user()->name,
+            'message' => $data['message'],
+            'user_id' => auth()->id(),
+            'receiver_id' => (int) $data['with'],
+        ]);
+        return redirect()->route('customer.messages', ['with' => $data['with']]);
     })->name('customer.messages.store');
 
     Route::get('/customer/fees', function () {
@@ -314,24 +385,41 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.fees');
 
     Route::get('/customer/problems', function () {
-        $problems = Problem::where('user_id', auth()->id())->latest()->get();
-        return view('customer.problems', ['problems' => $problems]);
+        $userId = auth()->id();
+        return view('customer.problems', [
+            'problems' => Problem::where('user_id', $userId)->latest()->get(),
+            'bookings' => Booking::where('user_id', $userId)->with('quote')->latest()->get(),
+        ]);
     })->name('customer.problems');
 
     Route::post('/customer/problems', function (Request $request) {
+        $data = $request->validate([
+            'booking_id'  => 'nullable|integer',
+            'subject'     => 'required|string|max:150',
+            'description' => 'required|string|max:2000',
+            'image'       => 'nullable|image|max:5120',
+        ]);
+
+        // Only a booking that belongs to this customer can be attached
+        $bookingId = null;
+        if (!empty($data['booking_id'])) {
+            $bookingId = Booking::where('user_id', auth()->id())->where('id', $data['booking_id'])->value('id');
+        }
+
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('problems', 's3');
+            $imagePath = $request->file('image')->store('problems');
         }
+
         Problem::create([
             'customer_name' => auth()->user()->name,
-            'booking_id' => $request->booking_id,
-            'subject' => $request->subject,
-            'description' => $request->description,
+            'booking_id' => $bookingId,
+            'subject' => $data['subject'],
+            'description' => $data['description'],
             'image_path' => $imagePath,
             'user_id' => auth()->id(),
         ]);
-        return redirect()->route('customer.problems')->with('success', 'Problem reported successfully!');
+        return redirect()->route('customer.problems')->with('success', 'Thank you. Your problem was sent and our team will look into it.');
     })->name('customer.problems.store');
 
     }); // end Customer
@@ -500,10 +588,14 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.messages');
 
     Route::post('/provider/messages', function (Request $request) {
+        // Reply to the customer who last wrote to this provider
+        $customerId = Message::where('receiver_id', auth()->id())->latest()->value('user_id');
+
         Message::create([
             'sender_name' => auth()->user()->name, 
             'message' => $request->message,
             'user_id' => auth()->id(),
+            'receiver_id' => $customerId,
         ]);
         return redirect()->route('provider.messages')->with('success', 'Message sent!');
     })->name('provider.messages.store');
@@ -655,5 +747,6 @@ Route::middleware(['auth'])->group(function () {
 
     // ADMIN LIVE TRACKING ROUTE
     Route::get('/admin/map', [TrackingController::class, 'adminMap'])->name('admin.map');
+    Route::get('/admin/tracking/locations', [TrackingController::class, 'adminLocations'])->name('admin.tracking.locations');
     }); // end Admin
 });

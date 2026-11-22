@@ -125,40 +125,65 @@
 </style>
 
 <h1>Messages</h1>
-<div class="m" style="margin-bottom: 20px;">Chat with your provider in real-time.</div>
+<div class="m" style="margin-bottom: 12px;">Chat with the provider you booked.</div>
 
-<div class="chat-wrapper">
-    <div class="chat-header">
-        <div class="dot"></div> Provider Chat
+@if($providers->isEmpty())
+    <div class="card empty">
+        <h3>No chat yet</h3>
+        <p class="m" style="margin-bottom: 12px;">Your chat opens as soon as you accept a quote and book a provider.</p>
+        <a href="{{ route('customer.quotes') }}" class="btn">View my quotes</a>
     </div>
+@else
+    @if($providers->count() > 1)
+        <nav class="stb" aria-label="Your providers">
+            @foreach($providers as $p)
+                <a href="{{ route('customer.messages', ['with' => $p['id']]) }}" class="{{ $p['id'] == $with ? 'on' : '' }}">{{ $p['name'] }}</a>
+            @endforeach
+        </nav>
+    @endif
 
-    <div class="chat-messages" id="chatMessages">
-        @forelse($messages as $msg)
-            <div class="msg-row {{ $msg->user_id == auth()->id() ? 'mine' : 'theirs' }}">
-                <div class="msg-bubble {{ $msg->user_id == auth()->id() ? 'mine' : 'theirs' }}">
-                    <div class="msg-sender-name">
-                        {{ $msg->user_id == auth()->id() ? 'You' : $msg->sender_name }}
+    <div class="chat-wrapper">
+        <div class="chat-header">
+            <div class="dot"></div> {{ $withName ?? 'Provider' }}
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            @forelse($messages as $msg)
+                <div class="msg-row {{ $msg->user_id == auth()->id() ? 'mine' : 'theirs' }}">
+                    <div class="msg-bubble {{ $msg->user_id == auth()->id() ? 'mine' : 'theirs' }}">
+                        <div class="msg-sender-name">
+                            {{ $msg->user_id == auth()->id() ? 'You' : $msg->sender_name }}
+                        </div>
+                        <div>{{ $msg->message }}</div>
+                        <span class="msg-time">{{ $msg->created_at->format('d M, H:i') }}</span>
                     </div>
-                    <div>{{ $msg->message }}</div>
-                    <span class="msg-time">{{ $msg->created_at->format('H:i') }}</span>
                 </div>
-            </div>
-        @empty
-            <div class="m sm" style="text-align: center; padding: 40px; color: var(--m);">No messages yet. Say hello!</div>
-        @endforelse
+            @empty
+                <div class="m sm" style="text-align: center; padding: 40px;">No messages yet. Say hello to {{ $withName ?? 'your provider' }}!</div>
+            @endforelse
+        </div>
+
+        <form method="POST" action="{{ route('customer.messages.store') }}" class="chat-input-area">
+            @csrf
+            <input type="hidden" name="with" value="{{ $with }}">
+            <input type="text" id="chatInput" name="message" required maxlength="1000" placeholder="Type a message..." autocomplete="off">
+            <button type="submit" aria-label="Send">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </form>
     </div>
 
-    <form method="POST" action="{{ route('customer.messages.store') }}" class="chat-input-area">
-        @csrf
-        <input type="text" name="message" required placeholder="Type a message..." autocomplete="off">
-        <button type="submit">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </button>
-    </form>
-</div>
+    <script>
+        const chatContainer = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
 
-<script>
-    const chatContainer = document.getElementById('chatMessages');
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-</script>
+        // Look for new messages every 20 seconds, but never while you are typing
+        setInterval(function () {
+            if (chatInput.value === '' && document.activeElement !== chatInput) {
+                window.location.reload();
+            }
+        }, 20000);
+    </script>
+@endif
 @endsection

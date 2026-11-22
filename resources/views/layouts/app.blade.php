@@ -49,6 +49,9 @@
         .stb a{white-space:nowrap;text-decoration:none;color:var(--n);background:#fff;border:1px solid var(--l);border-radius:99px;padding:8px 16px;font:600 14px Figtree;transition:.2s}
         .stb a:hover{border-color:var(--t)}
         .stb a.on{background:var(--a);border-color:var(--a);color:var(--n)}
+        .empty{text-align:center;padding:36px 20px}
+        .empty h3{margin-bottom:6px}
+        .chip.gr{background:#EEF2F5;color:var(--m);border-color:#EEF2F5}
         .mb{display:none}
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:860px){
@@ -139,6 +142,21 @@
             @if(session('success'))
                 <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
                     {{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div style="background:#FDECEC; color:#8A1C1C; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #E5A3A3;">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if($errors->any())
+                <div style="background:#FDECEC; color:#8A1C1C; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #E5A3A3;">
+                    Please fix the following:
+                    <ul style="margin:6px 0 0; font-weight:500;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
             @yield('content')

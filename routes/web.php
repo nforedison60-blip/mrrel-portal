@@ -540,8 +540,11 @@ Route::middleware(['auth'])->group(function () {
             'quotesCount' => Quote::where('provider_user_id', $user->id)->count(),
             'bookingsCount' => Booking::forProvider($user->id)->where('status', 'Paid')->count(),
             'totalRevenue' => Booking::forProvider($user->id)->where('status', 'Paid')->sum('total_price'),
-            'nextJobs' => Booking::forProvider($user->id)->where('status', 'Paid')->latest()->take(3)->get(),
-            'requests' => ServiceRequest::where('status', 'Active')->latest()->take(5)->get()
+            'nextJobs' => Booking::forProvider($user->id)->where('status', 'Paid')->with('quote.serviceRequest')->latest()->take(3)->get(),
+            // Open requests this provider has not quoted yet
+            'requests' => ServiceRequest::where('status', 'Active')->whereNotIn('id', Quote::where('provider_user_id', $user->id)->pluck('service_request_id'))->latest()->take(5)->get(),
+            'openRequestsCount' => ServiceRequest::where('status', 'Active')->whereNotIn('id', Quote::where('provider_user_id', $user->id)->pluck('service_request_id'))->count(),
+            'commissionRate' => config('services.mrrel.commission_rate'),
         ]);
     })->name('provider.dashboard');
 
@@ -882,7 +885,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/payments', function () {
         $bookings = Booking::latest()->get();
         $totalRevenue = Booking::where('status', 'Paid')->sum('total_price'); // only money really received
-        return view('admin.payments', ['bookings' => $bookings, 'totalRevenue' => $totalRevenue, 'pendingPayouts' => $totalRevenue * 0.9, 'totalBookings' => $bookings->count()]);
+        return view('admin.payments', ['bookings' => $bookings, 'totalRevenue' => $totalRevenue, 'pendingPayouts' => $totalRevenue * (1 - config('services.mrrel.commission_rate')), 'totalBookings' => $bookings->count()]);
     })->name('admin.payments');
 
     Route::get('/admin/disputes', function () {

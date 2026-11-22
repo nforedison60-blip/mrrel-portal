@@ -14,6 +14,11 @@ return [
     |
     */
 
+    'mrrel' => [
+        // Share of every paid job that MrRel keeps (0.10 = 10%)
+        'commission_rate' => (float) env('MRREL_COMMISSION_RATE', 0.10),
+    ],
+
     'ozow' => [
         'site_code'   => env('OZOW_SITE_CODE'),
         'private_key' => env('OZOW_PRIVATE_KEY'),

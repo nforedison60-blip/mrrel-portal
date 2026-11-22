@@ -34,6 +34,20 @@
         </div>
     </div>
 
+    @php $rate = config('services.mrrel.commission_rate'); @endphp
+    <div class="g2">
+        <div class="card">
+            <div class="m sm">MrRel commission ({{ round($rate * 100) }}%)</div>
+            <div class="big">R{{ number_format($paid->sum('total_price') * $rate, 2) }}</div>
+            <div class="m sm">on money received so far</div>
+        </div>
+        <div class="card">
+            <div class="m sm">Owed to providers ({{ 100 - round($rate * 100) }}%)</div>
+            <div class="big">R{{ number_format($paid->sum('total_price') * (1 - $rate), 2) }}</div>
+            <div class="m sm">before any payouts you have already made</div>
+        </div>
+    </div>
+
     <div class="card" style="margin-top:20px;">
         <h3>Bookings</h3>
         @if($bookings->isEmpty())

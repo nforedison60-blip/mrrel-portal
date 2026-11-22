@@ -19,9 +19,9 @@
     <!-- Stats Cards -->
     <div class="g4" style="margin-top: 20px;">
         <div class="card">
-            <div class="m sm">Subscription</div>
-            <div class="big">None</div>
-            <div class="m sm">No active plan</div>
+            <div class="m sm">Plan</div>
+            <div class="big" style="font-size:22px;">Founding member</div>
+            <div class="m sm">No monthly fee · {{ round($commissionRate * 100) }}% commission</div>
         </div>
         <div class="card">
             <div class="m sm">Verification</div>
@@ -30,7 +30,7 @@
         </div>
         <div class="card">
             <div class="m sm">Open requests</div>
-            <div class="big">{{ $requests->count() }}</div>
+            <div class="big">{{ $openRequestsCount }}</div>
             <div class="m sm">{{ $quotesCount }} quotes sent</div>
         </div>
         <div class="card">
@@ -65,15 +65,6 @@
                     </td>
                 </tr>
                 @endforeach
-                <!-- Adding the hardcoded "Instant price" row from the design for visual accuracy -->
-                <tr>
-                    <td>
-                        <b>Small items</b><br>
-                        <span class="m sm">Claremont to Wynberg</span>
-                    </td>
-                    <td>Mon 2 Nov</td>
-                    <td>Instant price from your rate card</td>
-                </tr>
             </table>
         @endif
     </div>
@@ -82,18 +73,26 @@
     <div class="g2" style="margin-top: 20px;">
         <div class="card">
             <h3>Next jobs</h3>
-            <ul>
-                <li>BKG-0101 · Sat 31 Oct · Parklands to Bellville</li>
-                <li>BKG-0104 · Mon 2 Nov · Claremont to Wynberg</li>
-            </ul>
+            @if($nextJobs->isEmpty())
+                <p class="m">No paid jobs yet. They appear here once a customer has paid.</p>
+            @else
+                <ul>
+                    @foreach($nextJobs as $job)
+                        @php $move = optional($job->quote)->serviceRequest; @endphp
+                        <li>BKG-{{ str_pad($job->id, 4, '0', STR_PAD_LEFT) }}@if($move) · {{ $move->move_date }} · {{ $move->moving_from }} to {{ $move->moving_to }}@endif</li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
         <div class="card">
-            <h3>Payout status</h3>
+            <h3>Your earnings</h3>
             <ul>
-                <li>Ready for payout: 1</li>
-                <li>Waiting for customer confirmation: 1</li>
-                <li>Paid out this month: R3,200</li>
+                <li>Paid jobs: {{ $bookingsCount }}</li>
+                <li>Total paid by customers: R{{ number_format($totalRevenue, 2) }}</li>
+                <li>MrRel commission ({{ round($commissionRate * 100) }}%): R{{ number_format($totalRevenue * $commissionRate, 2) }}</li>
+                <li><b>Your share: R{{ number_format($totalRevenue * (1 - $commissionRate), 2) }}</b></li>
             </ul>
+            <div class="m sm" style="margin-top:8px;">Payouts are made by MrRel.</div>
         </div>
     </div>
 @endsection

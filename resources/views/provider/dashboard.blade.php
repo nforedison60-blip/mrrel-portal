@@ -6,7 +6,11 @@
         <i class="hs a"></i><i class="hs b"></i><i class="hs c"></i>
         <div class="av hc" style="width: 80px; height: 80px; font-size: 32px;">{{ strtoupper(substr($provider->name, 0, 1)) }}</div>
         <div class="hc" style="flex:1;min-width:220px;">
-            <h1>Welcome back, {{ $provider->name }}</h1>
+            @php
+                // First visit = no quotes sent yet, so say "Welcome" rather than "Welcome back"
+                $isNewProvider = !\App\Models\Quote::where('provider_user_id', auth()->id())->exists();
+            @endphp
+            <h1>{{ $isNewProvider ? 'Welcome' : 'Welcome back' }}, {{ $provider->name }}</h1>
             <div class="m">{{ $provider->company_name ?: 'Add your business name under Profile and verification' }}</div>
         </div>
         <div class="hc"><a class="btn" href="{{ route('provider.requests') }}">See open requests</a></div>

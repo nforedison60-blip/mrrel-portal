@@ -22,6 +22,8 @@
         .links a{color:var(--t);text-decoration:none;font-weight:600;}
         .m{color:var(--m);font-size:14px;text-align:center;margin-bottom:20px;}
     </style>
+    <link rel="stylesheet" href="{{ asset('css/mrrel-ui.css') }}?v={{ @filemtime(public_path('css/mrrel-ui.css')) }}">
+    <script defer src="{{ asset('js/mrrel-ui.js') }}?v={{ @filemtime(public_path('js/mrrel-ui.js')) }}"></script>
 </head>
 <body>
     <div class="card">

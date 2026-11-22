@@ -45,6 +45,8 @@
         #toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);background:var(--n);color:#fff;padding:12px 22px;border-radius:99px;font-weight:600;transition:.4s;z-index:50;opacity:0}#toast.s{transform:translate(-50%,0);opacity:1}
         @media(max-width:860px){.bd{grid-template-columns:1fr}.sd{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;display:flex;overflow-x:auto;padding:0;border-top:1px solid var(--l);z-index:30}.sd a{white-space:nowrap;border-left:0;border-top:3px solid transparent;padding:12px 14px}.sd a.on{border-top-color:var(--t)}.g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}.mn{padding:20px 16px 90px}.st{position:static}}
     </style>
+    <link rel="stylesheet" href="{{ asset('css/mrrel-ui.css') }}?v={{ @filemtime(public_path('css/mrrel-ui.css')) }}">
+    <script defer src="{{ asset('js/mrrel-ui.js') }}?v={{ @filemtime(public_path('js/mrrel-ui.js')) }}"></script>
 </head>
 <body>
     <div class="top">

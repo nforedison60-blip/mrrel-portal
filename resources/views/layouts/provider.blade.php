@@ -50,7 +50,6 @@
         .stb a:hover{border-color:var(--t)}
         .stb a.on{background:var(--a);border-color:var(--a);color:var(--n)}
         .mb{display:none}
-        @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:860px){
             .top{padding:8px 16px}
             .bd{grid-template-columns:1fr}
@@ -62,6 +61,8 @@
             .mn{padding:20px 16px 90px}.st{position:static}
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/mrrel-ui.css') }}?v={{ @filemtime(public_path('css/mrrel-ui.css')) }}">
+    <script defer src="{{ asset('js/mrrel-ui.js') }}?v={{ @filemtime(public_path('js/mrrel-ui.js')) }}"></script>
 </head>
 <body>
     <div class="top">

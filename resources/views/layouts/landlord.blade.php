@@ -55,7 +55,6 @@
         .bdg{display:inline-block;min-width:20px;padding:1px 7px;margin-left:8px;border-radius:99px;background:#B3402F;color:#fff;font:700 12px Figtree;text-align:center;line-height:1.5}
         .mb .bdg{margin-left:4px;padding:0 5px;font-size:11px;min-width:16px}
         .mb{display:none}
-        @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:860px){
             .top{padding:8px 16px}
             .bd{grid-template-columns:1fr}
@@ -67,6 +66,8 @@
             .mn{padding:20px 16px 90px}.st{position:static}
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/mrrel-ui.css') }}?v={{ @filemtime(public_path('css/mrrel-ui.css')) }}">
+    <script defer src="{{ asset('js/mrrel-ui.js') }}?v={{ @filemtime(public_path('js/mrrel-ui.js')) }}"></script>
 </head>
 <body>
     <div class="top">

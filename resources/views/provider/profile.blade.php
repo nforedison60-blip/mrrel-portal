@@ -79,6 +79,44 @@
                 </div>
 
                 <div class="card" style="margin-top: 16px;">
+                    <h3>Payout details</h3>
+                    <div class="m sm">Where MrRel pays you for your jobs. Only you and the MrRel team can see these. The account must be in your own name or your business name.</div>
+                    <div class="f">
+                        <label>Bank
+                            <select name="bank_name">
+                                <option value="">Choose your bank</option>
+                                @foreach(['Absa','Capitec','FNB','Nedbank','Standard Bank','African Bank','Discovery Bank','TymeBank','Investec','Other'] as $bank)
+                                    <option value="{{ $bank }}" {{ old('bank_name', $provider->bank_name) === $bank ? 'selected' : '' }}>{{ $bank }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>Account type
+                            <select name="bank_account_type">
+                                <option value="">Choose</option>
+                                @foreach(['Cheque / Current','Savings','Transmission'] as $type)
+                                    <option value="{{ $type }}" {{ old('bank_account_type', $provider->bank_account_type) === $type ? 'selected' : '' }}>{{ $type }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="k">Account holder name
+                            <input type="text" name="bank_account_holder" value="{{ old('bank_account_holder', $provider->bank_account_holder) }}" maxlength="150" placeholder="Name on the bank account">
+                        </label>
+                        <label>Account number
+                            <input type="text" name="bank_account_number" inputmode="numeric" autocomplete="off" maxlength="16"
+                                   placeholder="{{ $provider->bank_account_number ? '•••• ' . substr($provider->bank_account_number, -4) . ' (leave blank to keep)' : 'Digits only' }}">
+                        </label>
+                        <label>Branch code
+                            <input type="text" name="bank_branch_code" inputmode="numeric" maxlength="6" value="{{ old('bank_branch_code', $provider->bank_branch_code) }}" placeholder="6 digits">
+                        </label>
+                    </div>
+                    @if($provider->hasBankDetails())
+                        <div class="chip ok" style="margin-top: 8px;">Payout details saved</div>
+                    @else
+                        <div class="chip wn" style="margin-top: 8px;">Add these so MrRel can pay you</div>
+                    @endif
+                </div>
+
+                <div class="card" style="margin-top: 16px;">
                     <h3>Documents</h3>
                     <div class="f" style="margin-top: 16px;">
                         <label class="k">ID Document (PDF/Image)

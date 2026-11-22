@@ -546,6 +546,7 @@ Route::middleware(['auth'])->group(function () {
             'requests' => ServiceRequest::where('status', 'Active')->whereNotIn('id', Quote::where('provider_user_id', $user->id)->pluck('service_request_id'))->latest()->take(5)->get(),
             'openRequestsCount' => ServiceRequest::where('status', 'Active')->whereNotIn('id', Quote::where('provider_user_id', $user->id)->pluck('service_request_id'))->count(),
             'commissionRate' => config('services.mrrel.commission_rate'),
+            'paidOutTotal' => Booking::forProvider($user->id)->where('status', 'Paid')->whereNotNull('paid_out_at')->sum('total_price'),
         ]);
     })->name('provider.dashboard');
 
@@ -736,7 +737,15 @@ Route::middleware(['auth'])->group(function () {
             'vehicle_image' => 'nullable|image|max:5120', 
             'id_image' => 'nullable|image|max:5120',
             'id_document' => 'nullable|file|mimes:pdf,jpg,png|max:5120',
-            'vehicle_document' => 'nullable|file|mimes:pdf,jpg,png|max:5120'
+            'vehicle_document' => 'nullable|file|mimes:pdf,jpg,png|max:5120',
+            'bank_name' => 'nullable|string|max:100',
+            'bank_account_type' => 'nullable|in:Cheque / Current,Savings,Transmission',
+            'bank_account_holder' => 'nullable|string|max:150',
+            'bank_account_number' => ['nullable', 'regex:/^[0-9 ]{6,20}$/'],
+            'bank_branch_code' => ['nullable', 'regex:/^[0-9]{6}$/'],
+        ], [
+            'bank_account_number.regex' => 'The account number must be digits only.',
+            'bank_branch_code.regex' => 'The branch code must be 6 digits.',
         ]);
         
         $user = auth()->user();
@@ -747,7 +756,15 @@ Route::middleware(['auth'])->group(function () {
             'company_name' => $request->company_name,
             'vehicle' => $request->vehicle,
             'plate_number' => $request->plate_number,
+            'bank_name' => $request->bank_name,
+            'bank_account_type' => $request->bank_account_type,
+            'bank_account_holder' => $request->bank_account_holder,
+            'bank_branch_code' => $request->bank_branch_code,
         ];
+        // Only replace the stored account number when a new one is typed in
+        if (filled($request->bank_account_number)) {
+            $data['bank_account_number'] = preg_replace('/\s+/', '', $request->bank_account_number);
+        }
 
         if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store('providers', 's3');
         if ($request->hasFile('vehicle_image')) $data['vehicle_image_path'] = $request->file('vehicle_image')->store('providers', 's3');
@@ -914,6 +931,14 @@ Route::middleware(['auth'])->group(function () {
         $totalRevenue = Booking::where('status', 'Paid')->sum('total_price'); // only money really received
         return view('admin.payments', ['bookings' => $bookings, 'totalRevenue' => $totalRevenue, 'pendingPayouts' => $totalRevenue * (1 - config('services.mrrel.commission_rate')), 'totalBookings' => $bookings->count()]);
     })->name('admin.payments');
+
+    Route::post('/admin/bookings/{booking}/payout', function (Booking $booking) {
+        if ($booking->status !== 'Paid') {
+            return redirect()->route('admin.payments')->with('error', 'Only paid bookings can be paid out.');
+        }
+        $booking->update(['paid_out_at' => $booking->paid_out_at ? null : now()]);
+        return redirect()->route('admin.payments')->with('success', $booking->paid_out_at ? 'Marked as paid out.' : 'Payout mark removed.');
+    })->name('admin.bookings.payout');
 
     Route::get('/admin/disputes', function () {
         return view('admin.disputes', ['problems' => Problem::latest()->get()]);

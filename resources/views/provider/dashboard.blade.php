@@ -91,6 +91,7 @@
                 <li>Total paid by customers: R{{ number_format($totalRevenue, 2) }}</li>
                 <li>MrRel commission ({{ round($commissionRate * 100) }}%): R{{ number_format($totalRevenue * $commissionRate, 2) }}</li>
                 <li><b>Your share: R{{ number_format($totalRevenue * (1 - $commissionRate), 2) }}</b></li>
+                <li>Already paid to you: R{{ number_format($paidOutTotal * (1 - $commissionRate), 2) }}</li>
             </ul>
             <div class="m sm" style="margin-top:8px;">Payouts are made by MrRel.</div>
         </div>

@@ -48,6 +48,45 @@
         </div>
     </div>
 
+    @php
+        // What each provider is owed, with their bank details
+        $byProvider = $paid->groupBy(fn($b) => optional($b->quote)->provider_user_id);
+    @endphp
+    <div class="card" style="margin-top:20px;">
+        <h3>Provider payouts</h3>
+        @if($byProvider->isEmpty())
+            <p class="m">Nothing to pay out yet. Providers appear here once a customer has paid for their job.</p>
+        @else
+            <div style="overflow-x:auto;">
+            <table class="tb">
+                <tr><th>Provider</th><th>Still to pay</th><th>Already paid out</th><th>Bank details</th></tr>
+                @foreach($byProvider as $providerUserId => $jobs)
+                    @php
+                        $prov = $providerUserId ? (\App\Models\Provider::where('user_id', $providerUserId)->first()
+                                ?: optional(\App\Models\User::find($providerUserId), fn($u) => \App\Models\Provider::where('email', $u->email)->first())) : null;
+                        $open = $jobs->whereNull('paid_out_at');
+                        $done = $jobs->whereNotNull('paid_out_at');
+                    @endphp
+                    <tr>
+                        <td><b>{{ optional($jobs->first()->quote)->provider_name ?: 'Provider' }}</b></td>
+                        <td>R{{ number_format($open->sum('total_price') * (1 - $rate), 2) }}<div class="m sm">{{ $open->count() }} {{ \Illuminate\Support\Str::plural('job', $open->count()) }}</div></td>
+                        <td>R{{ number_format($done->sum('total_price') * (1 - $rate), 2) }}</td>
+                        <td class="sm">
+                            @if($prov && $prov->hasBankDetails())
+                                {{ $prov->bank_name }} · {{ $prov->bank_account_type }}<br>
+                                {{ $prov->bank_account_holder }}<br>
+                                Account {{ $prov->bank_account_number }}@if($prov->bank_branch_code) · Branch {{ $prov->bank_branch_code }}@endif
+                            @else
+                                <span class="chip wn">Not added yet</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </table>
+            </div>
+        @endif
+    </div>
+
     <div class="card" style="margin-top:20px;">
         <h3>Bookings</h3>
         @if($bookings->isEmpty())
@@ -62,6 +101,7 @@
                     <th>Amount</th>
                     <th>Payment</th>
                     <th>Job confirmed</th>
+                    <th>Pay provider</th>
                     <th>Date</th>
                 </tr>
                 @foreach($bookings as $b)
@@ -72,6 +112,17 @@
                         <td>R{{ number_format($b->total_price, 2) }}</td>
                         <td><span class="chip {{ $b->status === 'Paid' ? 'ok' : 'wn' }}">{{ $b->status }}</span></td>
                         <td><span class="chip {{ $b->job_confirmed ? 'ok' : '' }}">{{ $b->job_confirmed ? 'Yes' : 'Not yet' }}</span></td>
+                        <td>
+                            @if($b->status === 'Paid')
+                                <div class="sm">R{{ number_format($b->total_price * (1 - $rate), 2) }}</div>
+                                <form method="POST" action="{{ route('admin.bookings.payout', $b->id) }}" style="margin-top:4px;">
+                                    @csrf
+                                    <button type="submit" class="btn {{ $b->paid_out_at ? 'g' : '' }}" style="padding:4px 12px;font-size:12px;margin:0;">{{ $b->paid_out_at ? 'Paid out ' . $b->paid_out_at->format('d M') . ' (undo)' : 'Mark paid out' }}</button>
+                                </form>
+                            @else
+                                <span class="m sm">—</span>
+                            @endif
+                        </td>
                         <td class="m sm">{{ optional($b->created_at)->format('d M Y') }}</td>
                     </tr>
                 @endforeach

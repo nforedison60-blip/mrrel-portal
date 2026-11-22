@@ -23,5 +23,20 @@ class Provider extends Model
         'id_image_path',
         'id_document',
         'vehicle_document',
+        'bank_name',
+        'bank_account_holder',
+        'bank_account_number',
+        'bank_account_type',
+        'bank_branch_code',
     ];
+
+    // The account number is encrypted in the database
+    protected $casts = [
+        'bank_account_number' => 'encrypted',
+    ];
+
+    public function hasBankDetails(): bool
+    {
+        return $this->bank_name && $this->bank_account_holder && $this->bank_account_number;
+    }
 }

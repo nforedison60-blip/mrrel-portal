@@ -18,6 +18,11 @@ class Booking extends Model
         'tracking_status',
         'extras_status',
         'job_confirmed',
+        'paid_out_at',
+    ];
+
+    protected $casts = [
+        'paid_out_at' => 'datetime',
     ];
 
     public function quote()

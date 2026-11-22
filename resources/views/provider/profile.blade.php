@@ -4,12 +4,6 @@
     <h1>Profile and Verification</h1>
     <div class="m" style="margin-bottom: 20px;">Update your details and upload your documents to get verified.</div>
 
-    @if(session('success'))
-        <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
-            {{ session('success') }}
-        </div>
-    @endif
-
     @if($errors->any())
         <div style="background:#FDF1CC; color:#5C4300; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #F4B731;">
             Please check the form for errors.
@@ -25,9 +19,13 @@
                     <h3>Photos</h3>
                     <div class="row" style="margin-top: 16px; gap: 20px; align-items: flex-start;">
                         <div style="text-align: center; flex: 1;">
-                            <div class="av" style="width: 120px; height: 120px; font-size: 48px; border-radius: 50%; margin: 0 auto; background: var(--a); color: var(--n); display: flex; align-items: center; justify-content: center;">
-                                {{ substr($provider->name, 0, 1) }}
-                            </div>
+                            @if($provider->image_path)
+                                <img src="{{ Storage::disk('s3')->url($provider->image_path) }}" alt="Your profile photo" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto;">
+                            @else
+                                <div class="av" style="width: 120px; height: 120px; font-size: 48px; border-radius: 50%; margin: 0 auto; background: var(--a); color: var(--n); display: flex; align-items: center; justify-content: center;">
+                                    {{ substr($provider->name, 0, 1) }}
+                                </div>
+                            @endif
                             <div class="m sm" style="margin-top: 8px;"><b>Profile photo</b><br>Clear photo of your face.</div>
                             <label class="btn g" style="margin-top: 8px; cursor: pointer; display: inline-block;">
                                 Change photo
@@ -38,6 +36,9 @@
                             @endif
                         </div>
                         <div style="text-align: center; flex: 1;">
+                            @if($provider->vehicle_image_path)
+                                <img src="{{ Storage::disk('s3')->url($provider->vehicle_image_path) }}" alt="Your vehicle photo" style="width: 160px; height: 120px; border-radius: 8px; object-fit: cover; display: block; margin: 0 auto;">
+                            @else
                             <div style="width: 160px; height: 120px; background-color: #E3F1F2; border: 1px solid var(--l); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                                 <svg width="100" height="50" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect x="5" y="10" width="45" height="20" rx="2" fill="#D5DEE6"/>
@@ -46,6 +47,7 @@
                                     <circle cx="60" cy="32" r="5" fill="#51657A"/>
                                 </svg>
                             </div>
+                            @endif
                             <div class="m sm" style="margin-top: 8px;"><b>Vehicle photo</b><br>Number plate visible.</div>
                             <label class="btn g" style="margin-top: 8px; cursor: pointer; display: inline-block;">
                                 Change photo

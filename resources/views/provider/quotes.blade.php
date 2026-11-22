@@ -41,9 +41,9 @@
 
     <!-- PROBLEMS SECTION -->
     <div class="card" style="margin-top: 20px;">
-        <h3>Problems</h3>
+        <h3>Issues</h3>
         @if($problems->isEmpty())
-            <p class="m">No problems reported.</p>
+            <p class="m">No issues reported.</p>
         @else
             <table class="tb">
                 <tr>

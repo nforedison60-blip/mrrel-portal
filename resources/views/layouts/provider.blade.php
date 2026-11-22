@@ -99,7 +99,7 @@
                     ['Profile & verification', 'provider.profile', ['provider.profile*']],
                     ['Rate card', 'provider.rate', ['provider.rate*']],
                     ['Reviews', 'provider.reviews', ['provider.reviews*']],
-                    ['Problems', 'provider.problems', ['provider.problems*']],
+                    ['Issues', 'provider.problems', ['provider.problems*']],
                 ]],
             ];
 

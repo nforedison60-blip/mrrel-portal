@@ -1,7 +1,7 @@
 @extends('layouts.provider')
 
 @section('content')
-    <h1>Problems</h1>
+    <h1>Issues</h1>
     <div class="m">Manage issues reported by customers on your jobs.</div>
 
     @if(session('success'))
@@ -11,9 +11,9 @@
     @endif
 
     <div class="card" style="margin-top: 20px;">
-        <h3>Reported Problems</h3>
+        <h3>Reported issues</h3>
         @if($problems->isEmpty())
-            <p class="m">No problems have been reported on your jobs.</p>
+            <p class="m">No issues have been reported on your jobs.</p>
         @else
             <table class="tb">
                 <tr>

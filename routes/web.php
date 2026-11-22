@@ -526,6 +526,7 @@ Route::middleware(['auth'])->group(function () {
         $provider = Provider::firstOrCreate(
             ['email' => $user->email],
             [
+                'user_id' => $user->id,
                 'name' => $user->name,
                 'company_name' => null,
                 'vehicle' => null,
@@ -551,10 +552,20 @@ Route::middleware(['auth'])->group(function () {
     // Helper: the Provider record that belongs to the logged-in user
     // Matches ignoring capital letters and spaces, and prefers a verified row if two exist
     $providerFor = function () {
-        $email = strtolower(trim(auth()->user()->email));
-        return Provider::whereRaw('LOWER(TRIM(email)) = ?', [$email])
+        $user = auth()->user();
+        // 1) the direct link between the login and its provider record
+        $provider = Provider::where('user_id', $user->id)->first();
+        if ($provider) {
+            return $provider;
+        }
+        // 2) older records that only have an email: find them, then link them for good
+        $provider = Provider::whereRaw('LOWER(TRIM(email)) = ?', [strtolower(trim($user->email))])
             ->orderByRaw("CASE WHEN verification_status = 'Verified' THEN 0 ELSE 1 END")
             ->first();
+        if ($provider && !$provider->user_id) {
+            $provider->update(['user_id' => $user->id]);
+        }
+        return $provider;
     };
     $verifiedProvider = function () use ($providerFor) {
         $provider = $providerFor();
@@ -714,7 +725,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/provider/profile', function () {
         $user = auth()->user();
-        $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name]);
+        $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name, 'user_id' => $user->id]);
         $reviews = Review::where('provider_user_id', $user->id)->latest()->get();
         return view('provider.profile', ['provider' => $provider, 'reviews' => $reviews]);
     })->name('provider.profile');
@@ -729,7 +740,7 @@ Route::middleware(['auth'])->group(function () {
         ]);
         
         $user = auth()->user();
-        $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name]);
+        $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name, 'user_id' => $user->id]);
         
         $data = [
             'name' => $request->name,

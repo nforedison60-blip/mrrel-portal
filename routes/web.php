@@ -536,42 +536,82 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('provider.dashboard');
 
-    Route::get('/provider/send-quote/{id}', function ($id) {
-        $serviceRequest = ServiceRequest::findOrFail($id);
-        return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
-    })->name('provider.send');
+    // Helper: the Provider record that belongs to the logged-in user
+    $verifiedProvider = function () {
+        $user = auth()->user();
+        return Provider::where('email', $user->email)->where('verification_status', 'Verified')->first();
+    };
 
-    // THE FIXED SEND QUOTE ROUTE
-    Route::post('/provider/send-quote', function (Request $request) {
-        try {
-            $included = $request->has('included') ? implode(', ', (array)$request->input('included')) : '';
-            $notIncluded = $request->has('not_included') ? implode(', ', (array)$request->input('not_included')) : '';
-
-            $quote = Quote::create([
-                'provider_name' => auth()->user()->name,
-                'provider_user_id' => auth()->id(),
-                'total_price' => $request->total_price ?? 0,
-                'price_type' => $request->price_type ?? 'Fixed',
-                'included' => $included,
-                'not_included' => $notIncluded,
-                'validity' => $request->validity ?? '48 hours',
-                'note' => $request->note,
-                'service_request_id' => $request->service_request_id,
-            ]);
-
-            $serviceRequest = ServiceRequest::find($request->service_request_id);
-            
-            // THIS IS THE FIX: Find the customer who owns this request
-            $customerUser = User::find($serviceRequest->user_id);
-            $customerEmail = $customerUser ? $customerUser->email : 'error@mrrel.co.za';
-
-            $savedQuote = Quote::find($quote->id);
-            Mail::to($customerEmail)->send(new NewQuoteReceived($savedQuote));
-
-            return redirect()->route('provider.dashboard')->with('success', 'Quote sent successfully to ' . $customerEmail);
-        } catch (\Exception $e) {
-            return back()->with('error', 'Database error: ' . $e->getMessage());
+    Route::get('/provider/send-quote/{serviceRequest}', function (ServiceRequest $serviceRequest) use ($verifiedProvider) {
+        if (!$verifiedProvider()) {
+            return redirect()->route('provider.profile')
+                ->with('error', 'Your account must be verified by MrRel before you can send quotes.');
         }
+        // Only open requests can be quoted (not drafts, not already handled)
+        if ($serviceRequest->status !== 'Active') {
+            return redirect()->route('provider.requests')
+                ->with('error', 'This request is no longer open for quotes.');
+        }
+        if (Quote::where('provider_user_id', auth()->id())->where('service_request_id', $serviceRequest->id)->exists()) {
+            return redirect()->route('provider.quotes')
+                ->with('error', 'You have already sent a quote for this request.');
+        }
+        return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
+    })->whereNumber('serviceRequest')->name('provider.send');
+
+    Route::post('/provider/send-quote', function (Request $request) use ($verifiedProvider) {
+        $data = $request->validate([
+            'service_request_id' => 'required|integer|exists:service_requests,id',
+            'total_price'        => 'required|numeric|gt:0|max:999999.99',
+            'price_type'         => 'nullable|in:Fixed,Estimate,Hourly',
+            'included'           => 'nullable|array',
+            'included.*'         => 'string|max:50',
+            'not_included'       => 'nullable|array',
+            'not_included.*'     => 'string|max:50',
+            'validity'           => 'nullable|string|max:50',
+            'note'               => 'nullable|string|max:1000',
+        ]);
+
+        if (!$verifiedProvider()) {
+            return redirect()->route('provider.profile')
+                ->with('error', 'Your account must be verified by MrRel before you can send quotes.');
+        }
+
+        $serviceRequest = ServiceRequest::findOrFail($data['service_request_id']);
+        if ($serviceRequest->status !== 'Active') {
+            return redirect()->route('provider.requests')
+                ->with('error', 'This request is no longer open for quotes.');
+        }
+
+        // One quote per provider per request
+        if (Quote::where('provider_user_id', auth()->id())->where('service_request_id', $serviceRequest->id)->exists()) {
+            return redirect()->route('provider.quotes')
+                ->with('error', 'You have already sent a quote for this request.');
+        }
+
+        $quote = Quote::create([
+            'provider_name'      => auth()->user()->name,
+            'provider_user_id'   => auth()->id(),
+            'total_price'        => $data['total_price'],
+            'price_type'         => $data['price_type'] ?? 'Fixed',
+            'included'           => implode(', ', $data['included'] ?? []),
+            'not_included'       => implode(', ', $data['not_included'] ?? []),
+            'validity'           => $data['validity'] ?? '48 hours',
+            'note'               => $data['note'] ?? null,
+            'service_request_id' => $serviceRequest->id,
+        ]);
+
+        // The quote is saved either way; a mail problem must not undo it or leak internals
+        $customer = User::find($serviceRequest->user_id);
+        if ($customer && $customer->email) {
+            try {
+                Mail::to($customer->email)->send(new NewQuoteReceived($quote));
+            } catch (\Throwable $e) {
+                \Log::error('New quote email failed: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('provider.dashboard')->with('success', 'Quote sent to the customer.');
     })->name('provider.send.store');
 
     Route::get('/provider/requests', function () {

@@ -138,6 +138,18 @@
                     {{ session('success') }}
                 </div>
             @endif
+            @if(session('error'))
+                <div style="background:#FBEAEA; color:#8A1C1C; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #C0392B;">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if($errors->any())
+                <div style="background:#FBEAEA; color:#8A1C1C; padding:12px 18px; border-radius:12px; margin-bottom:16px; border:1px solid #C0392B;">
+                    @foreach($errors->all() as $message)
+                        <div>{{ $message }}</div>
+                    @endforeach
+                </div>
+            @endif
             @yield('content')
         </main>
     </div>

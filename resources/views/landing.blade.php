@@ -91,7 +91,7 @@
             <div class="rvl">
                 <span class="chipx">Movers and rentals, built for South Africa</span>
                 <h1 class="hd">Find a mover. <span>Find a home.</span> Move in with confidence.</h1>
-                <p class="lead">Compare quotes from movers, follow your move live, and browse places to rent. All in one place.</p>
+                <p class="lead">Compare quotes from movers and follow your move live. All in one place.</p>
                 <div class="cta">
                     <a class="btn" href="{{ route('register') }}">Get started</a>
                     <a class="btn g" href="{{ route('login') }}">Log in</a>

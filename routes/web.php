@@ -66,9 +66,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/customer/search', function (Request $request) {
         $query = Property::where('status', 'Approved');
         if ($request->filled('location')) {
-            $location = $request->input('location');
+            // Case-insensitive on every database (LIKE is case-sensitive on PostgreSQL)
+            $location = '%' . mb_strtolower(trim($request->input('location'))) . '%';
             $query->where(function($q) use ($location) {
-                $q->where('suburb', 'like', "%{$location}%")->orWhere('city', 'like', "%{$location}%");
+                $q->whereRaw('LOWER(suburb) LIKE ?', [$location])->orWhereRaw('LOWER(city) LIKE ?', [$location]);
             });
         }
         if ($request->filled('max_price')) {

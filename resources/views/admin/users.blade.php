@@ -60,6 +60,12 @@
                                 </form>
                                 <a href="{{ route('admin.providers') }}" class="btn g" style="padding:4px 12px;font-size:12px;margin:0;text-decoration:none;">See documents</a>
                             @endif
+                            @if($user->role !== 'Admin')
+                                <form method="POST" action="{{ route('admin.users.delete', $user->id) }}" style="display:inline;" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Remove '.$user->name.' and everything linked to them? This cannot be undone.') }});">
+                                    @csrf
+                                    <button type="submit" class="btn g" style="padding:4px 12px;font-size:12px;margin:0;color:#8A1C1C;">Remove</button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @endforeach

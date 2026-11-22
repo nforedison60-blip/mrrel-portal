@@ -152,6 +152,11 @@
                 </nav>
             @endif
 
+            @if(session('error'))
+                <div style="background:#FDECEC; color:#8A1C1C; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #E5A3A3;">
+                    {{ session('error') }}
+                </div>
+            @endif
             @if(session('success'))
                 <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
                     {{ session('success') }}

@@ -19,6 +19,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use App\Mail\NewQuoteReceived;
 
 require __DIR__.'/auth.php';
@@ -730,6 +731,83 @@ Route::middleware(['auth'])->group(function () {
 
     // ADMIN ROUTES
     Route::middleware('role:Admin')->group(function () {
+
+    // Removes one account and everything that belongs to it.
+    // It refuses when real money is involved (a paid booking), so records are never lost.
+    $removeAccount = function (User $user) {
+        if ($user->role === 'Admin' || $user->id === auth()->id()) {
+            return [false, 'Admin accounts cannot be removed here.'];
+        }
+        $id = $user->id;
+
+        $requestIds = ServiceRequest::where('user_id', $id)->pluck('id');
+        $quoteIds = Quote::where(function ($q) use ($id, $requestIds) {
+            $q->where('provider_user_id', $id)->orWhereIn('service_request_id', $requestIds);
+        })->pluck('id');
+        $bookings = Booking::where(function ($q) use ($id, $quoteIds) {
+            $q->where('user_id', $id)->orWhereIn('quote_id', $quoteIds);
+        })->get();
+
+        if ($bookings->where('status', 'Paid')->isNotEmpty()) {
+            return [false, $user->name . ' has paid bookings, so the account was kept for your records.'];
+        }
+
+        $bookingIds = $bookings->pluck('id');
+        $provider = Provider::where('email', $user->email)->first();
+        $files = $provider ? array_filter([
+            $provider->image_path, $provider->vehicle_image_path, $provider->id_image_path,
+            $provider->id_document, $provider->vehicle_document,
+        ]) : [];
+        $name = $user->name;
+
+        DB::transaction(function () use ($user, $id, $requestIds, $quoteIds, $bookingIds) {
+            Problem::where('user_id', $id)->orWhereIn('booking_id', $bookingIds)->delete();
+            ProviderLocation::where('user_id', $id)->delete();
+            Booking::whereIn('id', $bookingIds)->delete();
+            Quote::whereIn('id', $quoteIds)->delete();
+            ServiceRequest::where('user_id', $id)->delete();
+            Message::where('user_id', $id)->orWhere('receiver_id', $id)->delete();
+            Review::where('user_id', $id)->orWhere('provider_user_id', $id)->delete();
+            ViewingRequest::where('user_id', $id)->delete();
+            Property::where('accepted_by', $id)->where('status', 'Under Offer')->update(['accepted_by' => null, 'status' => 'Approved']);
+            Property::where('accepted_by', $id)->update(['accepted_by' => null]);
+            Property::where('user_id', $id)->delete();
+            Customer::where('user_id', $id)->delete();
+            Provider::where('email', $user->email)->delete();
+            $user->delete();
+        });
+
+        // Uploaded documents go too (a failure here must not undo the removal)
+        try {
+            if ($files) {
+                Storage::disk('s3')->delete(array_values($files));
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Could not delete files of removed account: ' . $e->getMessage());
+        }
+
+        return [true, 'Removed ' . $name . ' and everything linked to them.'];
+    };
+
+    Route::post('/admin/users/{user}/delete', function (User $user) use ($removeAccount) {
+        [$ok, $message] = $removeAccount($user);
+        return redirect()->route('admin.users')->with($ok ? 'success' : 'error', $message);
+    })->name('admin.users.delete');
+
+    Route::post('/admin/providers/{provider}/delete', function (Provider $provider) use ($removeAccount) {
+        $user = User::where('email', $provider->email)->first();
+        if ($user) {
+            [$ok, $message] = $removeAccount($user);
+        } else {
+            // A provider record with no login behind it
+            $files = array_filter([$provider->image_path, $provider->vehicle_image_path, $provider->id_image_path, $provider->id_document, $provider->vehicle_document]);
+            $name = $provider->name;
+            $provider->delete();
+            try { if ($files) { Storage::disk('s3')->delete(array_values($files)); } } catch (\Throwable $e) {}
+            [$ok, $message] = [true, 'Removed ' . $name . '.'];
+        }
+        return redirect()->route('admin.providers')->with($ok ? 'success' : 'error', $message);
+    })->name('admin.providers.delete');
 
     Route::get('/admin/dashboard', function (Request $request) {
         return view('admin.dashboard', [

@@ -74,6 +74,10 @@
                         @else
                             <span class="m sm">Verified</span>
                         @endif
+                        <form method="POST" action="{{ route('admin.providers.delete', $provider->id) }}" style="margin-top:8px;" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Remove '.$provider->name.' and everything linked to them? This cannot be undone.') }});">
+                            @csrf
+                            <button type="submit" class="btn g" style="padding: 6px 14px; font-size: 13px; color:#8A1C1C;">Remove</button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach

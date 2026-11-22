@@ -116,3 +116,28 @@ body.leaving{opacity:0;transition:opacity .22s ease-out}
   .rip{display:none}
 }
 @media(max-width:860px){body::before,body::after{display:none}}
+
+/* dashboard hero banner */
+.hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:22px;flex-wrap:wrap;border-radius:24px;padding:30px 32px;margin-bottom:22px;color:#fff;
+  background:radial-gradient(600px 300px at 100% 0%,rgba(244,183,49,.38),transparent 60%),linear-gradient(135deg,#0E7C86 0%,#0F4C5C 55%,#10243A 100%);
+  box-shadow:0 22px 46px rgba(16,36,58,.28),inset 0 1px 0 rgba(255,255,255,.2)}
+.hero .hc{position:relative;z-index:1}
+.hero h1{font-size:32px;line-height:1.1;margin:0 0 6px;color:#fff;-webkit-text-fill-color:#fff;background:none}
+.hero .m{color:rgba(255,255,255,.84)}
+.hero .btn.g{background:rgba(255,255,255,.14) !important;color:#fff;border:1.5px solid rgba(255,255,255,.4) !important;box-shadow:none !important}
+.hero .btn.g:hover{background:rgba(255,255,255,.24) !important}
+.hs{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 30% 28%,rgba(255,255,255,.6),rgba(255,255,255,.1) 55%,transparent 72%);animation:floaty 9s ease-in-out infinite}
+.hs.a{width:170px;height:170px;right:-36px;top:-50px}
+.hs.b{width:84px;height:84px;right:150px;bottom:-26px;animation-delay:-3s}
+.hs.c{width:46px;height:46px;right:310px;top:16px;animation-delay:-6s}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@media(max-width:860px){.hero{padding:24px 20px}.hero h1{font-size:26px}}
+@media (prefers-reduced-motion:reduce){.hs{animation:none !important}}
+
+/* menu icons */
+.sd a{display:flex !important;align-items:center}
+.sd a .bdg{margin-left:auto !important}
+.mi{width:19px;height:19px;flex:none;margin-right:11px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s var(--ease)}
+.sd a:hover .mi{transform:scale(1.18) rotate(-5deg)}
+.mb a{display:flex !important;flex-direction:column;align-items:center;gap:2px}
+.mb a .mi{width:21px;height:21px;margin:0}

@@ -1,8 +1,14 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1>Admin dashboard</h1>
-    <div class="m">Everything the MrRel team manages. Not shown on the public site.</div>
+    <div class="hero">
+        <i class="hs a"></i><i class="hs b"></i><i class="hs c"></i>
+        <div class="hc" style="flex:1;min-width:240px;">
+            <h1>Admin dashboard</h1>
+            <div class="m">Everything the MrRel team manages. Not shown on the public site.</div>
+        </div>
+        <div class="hc"><a class="btn" href="{{ route('admin.approvals') }}">Review approvals</a></div>
+    </div>
 
     <div class="g4" style="margin-top: 20px;">
         <div class="card">

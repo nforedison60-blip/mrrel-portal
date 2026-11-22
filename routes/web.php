@@ -27,6 +27,11 @@ require __DIR__.'/auth.php';
 // Ozow's server calls this: no login, no session, no CSRF token. The message is verified by its signature.
 Route::post('/payment/notify', [PaymentController::class, 'notify'])->name('payment.notify');
 
+// Public home page. Logged-in people go straight to their own dashboard.
+Route::get('/', function () {
+    return auth()->check() ? redirect()->route('dashboard') : view('landing');
+})->name('home');
+
 Route::get('/dashboard', function () {
     $role = auth()->user()->role;
     if ($role == 'Admin') return redirect()->route('admin.dashboard');
@@ -52,7 +57,7 @@ Route::middleware(['auth'])->group(function () {
     // CUSTOMER ROUTES
     Route::middleware('role:Customer')->group(function () {
 
-    Route::get('/', function () {
+    Route::get('/home', function () {
         $userId = auth()->id();
         return view('customer.dashboard', [
             'requestsCount' => ServiceRequest::where('user_id', $userId)->count(),

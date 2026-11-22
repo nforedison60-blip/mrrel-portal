@@ -8,6 +8,49 @@
   function ready(fn) { d.readyState !== 'loading' ? fn() : d.addEventListener('DOMContentLoaded', fn); }
 
   ready(function () {
+
+    /* menu icons, chosen from each link's label */
+    var P = {
+      home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/>',
+      place: '<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+      building: '<path d="M5 21V4h9v17"/><path d="M14 9h5v12"/><path d="M8 8h3M8 12h3M8 16h3"/>',
+      eye: '<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/>',
+      truck: '<path d="M2 6h11v10H2z"/><path d="M13 9h4.5L21 12.5V16h-8"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+      message: '<path d="M4 5h16v11H9l-5 4z"/>',
+      card: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 10h18"/>',
+      check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
+      users: '<circle cx="9" cy="8.5" r="3"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M17 14c2.5 0 4.5 1.6 4.5 4"/>',
+      cog: '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
+      wallet: '<path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M4 7l11-3v3"/><circle cx="16" cy="13.5" r="1.2"/>',
+      help: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5.6 5.6l3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9"/>',
+      user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6"/>'
+    };
+    function iconFor(t) {
+      t = t.toLowerCase();
+      if (/home|overview/.test(t)) return 'home';
+      if (/find a place|search/.test(t)) return 'place';
+      if (/propert/.test(t)) return 'building';
+      if (/viewing/.test(t)) return 'eye';
+      if (/move|job/.test(t)) return 'truck';
+      if (/message/.test(t)) return 'message';
+      if (/subscription/.test(t)) return 'card';
+      if (/approval/.test(t)) return 'check';
+      if (/user|people/.test(t)) return 'users';
+      if (/operation/.test(t)) return 'cog';
+      if (/finance|money/.test(t)) return 'wallet';
+      if (/support/.test(t)) return 'help';
+      if (/account|business|profile/.test(t)) return 'user';
+      return null;
+    }
+    d.querySelectorAll('.sd a, .mb a').forEach(function (a) {
+      var key = iconFor(a.textContent.replace(/\d+/g, '').trim());
+      if (!key || a.querySelector('.mi')) return;
+      var svg = d.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('class', 'mi'); svg.setAttribute('aria-hidden', 'true');
+      svg.innerHTML = P[key];
+      a.insertBefore(svg, a.firstChild);
+    });
+
     /* top progress bar */
     var bar = d.createElement('div'); bar.id = 'pbar'; d.body.appendChild(bar);
     function setBar(w) { bar.style.opacity = '1'; bar.style.width = w + '%'; }
@@ -15,7 +58,7 @@
     window.addEventListener('load', function () { setBar(100); setTimeout(function () { bar.style.opacity = '0'; }, 450); });
 
     /* scroll reveal with stagger */
-    var els = [].slice.call(d.querySelectorAll('.mn > h1, .mn > .m, .mn > .stb, .mn .card, body > .card'));
+    var els = [].slice.call(d.querySelectorAll('.mn > h1, .mn > .m, .mn > .stb, .mn .card, .mn .hero, body > .card, .rvl'));
     if ('IntersectionObserver' in window && els.length) {
       els.forEach(function (el) { el.classList.add('rv'); });
       var io = new IntersectionObserver(function (entries) {

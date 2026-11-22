@@ -52,8 +52,17 @@
     $events = $events->filter(fn($e) => $e['at'])->sortByDesc('at')->take(5);
 @endphp
 
-    <h1>{{ $isNew ? 'Welcome' : 'Welcome back' }}, {{ $firstName }}</h1>
-    <div class="m">Everything that needs you, in one place.</div>
+    <div class="hero">
+        <i class="hs a"></i><i class="hs b"></i><i class="hs c"></i>
+        <div class="hc" style="flex:1;min-width:240px;">
+            <h1>{{ $isNew ? 'Welcome' : 'Welcome back' }}, {{ $firstName }}</h1>
+            <div class="m">Everything that needs you, in one place.</div>
+        </div>
+        <div class="hc">
+            <a class="btn" href="{{ route('customer.new-request') }}">{{ $isNew ? 'Get moving quotes' : 'New move request' }}</a>
+            <a class="btn g" href="{{ route('customer.search') }}">Find a place</a>
+        </div>
+    </div>
 
     <div class="g4">
         <a href="{{ route('customer.requests') }}" class="card" style="display:block;text-decoration:none;color:inherit;">

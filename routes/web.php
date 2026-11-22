@@ -408,7 +408,7 @@ Route::middleware(['auth'])->group(function () {
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('problems');
+            $imagePath = $request->file('image')->store('problems', 's3');
         }
 
         Problem::create([

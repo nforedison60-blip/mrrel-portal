@@ -53,7 +53,7 @@
                         <p class="m sm" style="margin-top: 12px;">{{ $latest->description }}</p>
                         @if($latest->image_path)
                             <div style="margin-top: 8px;">
-                                <a href="{{ Storage::url($latest->image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline;">View attached document</a>
+                                <a href="{{ Storage::disk('s3')->url($latest->image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline;">View attached document</a>
                             </div>
                         @endif
                     </div>

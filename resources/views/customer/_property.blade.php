@@ -14,7 +14,7 @@
     </div>
 
     @if($property->image_path)
-        <img src="{{ Storage::url($property->image_path) }}" alt="Photo of {{ $property->title }}"
+        <img src="{{ Storage::disk('s3')->url($property->image_path) }}" alt="Photo of {{ $property->title }}"
              style="width:100%; height:200px; object-fit:cover; border-radius:8px; margin-bottom:10px;"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
         <div style="display:none; {{ $boxStyle }}">No photo available</div>

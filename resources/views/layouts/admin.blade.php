@@ -101,7 +101,7 @@
                     ['Live map', 'admin.map', ['admin.map*']],
                 ]],
                 ['label' => 'Approvals', 'short' => 'Approve', 'route' => 'admin.approvals', 'match' => ['admin.approvals*'], 'subs' => [], 'badge' => $pending],
-                ['label' => 'People', 'short' => 'People', 'route' => 'admin.providers', 'match' => [], 'subs' => [
+                ['label' => 'Users', 'short' => 'Users', 'route' => 'admin.providers', 'match' => [], 'subs' => [
                     ['Providers', 'admin.providers', ['admin.providers*']],
                     ['Users', 'admin.users', ['admin.users*']],
                 ]],
@@ -111,7 +111,7 @@
                     ['Bookings', 'admin.bookings', ['admin.bookings*']],
                     ['Properties', 'admin.properties', ['admin.properties*']],
                 ]],
-                ['label' => 'Money', 'short' => 'Money', 'route' => 'admin.payments', 'match' => [], 'subs' => [
+                ['label' => 'Finance', 'short' => 'Finance', 'route' => 'admin.payments', 'match' => [], 'subs' => [
                     ['Payments', 'admin.payments', ['admin.payments*']],
                     ['Subscriptions', 'admin.subscriptions', ['admin.subscriptions*']],
                 ]],

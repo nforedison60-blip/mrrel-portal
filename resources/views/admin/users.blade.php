@@ -20,7 +20,7 @@
     <div class="card">
         <h3>Accounts</h3>
         @if($users->isEmpty())
-            <p class="m">No accounts yet. People appear here after they register.</p>
+            <p class="m">No accounts yet. Users appear here after they register.</p>
         @else
             <div style="overflow-x:auto;">
             <table class="tb">

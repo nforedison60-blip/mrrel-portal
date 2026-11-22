@@ -9,7 +9,7 @@
 @endphp
 
     <h1>Payments</h1>
-    <div class="m">Money paid by customers, and which jobs they have confirmed. Payouts to providers are made by hand for now.</div>
+    <div class="m">Payments made by customers, and which jobs they have confirmed. Payouts to providers are made by hand for now.</div>
 
     <div class="g4" style="margin-top:20px;">
         <div class="card">

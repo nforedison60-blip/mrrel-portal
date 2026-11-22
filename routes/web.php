@@ -549,15 +549,31 @@ Route::middleware(['auth'])->group(function () {
     })->name('provider.dashboard');
 
     // Helper: the Provider record that belongs to the logged-in user
-    $verifiedProvider = function () {
-        $user = auth()->user();
-        return Provider::where('email', $user->email)->where('verification_status', 'Verified')->first();
+    // Matches ignoring capital letters and spaces, and prefers a verified row if two exist
+    $providerFor = function () {
+        $email = strtolower(trim(auth()->user()->email));
+        return Provider::whereRaw('LOWER(TRIM(email)) = ?', [$email])
+            ->orderByRaw("CASE WHEN verification_status = 'Verified' THEN 0 ELSE 1 END")
+            ->first();
+    };
+    $verifiedProvider = function () use ($providerFor) {
+        $provider = $providerFor();
+        return ($provider && $provider->verification_status === 'Verified') ? $provider : null;
+    };
+    // Says exactly why quoting is blocked, so a mismatch is easy to spot
+    $notVerifiedMessage = function () use ($providerFor) {
+        $provider = $providerFor();
+        $email = auth()->user()->email;
+        if (!$provider) {
+            return 'No provider profile was found for ' . $email . '. Open My business and save your details first.';
+        }
+        return 'Your account (' . $email . ') is not verified yet. Its status is "' . ($provider->verification_status ?: 'Pending') . '". Ask MrRel to verify this exact account.';
     };
 
-    Route::get('/provider/send-quote/{serviceRequest}', function (ServiceRequest $serviceRequest) use ($verifiedProvider) {
+    Route::get('/provider/send-quote/{serviceRequest}', function (ServiceRequest $serviceRequest) use ($verifiedProvider, $notVerifiedMessage) {
         if (!$verifiedProvider()) {
             return redirect()->route('provider.profile')
-                ->with('error', 'Your account must be verified by MrRel before you can send quotes.');
+                ->with('error', $notVerifiedMessage());
         }
         // Only open requests can be quoted (not drafts, not already handled)
         if ($serviceRequest->status !== 'Active') {
@@ -571,7 +587,7 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->whereNumber('serviceRequest')->name('provider.send');
 
-    Route::post('/provider/send-quote', function (Request $request) use ($verifiedProvider) {
+    Route::post('/provider/send-quote', function (Request $request) use ($verifiedProvider, $notVerifiedMessage) {
         $data = $request->validate([
             'service_request_id' => 'required|integer|exists:service_requests,id',
             'total_price'        => 'required|numeric|gt:0|max:999999.99',
@@ -586,7 +602,7 @@ Route::middleware(['auth'])->group(function () {
 
         if (!$verifiedProvider()) {
             return redirect()->route('provider.profile')
-                ->with('error', 'Your account must be verified by MrRel before you can send quotes.');
+                ->with('error', $notVerifiedMessage());
         }
 
         $serviceRequest = ServiceRequest::findOrFail($data['service_request_id']);

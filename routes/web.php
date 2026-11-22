@@ -681,7 +681,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/provider/booking/{booking}/status', function (Request $request, Booking $booking) {
         // Provider may only update THEIR OWN bookings
         abort_unless(Booking::forProvider(auth()->id())->where('id', $booking->id)->exists(), 403);
-        abort_unless($booking->status === 'Paid', 403); // work starts after the customer has paid
+        if ($booking->status !== 'Paid') { // work starts after the customer has paid
+            return redirect()->back()->with('error', 'You can update tracking once the customer has paid for this booking.');
+        }
         $data = $request->validate(['status' => 'required|in:On my way,Arrived,Loading,In transit,Delivered']);
         $booking->update(['tracking_status' => $data['status']]);
         return redirect()->route('provider.dashboard')->with('success', 'Tracking status updated!');

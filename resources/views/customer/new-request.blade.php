@@ -10,17 +10,6 @@
     <h1>New move or service request</h1>
     <div class="m">Providers in your area see this and send you quotes.</div>
 
-    @if($errors->any())
-        <div style="background:#FDF1CC; color:#5C4300; padding:12px 18px; border-radius:12px; margin:16px 0; border:1px solid #F4B731;">
-            <b>Please check these details:</b>
-            <ul style="margin:6px 0 0;">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <div class="sp">
         <div class="card">
             <h3>Request details</h3>

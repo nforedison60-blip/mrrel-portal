@@ -437,26 +437,43 @@ Route::middleware(['auth'])->group(function () {
     })->name('landlord.add-property');
 
     Route::post('/landlord/add-property', function (Request $request) {
-        $request->validate(['image' => 'nullable|image|max:5120']);
+        $data = $request->validate([
+            'title'         => 'required|string|max:150',
+            'description'   => 'nullable|string|max:1000',
+            'property_type' => 'required|string|max:50',
+            'city'          => 'required|string|max:100',
+            'suburb'        => 'required|string|max:100',
+            'bedrooms'      => 'required|string|max:10',
+            'bathrooms'     => 'required|string|max:10',
+            'rent'          => 'required|numeric|min:0',
+            'deposit'       => 'required|numeric|min:0',
+            'own'           => 'accepted',
+            'image'         => 'nullable|image|max:5120',
+        ], [
+            'own.accepted' => 'Please confirm that you own this property or are authorised to let it.',
+        ]);
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('properties', 's3');
         }
+
+        // Status "Draft" means: sent to MrRel, waiting for review
         Property::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'property_type' => $request->property_type,
-            'city' => $request->city,
-            'suburb' => $request->suburb,
-            'bedrooms' => $request->bedrooms,
-            'bathrooms' => $request->bathrooms,
-            'rent' => $request->rent,
-            'deposit' => $request->deposit,
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'property_type' => $data['property_type'],
+            'city' => $data['city'],
+            'suburb' => $data['suburb'],
+            'bedrooms' => $data['bedrooms'],
+            'bathrooms' => $data['bathrooms'],
+            'rent' => $data['rent'],
+            'deposit' => $data['deposit'],
             'status' => 'Draft',
             'image_path' => $imagePath,
             'user_id' => auth()->id(),
         ]);
-        return redirect()->route('landlord.properties')->with('success', 'Property saved as draft!');
+        return redirect()->route('landlord.properties')->with('success', 'Property sent to MrRel for review. It goes live for tenants once MrRel approves it.');
     })->name('landlord.properties.store');
 
     Route::get('/landlord/viewing-requests', function () {
@@ -474,8 +491,20 @@ Route::middleware(['auth'])->group(function () {
     })->name('landlord.viewing.resolve');
 
     Route::get('/landlord/profile', function () {
-        return view('landlord.profile');
+        return view('landlord.profile', ['user' => auth()->user()]);
     })->name('landlord.profile');
+
+    Route::post('/landlord/profile', function (Request $request) {
+        $data = $request->validate([
+            'name'          => 'required|string|max:100',
+            'phone'         => 'nullable|string|max:30',
+            'landlord_type' => 'required|in:Owner,Agent',
+            'agency_name'   => 'nullable|string|max:150',
+            'ppra_number'   => 'nullable|string|max:50',
+        ]);
+        auth()->user()->update($data);
+        return redirect()->route('landlord.profile')->with('success', 'Profile updated.');
+    })->name('landlord.profile.update');
 
     }); // end Landlord
 

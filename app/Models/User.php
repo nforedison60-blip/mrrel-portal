@@ -15,6 +15,10 @@ class User extends Authenticatable
         'email',
         'password',
         'role', // THIS IS THE CRITICAL FIX
+        'phone',
+        'landlord_type',
+        'agency_name',
+        'ppra_number',
     ];
 
     protected $hidden = [

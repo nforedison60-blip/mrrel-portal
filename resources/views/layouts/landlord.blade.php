@@ -43,7 +43,29 @@
         .pl{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.pl label{display:flex;gap:6px;align-items:center;border:1px solid var(--l);border-radius:99px;padding:5px 12px;font-size:14px;font-weight:500;cursor:pointer;margin:0}
         .star{cursor:pointer}.star.on{background:var(--a);border-color:var(--a)}
         #toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);background:var(--n);color:#fff;padding:12px 22px;border-radius:99px;font-weight:600;transition:.4s;z-index:50;opacity:0}#toast.s{transform:translate(-50%,0);opacity:1}
-        @media(max-width:860px){.bd{grid-template-columns:1fr}.sd{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;display:flex;overflow-x:auto;padding:0;border-top:1px solid var(--l);z-index:30}.sd a{white-space:nowrap;border-left:0;border-top:3px solid transparent;padding:12px 14px}.sd a.on{border-top-color:var(--t)}.g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}.mn{padding:20px 16px 90px}.st{position:static}}
+        .sd a:focus-visible,.mb a:focus-visible,.stb a:focus-visible,.sw a:focus-visible{outline:3px solid var(--t);outline-offset:-3px}
+        .sd a{padding:12px 22px;font-weight:600}
+        .stb{display:flex;gap:8px;margin:0 0 20px;overflow-x:auto;padding-bottom:2px}
+        .stb a{white-space:nowrap;text-decoration:none;color:var(--n);background:#fff;border:1px solid var(--l);border-radius:99px;padding:8px 16px;font:600 14px Figtree;transition:.2s}
+        .stb a:hover{border-color:var(--t)}
+        .stb a.on{background:var(--a);border-color:var(--a);color:var(--n)}
+        .empty{text-align:center;padding:36px 20px}
+        .empty h3{margin-bottom:6px}
+        .chip.gr{background:#EEF2F5;color:var(--m);border-color:#EEF2F5}
+        .bdg{display:inline-block;min-width:20px;padding:1px 7px;margin-left:8px;border-radius:99px;background:#B3402F;color:#fff;font:700 12px Figtree;text-align:center;line-height:1.5}
+        .mb .bdg{margin-left:4px;padding:0 5px;font-size:11px;min-width:16px}
+        .mb{display:none}
+        @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+        @media(max-width:860px){
+            .top{padding:8px 16px}
+            .bd{grid-template-columns:1fr}
+            .sd{display:none}
+            .mb{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--l);z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+            .mb a{flex:1;min-width:0;text-align:center;padding:13px 2px;border-top:3px solid transparent;color:var(--n);font:600 13px Figtree;text-decoration:none}
+            .mb a.on{border-top-color:var(--t);color:var(--td);background:var(--tl)}
+            .g2,.g3,.g4,.sp,.f{grid-template-columns:1fr}
+            .mn{padding:20px 16px 90px}.st{position:static}
+        }
     </style>
 </head>
 <body>
@@ -54,7 +76,6 @@
             <a href="{{ route('landlord.properties') }}" class="on">Landlord</a>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-            <span style="opacity:.85;font-size:13px">Example data</span>
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                 @csrf
                 <button type="submit" style="background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 14px; border-radius:99px; cursor:pointer; font:600 13px Figtree;">Log Out</button>
@@ -62,18 +83,79 @@
         </div>
     </div>
 
+
     <div class="bd">
-        <nav class="sd" id="sd">
-            <a href="{{ route('landlord.properties') }}" class="{{ request()->routeIs('landlord.properties') ? 'on' : '' }}">My properties</a>
-            <a href="{{ route('landlord.add-property') }}" class="{{ request()->routeIs('landlord.add-property') ? 'on' : '' }}">Add property</a>
-            <a href="{{ route('landlord.viewing-requests') }}" class="{{ request()->routeIs('landlord.viewing-requests') ? 'on' : '' }}">Viewing requests</a>
-            <a href="{{ route('landlord.profile') }}" class="{{ request()->routeIs('landlord.profile') ? 'on' : '' }}">Profile</a>
+        @php
+            $isOn = fn($patterns) => request()->routeIs(...$patterns);
+
+            // Red badge: viewing requests waiting for this landlord
+            try {
+                $pendingViewings = \App\Models\ViewingRequest::where('status', 'Pending')
+                    ->whereHas('property', fn($q) => $q->where('user_id', auth()->id()))
+                    ->count();
+            } catch (\Throwable $e) {
+                $pendingViewings = 0;
+            }
+
+            // 5 main tabs. Tabs with "subs" show a row of sub-tabs at the top of each page.
+            // Each sub is: [label, route name, route patterns that count as "on"]
+            $tabs = [
+                ['label' => 'My properties', 'short' => 'Properties', 'route' => 'landlord.properties', 'match' => [], 'subs' => [
+                    ['My properties', 'landlord.properties', ['landlord.properties']],
+                    ['Add property', 'landlord.add-property', ['landlord.add-property', 'landlord.properties.store']],
+                ]],
+                ['label' => 'Viewing requests', 'short' => 'Viewings', 'route' => 'landlord.viewing-requests', 'match' => ['landlord.viewing*'], 'subs' => [], 'badge' => $pendingViewings],
+                ['label' => 'Profile', 'short' => 'Profile', 'route' => 'landlord.profile', 'match' => ['landlord.profile*'], 'subs' => []],
+            ];
+
+            // Find which main tab the current page belongs to
+            $active = null;
+            foreach ($tabs as $i => $t) {
+                $hit = $isOn($t['match']);
+                foreach ($t['subs'] as $s) { if ($isOn($s[2])) { $hit = true; } }
+                if ($hit) { $active = $i; break; }
+            }
+        @endphp
+
+        <nav class="sd" id="sd" aria-label="Main menu">
+            @foreach($tabs as $i => $t)
+                <a href="{{ route($t['route']) }}" class="{{ $active === $i ? 'on' : '' }}">{{ $t['label'] }}@if(!empty($t['badge']))<span class="bdg" title="{{ $t['badge'] }} waiting">{{ $t['badge'] }}</span>@endif</a>
+            @endforeach
         </nav>
-        
+
+        <div class="mb" id="mb">
+            @foreach($tabs as $i => $t)
+                <a href="{{ route($t['route']) }}" class="{{ $active === $i ? 'on' : '' }}">{{ $t['short'] }}@if(!empty($t['badge']))<span class="bdg" title="{{ $t['badge'] }} waiting">{{ $t['badge'] }}</span>@endif</a>
+            @endforeach
+        </div>
+
         <main class="mn" id="mn">
+            @if($active !== null && count($tabs[$active]['subs']) > 1)
+                <nav class="stb" aria-label="{{ $tabs[$active]['label'] }} sections">
+                    @foreach($tabs[$active]['subs'] as $s)
+                        <a href="{{ route($s[1]) }}" class="{{ $isOn($s[2]) ? 'on' : '' }}">{{ $s[0] }}</a>
+                    @endforeach
+                </nav>
+            @endif
+
             @if(session('success'))
                 <div style="background:#E3F1F2; color:#0A5C64; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #0E7C86;">
                     {{ session('success') }}
+                </div>
+            @endif
+            @if(session('error'))
+                <div style="background:#FDECEC; color:#8A1C1C; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #E5A3A3;">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if($errors->any())
+                <div style="background:#FDECEC; color:#8A1C1C; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #E5A3A3;">
+                    Please fix the following:
+                    <ul style="margin:6px 0 0; font-weight:500;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
             @yield('content')

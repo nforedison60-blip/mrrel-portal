@@ -3,12 +3,6 @@
 @section('content')
 <h1>Checkout</h1>
 
-@if(session('error'))
-    <div style="background:#FDF1CC; color:#5C4300; padding:12px 18px; border-radius:12px; margin:16px 0; font-weight:600; border:1px solid #F4B731; max-width: 500px;">
-        {{ session('error') }}
-    </div>
-@endif
-
 @if(!$booking)
     <div class="card" style="max-width: 500px; margin-top: 20px;">
         <h3>Nothing to pay</h3>

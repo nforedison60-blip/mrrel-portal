@@ -1,25 +1,39 @@
 @extends('layouts.landlord')
 
 @section('content')
-    <h1>My properties</h1>
-    <div class="m">Properties stay private. Only MrRel decides which tenants see them.</div>
+@php
+    // Properties only ever have these three states. Draft means "sent to MrRel, waiting for review".
+    $labels = [
+        'Draft'       => ['Waiting for MrRel', 'wn'],
+        'Approved'    => ['Live', 'ok'],
+        'Under Offer' => ['Tenant accepted', 'ok'],
+    ];
+@endphp
 
-    <div class="g4" style="margin-top: 20px;">
-        <div class="card"><div class="m sm">Approved</div><div class="big">{{ $properties->where('status', 'Approved')->count() }}</div><div class="m sm">Visible to tenants</div></div>
-        <div class="card"><div class="m sm">Submitted</div><div class="big">{{ $properties->where('status', 'Submitted')->count() }}</div><div class="m sm">Waiting for MrRel</div></div>
-        <div class="card"><div class="m sm">Changes requested</div><div class="big">{{ $properties->where('status', 'Changes requested')->count() }}</div><div class="m sm">Needs your attention</div></div>
-        <div class="card"><div class="m sm">Draft</div><div class="big">{{ $properties->where('status', 'Draft')->count() }}</div><div class="m sm">Not submitted yet</div></div>
+    <div class="row" style="justify-content: space-between; margin-bottom: 16px;">
+        <div>
+            <h1>My properties</h1>
+            <div class="m">Properties stay private. Only MrRel decides which tenants see them.</div>
+        </div>
+        <a href="{{ route('landlord.add-property') }}" class="btn" style="text-decoration:none;">+ Add property</a>
     </div>
 
-    <div style="margin-bottom: 16px;">
-        <a href="{{ route('landlord.add-property') }}" class="btn" style="text-decoration:none;">Add property</a>
+    <div class="g3">
+        <div class="card"><div class="m sm">Live</div><div class="big">{{ $properties->where('status', 'Approved')->count() }}</div><div class="m sm">Visible to tenants</div></div>
+        <div class="card"><div class="m sm">Waiting for MrRel</div><div class="big">{{ $properties->where('status', 'Draft')->count() }}</div><div class="m sm">Being reviewed</div></div>
+        <div class="card"><div class="m sm">Tenant accepted</div><div class="big">{{ $properties->where('status', 'Under Offer')->count() }}</div><div class="m sm">MrRel will finalise the lease</div></div>
     </div>
 
-    <div class="card">
+    <div class="card" style="margin-top: 16px;">
         <h3>Your properties</h3>
         @if($properties->isEmpty())
-            <p class="m">You haven't added any properties yet. Click the button above to get started.</p>
+            <div class="empty">
+                <h3>No properties yet</h3>
+                <p class="m" style="margin-bottom: 12px;">Add a property and MrRel will review it. Once it is approved, matching tenants can ask to view it.</p>
+                <a href="{{ route('landlord.add-property') }}" class="btn" style="text-decoration:none;">Add your first property</a>
+            </div>
         @else
+            <div style="overflow-x:auto;">
             <table class="tb">
                 <tr>
                     <th>Property</th>
@@ -28,30 +42,19 @@
                     <th>Updated</th>
                 </tr>
                 @foreach($properties as $property)
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 40px; height: 40px; background: #E3F1F2; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #D5DEE6;">
-                                <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10 50L50 10L90 50V90H10V50Z" fill="#D5DEE6" stroke="#51657A" stroke-width="4"/>
-                                    <rect x="40" y="60" width="20" height="30" fill="#51657A"/>
-                                    <rect x="20" y="55" width="15" height="15" fill="#51657A"/>
-                                    <rect x="65" y="55" width="15" height="15" fill="#51657A"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <b>{{ $property->title }}</b><br>
-                                <span class="m sm">{{ $property->suburb }}</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td>R{{ number_format($property->rent, 0) }}</td>
-                    <td><span class="chip {{ $property->status == 'Approved' ? 'ok' : 'wn' }}">{{ $property->status }}</span></td>
-                    <td>{{ $property->updated_at->format('d M') }}</td>
-                </tr>
+                    @php $label = $labels[$property->status] ?? [$property->status, 'wn']; @endphp
+                    <tr>
+                        <td>
+                            <b>{{ $property->title }}</b><br>
+                            <span class="m sm">{{ collect([$property->suburb, $property->city])->filter()->implode(', ') }} · {{ $property->property_type }}</span>
+                        </td>
+                        <td>R{{ number_format($property->rent, 0) }}</td>
+                        <td><span class="chip {{ $label[1] }}">{{ $label[0] }}</span></td>
+                        <td class="m sm">{{ $property->updated_at->format('d M Y') }}</td>
+                    </tr>
                 @endforeach
             </table>
-            <p class="m sm" style="margin-top: 16px;">Statuses: Draft, Submitted, Approved, Changes requested, Rejected, Withdrawn.</p>
+            </div>
         @endif
     </div>
 @endsection

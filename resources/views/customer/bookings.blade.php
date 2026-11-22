@@ -1,12 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-@if(session('error'))
-    <div style="background:#FDF1CC; color:#5C4300; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #F4B731;">
-        {{ session('error') }}
-    </div>
-@endif
-
 @if($booking)
 @php
     $quote = $booking->quote;
@@ -58,7 +52,7 @@
                         @endif
                     </div>
                 </div>
-                <div class="m sm" style="margin-top: 12px;">If someone else arrives, don't hand anything over. <a href="{{ route('customer.messages') }}" style="color:inherit;">Message MrRel</a>.</div>
+                <div class="m sm" style="margin-top: 12px;">If someone else arrives, don't hand anything over. <a href="{{ route('customer.problems') }}" style="color:inherit;">Report a problem</a>.</div>
             </div>
 
             <div class="card" style="margin-top: 16px;">
@@ -80,8 +74,8 @@
 
             <div class="card" style="margin-top: 16px;">
                 <h3>Questions about this booking?</h3>
-                <p class="m sm" style="margin-top: 8px;">Send MrRel a message and mention {{ $ref }}.</p>
-                <a href="{{ route('customer.messages') }}" class="btn g" style="text-decoration:none;">Go to messages</a>
+                <p class="m sm" style="margin-top: 8px;">Send {{ $providerName }} a message about {{ $ref }}.</p>
+                <a href="{{ $providerUserId ? route('customer.messages', ['with' => $providerUserId]) : route('customer.messages') }}" class="btn g" style="text-decoration:none;">Message {{ $providerName }}</a>
             </div>
 
             <div class="card" style="margin-top: 16px;">

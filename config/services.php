@@ -14,6 +14,12 @@ return [
     |
     */
 
+    'ozow' => [
+        'site_code'   => env('OZOW_SITE_CODE'),
+        'private_key' => env('OZOW_PRIVATE_KEY'),
+        'is_test'     => filter_var(env('OZOW_IS_TEST', false), FILTER_VALIDATE_BOOLEAN),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

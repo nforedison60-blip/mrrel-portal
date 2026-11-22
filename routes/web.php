@@ -23,6 +23,9 @@ use App\Mail\NewQuoteReceived;
 
 require __DIR__.'/auth.php';
 
+// Ozow's server calls this: no login, no session, no CSRF token. The message is verified by its signature.
+Route::post('/payment/notify', [PaymentController::class, 'notify'])->name('payment.notify');
+
 Route::get('/dashboard', function () {
     $role = auth()->user()->role;
     if ($role == 'Admin') return redirect()->route('admin.dashboard');
@@ -44,7 +47,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
     Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
-    Route::post('/payment/notify', [PaymentController::class, 'notify'])->name('payment.notify');
 
     // CUSTOMER ROUTES
     Route::middleware('role:Customer')->group(function () {
@@ -794,7 +796,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/payments', function () {
         $bookings = Booking::latest()->get();
-        $totalRevenue = Booking::sum('total_price');
+        $totalRevenue = Booking::where('status', 'Paid')->sum('total_price'); // only money really received
         return view('admin.payments', ['bookings' => $bookings, 'totalRevenue' => $totalRevenue, 'pendingPayouts' => $totalRevenue * 0.9, 'totalBookings' => $bookings->count()]);
     })->name('admin.payments');
 

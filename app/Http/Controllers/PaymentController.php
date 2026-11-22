@@ -11,17 +11,28 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
-    public function checkout()
+    public function checkout(Request $request)
     {
-        return view('payment.checkout');
+        // Pay the booking the customer clicked on, or else their newest unpaid one
+        $booking = $request->filled('booking')
+            ? Booking::where('user_id', auth()->id())->with('quote')->find($request->booking)
+            : Booking::where('user_id', auth()->id())->where('status', '!=', 'Paid')->with('quote')->latest()->first();
+
+        return view('payment.checkout', ['booking' => $booking]);
     }
 
     public function process(Request $request)
     {
-        $booking = Booking::where('user_id', auth()->id())->latest()->first();
+        $request->validate(['booking_id' => 'required|integer']);
+
+        $booking = Booking::where('user_id', auth()->id())->find($request->booking_id);
 
         if (!$booking) {
-            return redirect()->back()->with('error', 'No active booking found to pay for.');
+            return redirect()->route('customer.bookings')->with('error', 'No booking found to pay for.');
+        }
+
+        if ($booking->status === 'Paid') {
+            return redirect()->route('customer.bookings', ['booking' => $booking->id])->with('error', 'This booking is already paid.');
         }
 
         $siteCode = env('OZOW_SITE_CODE');
@@ -67,20 +78,41 @@ class PaymentController extends Controller
         return $html;
     }
 
-    public function success()
+    public function success(Request $request)
     {
-        $booking = Booking::where('user_id', auth()->id())->latest()->first();
-        
-        if ($booking) {
-            $booking->update(['status' => 'Paid']);
+        // Ozow sends the customer back with the booking reference (for example BKG-0007)
+        $booking = null;
+        $reference = $request->query('TransactionReference');
+        if ($reference && preg_match('/^BKG-(\d+)$/', $reference, $m)) {
+            $booking = Booking::where('user_id', auth()->id())->find((int) $m[1]);
+        }
+        if (!$booking) {
+            $booking = Booking::where('user_id', auth()->id())->where('status', '!=', 'Paid')->latest()->first();
+        }
+        if (!$booking) {
+            return redirect()->route('customer.bookings');
         }
 
-        return "Payment Successful! Thank you. Check your email for the receipt.";
+        // If the bank says the payment did not complete, do not mark it as paid
+        $gatewayStatus = $request->query('Status');
+        if ($gatewayStatus && strtolower($gatewayStatus) !== 'complete') {
+            return redirect()->route('customer.bookings', ['booking' => $booking->id])
+                ->with('error', 'Your bank did not confirm the payment. Please try again with Pay now.');
+        }
+
+        // TODO (needs a test payment with Ozow): confirm payment ONLY from the signed notify message below.
+        $booking->update(['status' => 'Paid']);
+
+        return redirect()->route('customer.bookings', ['booking' => $booking->id])
+            ->with('success', 'Thank you! Your payment has been recorded.');
     }
 
     public function cancel()
     {
-        return "Payment Cancelled.";
+        $booking = Booking::where('user_id', auth()->id())->where('status', '!=', 'Paid')->latest()->first();
+
+        return redirect()->route('customer.bookings', $booking ? ['booking' => $booking->id] : [])
+            ->with('error', 'The payment was cancelled, so nothing was charged. You can try again with Pay now.');
     }
 
     public function notify(Request $request)

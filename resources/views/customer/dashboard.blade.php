@@ -28,7 +28,10 @@
     if ($quotesCount > 0 && !$nextBooking) {
         $todo[] = ['text' => 'You have ' . $plural($quotesCount, 'quote') . ' to compare. Pick one to book your move.', 'url' => route('customer.quotes'), 'cta' => 'Compare quotes'];
     }
-    if ($nextBooking && !$nextBooking->job_confirmed) {
+    if ($nextBooking && $nextBooking->status !== 'Paid') {
+        $todo[] = ['text' => 'Your booking with ' . $providerName . ' is waiting for payment.', 'url' => route('payment.checkout', ['booking' => $nextBooking->id]), 'cta' => 'Pay now'];
+    }
+    if ($nextBooking && $nextBooking->status === 'Paid' && !$nextBooking->job_confirmed) {
         $todo[] = ['text' => 'Your move with ' . $providerName . ' is booked. Follow it live or send a message.', 'url' => route('customer.tracking'), 'cta' => 'Track my move'];
     }
 
@@ -113,7 +116,11 @@
             <div>
                 <b>{{ $providerName }}</b>
                 <div class="m sm">{{ $moveDate ? 'Move date: ' . $moveDate->format('D d M Y') : 'Booked ' . $nextBooking->created_at->format('D d M, H:i') }}</div>
-                <a href="{{ route('customer.tracking') }}" class="btn" style="margin-top:8px;padding:6px 14px;font-size:13px;text-decoration:none;">Track my move</a>
+                @if($nextBooking->status === 'Paid')
+                    <a href="{{ route('customer.tracking') }}" class="btn" style="margin-top:8px;padding:6px 14px;font-size:13px;text-decoration:none;">Track my move</a>
+                @else
+                    <a href="{{ route('payment.checkout', ['booking' => $nextBooking->id]) }}" class="btn" style="margin-top:8px;padding:6px 14px;font-size:13px;text-decoration:none;">Pay now</a>
+                @endif
                 <a href="{{ route('customer.bookings') }}" class="btn g" style="margin-top:8px;padding:6px 14px;font-size:13px;text-decoration:none;">Open booking and chat</a>
             </div>
         </div>

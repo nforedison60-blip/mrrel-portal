@@ -90,40 +90,45 @@ Route::middleware(['auth'])->group(function () {
     })->name('customer.new-request');
 
     Route::post('/requests/new', function (Request $request) {
-        $data = $request->only([
-            'services_needed', 'moving_from', 'moving_to', 'move_date',
-            'date_flexibility', 'item_size', 'items_count', 'budget',
-            'access_pickup', 'access_delivery', 'details',
+        $data = $request->validate([
+            'services_needed'  => 'required|string|max:255',
+            'moving_from'      => 'required|string|max:255',
+            'moving_to'        => 'nullable|string|max:255',
+            'move_date'        => 'required|date|after_or_equal:today',
+            'date_flexibility' => 'required|string|max:100',
+            'item_size'        => 'required|string|max:100',
+            'items_count'      => 'nullable|integer|min:1|max:1000',
+            'budget'           => 'nullable|string|max:100',
+            'access_pickup'    => 'required|string|max:100',
+            'access_delivery'  => 'required|string|max:100',
+            'details'          => 'nullable|string|max:2000',
         ]);
+        $isDraft = $request->has('is_draft');
         $data['customer_name'] = auth()->user()->name;
         $data['user_id'] = auth()->id();
-        $data['status'] = $request->has('is_draft') ? 'Draft' : 'Active';
+        $data['status'] = $isDraft ? 'Draft' : 'Active';
         ServiceRequest::create($data);
-        return redirect()->route('customer.dashboard')->with('success', 'Request submitted successfully!');
+
+        if ($isDraft) {
+            return redirect()->route('customer.requests')->with('success', 'Draft saved. Send it to providers from here when you are ready.');
+        }
+        return redirect()->route('customer.requests')->with('success', 'Request sent! Providers can now send you quotes.');
     })->name('customer.requests.store');
 
     Route::post('/requests/{serviceRequest}/publish', function (ServiceRequest $serviceRequest) {
         abort_unless($serviceRequest->user_id === auth()->id(), 403);
-        $serviceRequest->update(['status' => 'Active']);
-        return redirect()->route('customer.requests')->with('success', 'Request submitted! Providers will now send quotes.');
+        if ($serviceRequest->status === 'Draft') {
+            $serviceRequest->update(['status' => 'Active']);
+        }
+        return redirect()->route('customer.requests')->with('success', 'Request sent! Providers can now send you quotes.');
     })->name('customer.requests.publish');
 
-    Route::post('/requests/draft', function (Request $request) {
-        ServiceRequest::create([
-            'customer_name' => auth()->user()->name,
-            'user_id' => auth()->id(),
-            'services_needed' => $request->services_needed ?? 'Draft',
-            'moving_from' => $request->moving_from ?? 'TBD',
-            'moving_to' => $request->moving_to ?? 'TBD',
-            'move_date' => $request->move_date ?? now(),
-            'date_flexibility' => $request->date_flexibility ?? 'Exact date',
-            'item_size' => $request->item_size ?? 'Small items',
-            'access_pickup' => $request->access_pickup ?? 'Ground floor',
-            'access_delivery' => $request->access_delivery ?? 'Ground floor',
-            'status' => 'Draft',
-        ]);
-        return redirect()->route('customer.dashboard')->with('success', 'Draft saved!');
-    })->name('customer.requests.draft');
+    Route::post('/requests/{serviceRequest}/delete', function (ServiceRequest $serviceRequest) {
+        abort_unless($serviceRequest->user_id === auth()->id(), 403);
+        abort_unless($serviceRequest->status === 'Draft', 403);
+        $serviceRequest->delete();
+        return redirect()->route('customer.requests')->with('success', 'Draft deleted.');
+    })->name('customer.requests.delete');
 
     // FILTERED QUOTES
     Route::get('/quotes', function () {
@@ -140,58 +145,105 @@ Route::middleware(['auth'])->group(function () {
         return view('customer.quote-detail', ['quote' => $quote]);
     })->name('customer.quote.show');
 
-    Route::get('/bookings', function () {
-        $booking = Booking::where('user_id', auth()->id())->latest()->first();
-        return view('customer.bookings', ['booking' => $booking]);
+    Route::get('/bookings', function (Request $request) {
+        $all = Booking::where('user_id', auth()->id())->with('quote.serviceRequest')->latest()->get();
+        $booking = $request->filled('booking') ? $all->firstWhere('id', (int) $request->booking) : $all->first();
+        abort_if($request->filled('booking') && !$booking, 404);
+        return view('customer.bookings', ['booking' => $booking, 'allBookings' => $all]);
     })->name('customer.bookings');
 
     Route::post('/bookings', function (Request $request) {
+        $request->validate(['quote_id' => 'required|integer']);
+
         // Only allow quotes that belong to this customer's own requests
         $quote = Quote::whereHas('serviceRequest', function ($q) {
             $q->where('user_id', auth()->id());
         })->findOrFail($request->quote_id);
 
-        Booking::create([
+        // One booking per request: stop a second booking for the same request
+        $alreadyBooked = Booking::whereHas('quote', function ($q) use ($quote) {
+            $q->where('service_request_id', $quote->service_request_id);
+        })->exists();
+        if ($alreadyBooked) {
+            return redirect()->route('customer.bookings')->with('error', 'You have already booked a provider for this request.');
+        }
+
+        // A new booking is NOT paid and NOT started until that really happens
+        $booking = Booking::create([
             'quote_id' => $quote->id,
             'user_id' => auth()->id(),
             'customer_name' => auth()->user()->name,
             'total_price' => $quote->total_price, // price comes from the quote, not from the form
-            'status' => 'Paid',
-            'tracking_status' => 'On my way',
+            'status' => 'Awaiting payment',
+            'tracking_status' => 'Not started',
         ]);
-        return redirect()->route('customer.bookings')->with('success', 'Quote accepted! Booking created.');
+        return redirect()->route('payment.checkout', ['booking' => $booking->id])
+            ->with('success', 'Quote accepted. Complete your payment to confirm the booking.');
     })->name('customer.bookings.store');
+
+    Route::post('/bookings/{booking}/cancel', function (Booking $booking) {
+        abort_unless($booking->user_id === auth()->id(), 403);
+        if ($booking->status === 'Paid') {
+            return redirect()->route('customer.bookings', ['booking' => $booking->id])
+                ->with('error', 'A paid booking cannot be cancelled here. Please report a problem so MrRel can help.');
+        }
+        $booking->delete();
+        return redirect()->route('customer.quotes')->with('success', 'Booking cancelled. You can choose another quote.');
+    })->name('customer.bookings.cancel');
 
     Route::post('/bookings/{booking}/confirm', function (Booking $booking) {
         abort_unless($booking->user_id === auth()->id(), 403);
+        if ($booking->status !== 'Paid') {
+            return redirect()->route('customer.bookings', ['booking' => $booking->id])
+                ->with('error', 'You can confirm the job once the booking has been paid.');
+        }
         $booking->update(['job_confirmed' => true]);
-        return redirect()->route('customer.bookings')->with('success', 'Job confirmed! Thank you.');
+        return redirect()->route('customer.bookings', ['booking' => $booking->id])->with('success', 'Job confirmed! Thank you.');
     })->name('customer.bookings.confirm');
 
     Route::post('/bookings/{booking}/extras/approve', function (Booking $booking) {
         abort_unless($booking->user_id === auth()->id(), 403);
-        $booking->update(['extras_status' => 'Approved']);
-        return redirect()->route('customer.bookings')->with('success', 'Extra charge approved and paid.');
+        if ($booking->extras_status === 'Proposed') {
+            $booking->update(['extras_status' => 'Approved']);
+        }
+        return redirect()->route('customer.bookings', ['booking' => $booking->id])->with('success', 'Extra charge approved.');
     })->name('customer.extras.approve');
 
     Route::post('/bookings/{booking}/extras/decline', function (Booking $booking) {
         abort_unless($booking->user_id === auth()->id(), 403);
-        $booking->update(['extras_status' => 'Declined']);
-        return redirect()->route('customer.bookings')->with('success', 'Extra charge declined.');
+        if ($booking->extras_status === 'Proposed') {
+            $booking->update(['extras_status' => 'Declined']);
+        }
+        return redirect()->route('customer.bookings', ['booking' => $booking->id])->with('success', 'Extra charge declined.');
     })->name('customer.extras.decline');
 
     Route::post('/review', function (Request $request) {
-        // Find the provider from this customer's latest booking
-        $booking = Booking::where('user_id', auth()->id())->with('quote')->latest()->first();
+        $data = $request->validate([
+            'booking_id' => 'required|integer',
+            'rating'     => 'required|integer|min:1|max:5',
+            'comment'    => 'nullable|string|max:1000',
+        ]);
+
+        // The review is for the provider of THIS customer's own booking
+        $booking = Booking::where('user_id', auth()->id())->with('quote')->findOrFail($data['booking_id']);
+        $back = redirect()->route('customer.bookings', ['booking' => $booking->id]);
+
+        if (!$booking->job_confirmed) {
+            return $back->with('error', 'You can review your provider after you confirm the job is done.');
+        }
+        $providerUserId = optional($booking->quote)->provider_user_id;
+        if (Review::where('user_id', auth()->id())->where('provider_user_id', $providerUserId)->exists()) {
+            return $back->with('error', 'You have already reviewed this provider.');
+        }
 
         Review::create([
-            'provider_user_id' => optional(optional($booking)->quote)->provider_user_id,
+            'provider_user_id' => $providerUserId,
             'user_id' => auth()->id(),
             'customer_name' => auth()->user()->name,
-            'rating' => $request->rating,
-            'comment' => $request->comment,
+            'rating' => $data['rating'],
+            'comment' => $data['comment'] ?? null,
         ]);
-        return redirect()->route('customer.bookings')->with('success', 'Thank you for your review!');
+        return $back->with('success', 'Thank you for your review!');
     })->name('customer.review.store');
 
     Route::get('/shortlist', function () {
@@ -360,9 +412,9 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.dashboard', [
             'provider' => $provider,
             'quotesCount' => Quote::where('provider_user_id', $user->id)->count(),
-            'bookingsCount' => Booking::forProvider($user->id)->count(),
-            'totalRevenue' => Booking::forProvider($user->id)->sum('total_price'),
-            'nextJobs' => Booking::forProvider($user->id)->latest()->take(3)->get(),
+            'bookingsCount' => Booking::forProvider($user->id)->where('status', 'Paid')->count(),
+            'totalRevenue' => Booking::forProvider($user->id)->where('status', 'Paid')->sum('total_price'),
+            'nextJobs' => Booking::forProvider($user->id)->where('status', 'Paid')->latest()->take(3)->get(),
             'requests' => ServiceRequest::where('status', 'Active')->latest()->take(5)->get()
         ]);
     })->name('provider.dashboard');
@@ -459,7 +511,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/provider/booking/{booking}/status', function (Request $request, Booking $booking) {
         // Provider may only update THEIR OWN bookings
         abort_unless(Booking::forProvider(auth()->id())->where('id', $booking->id)->exists(), 403);
-        $booking->update(['tracking_status' => $request->status]);
+        abort_unless($booking->status === 'Paid', 403); // work starts after the customer has paid
+        $data = $request->validate(['status' => 'required|in:On my way,Arrived,Loading,In transit,Delivered']);
+        $booking->update(['tracking_status' => $data['status']]);
         return redirect()->route('provider.dashboard')->with('success', 'Tracking status updated!');
     })->name('provider.booking.status');
 

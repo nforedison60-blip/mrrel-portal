@@ -1,8 +1,8 @@
 @extends('layouts.provider')
 
 @section('content')
-    <h1>Bookings and Payouts</h1>
-    <div class="m" style="margin-bottom: 20px;">Manage your active jobs.</div>
+    <h1>Bookings</h1>
+    <div class="m" style="margin-bottom: 20px;">Your jobs. You can start a job once the customer has paid.</div>
 
     @forelse($bookings as $booking)
         <div class="card" style="margin-bottom: 20px;">
@@ -13,9 +13,11 @@
                 </div>
                 <div>
                     <span class="chip ok">R{{ number_format($booking->total_price, 2) }}</span>
+                    <span class="chip {{ $booking->status === 'Paid' ? 'ok' : 'wn' }}">{{ $booking->status === 'Paid' ? 'Paid' : 'Waiting for customer payment' }}</span>
                 </div>
             </div>
 
+            @if($booking->status === 'Paid')
             <div class="card" style="background: var(--bg); border: 1px solid var(--l); padding: 16px; margin-bottom: 16px;">
                 <h4 style="margin-bottom: 12px;">Update Job Status</h4>
                 <div class="pl">
@@ -53,6 +55,9 @@
             </div>
 
             <a href="{{ route('provider.tracking') }}" class="btn">Start Live Tracking</a>
+            @else
+                <p class="m sm">The customer has not paid yet. Job updates and live tracking unlock once they pay.</p>
+            @endif
         </div>
     @empty
         <div class="card">

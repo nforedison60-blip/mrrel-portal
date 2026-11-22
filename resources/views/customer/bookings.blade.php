@@ -1,189 +1,189 @@
 @extends('layouts.app')
 
 @section('content')
-    @if($booking)
-        <h1>Booking BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</h1>
-        <div class="m">Moving one bed · Sat 31 Oct · Parklands to Bellville</div>
+@if(session('error'))
+    <div style="background:#FDF1CC; color:#5C4300; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #F4B731;">
+        {{ session('error') }}
+    </div>
+@endif
 
-        <div class="sp" style="margin-top: 20px;">
-            <!-- LEFT COLUMN -->
-            <div>
-                <div class="card">
-                    <h3>Your provider</h3>
-                    <div class="row" style="margin-top: 12px; align-items: flex-start;">
-                        <div style="text-align: center;">
-                            <div class="av" style="width: 120px; height: 120px; font-size: 40px; border-radius: 50%;">P</div>
-                            <div class="m sm" style="margin-top: 8px;">The person who will arrive</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="width: 200px; height: 120px; background-color: #E3F1F2; border: 1px solid var(--l); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                <svg width="100" height="50" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <rect x="5" y="10" width="45" height="20" rx="2" fill="#D5DEE6"/>
-                                    <path d="M50 15H65L75 25V30H50V15Z" fill="#D5DEE6"/>
-                                    <circle cx="20" cy="32" r="5" fill="#51657A"/>
-                                    <circle cx="60" cy="32" r="5" fill="#51657A"/>
-                                </svg>
-                            </div>
-                            <div class="m sm" style="margin-top: 8px;">Your vehicle · CA 000 000</div>
-                        </div>
-                    </div>
-                    
-                    <div class="row" style="margin-top: 16px;">
-                        <span class="av" style="width: 48px; height: 48px; font-size: 18px;">P</span>
-                        <div>
-                            <b>{{ optional($booking->quote)->provider_name ?? 'Your provider' }}</b>
-                        </div>
-                    </div>
-                    <p class="sm" style="margin-top: 12px;">
-                        Your provider will confirm vehicle details and arrival time with you.
-                    </p>
-                    <div class="m sm">If someone else arrives, don’t hand anything over and call us.</div>
-                </div>
+@if($booking)
+@php
+    $quote = $booking->quote;
+    $sr = optional($quote)->serviceRequest;
+    $providerName = optional($quote)->provider_name ?: 'Your provider';
+    $providerUserId = optional($quote)->provider_user_id;
+    $isPaid = $booking->status === 'Paid';
+    $ref = 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT);
+    $providerUser = $providerUserId ? \App\Models\User::find($providerUserId) : null;
+    $provider = $providerUser ? \App\Models\Provider::where('email', $providerUser->email)->first() : null;
+    $reviewed = $providerUserId
+        ? \App\Models\Review::where('user_id', auth()->id())->where('provider_user_id', $providerUserId)->exists()
+        : false;
+    $steps = ['On my way', 'Arrived', 'Loading', 'In transit', 'Delivered'];
+@endphp
 
-                <div class="card" style="margin-top: 16px;">
-                    <h3>Track your driver</h3>
-                    <div style="width: 100%; height: 180px; background-color: #E3F1F2; border-radius: 8px; position: relative; overflow: hidden; margin-bottom: 16px;">
-                        <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                             <svg width="400" height="150" viewBox="0 0 400 150">
-                                <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0E7C86" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
-                                <circle cx="50" cy="100" r="8" fill="#F4B731" stroke="#10243A" stroke-width="2"/>
-                                <circle cx="350" cy="50" r="8" fill="#0E7C86"/>
-                             </svg>
-                        </div>
-                    </div>
+    @if($allBookings->count() > 1)
+        <nav class="stb" aria-label="Your bookings">
+            @foreach($allBookings as $b)
+                <a href="{{ route('customer.bookings', ['booking' => $b->id]) }}" class="{{ $b->id === $booking->id ? 'on' : '' }}">
+                    BKG-{{ str_pad($b->id, 4, '0', STR_PAD_LEFT) }} · {{ optional($b->quote)->provider_name ?: 'Provider' }}
+                </a>
+            @endforeach
+        </nav>
+    @endif
 
-                    <p class="sm"><b>{{ optional($booking->quote)->provider_name ?? 'Your provider' }}</b> · Status: {{ $booking->tracking_status }}</p>
-                    <div class="pl" style="margin-top: 8px;">
-                        <span class="chip {{ $booking->tracking_status == 'On my way' ? 'ok' : '' }}">On my way</span>
-                        <span class="chip {{ $booking->tracking_status == 'Arrived' ? 'ok' : '' }}">Arrived</span>
-                        <span class="chip {{ $booking->tracking_status == 'Loading' ? 'ok' : '' }}">Loading</span>
-                        <span class="chip {{ $booking->tracking_status == 'In transit' ? 'ok' : '' }}">In transit</span>
-                        <span class="chip {{ $booking->tracking_status == 'Delivered' ? 'ok' : '' }}">Delivered</span>
-                        <span class="chip {{ $booking->tracking_status == 'Complete' ? 'ok' : '' }}">Complete</span>
+    <h1>Booking {{ $ref }}</h1>
+    <div class="m">
+        @if($sr)
+            {{ $sr->services_needed }} · {{ \Carbon\Carbon::parse($sr->move_date)->format('D d M Y') }} · {{ $sr->moving_from }}@if($sr->moving_to) to {{ $sr->moving_to }}@endif
+        @else
+            Booked with {{ $providerName }}
+        @endif
+    </div>
+
+    <div class="sp" style="margin-top: 20px;">
+        <!-- LEFT COLUMN -->
+        <div>
+            <div class="card">
+                <h3>Your provider</h3>
+                <div class="row" style="margin-top: 12px;">
+                    <div class="av" style="width: 64px; height: 64px; font-size: 24px;">{{ strtoupper(substr($providerName, 0, 1)) }}</div>
+                    <div>
+                        <b>{{ $providerName }}</b>
+                        @if($isPaid && $provider && ($provider->vehicle || $provider->plate_number))
+                            <div class="m sm">Vehicle: {{ $provider->vehicle }}@if($provider->vehicle && $provider->plate_number) · @endif{{ $provider->plate_number }}</div>
+                        @elseif(!$isPaid)
+                            <div class="m sm">Vehicle details are shared once your booking is paid.</div>
+                        @endif
                     </div>
                 </div>
-
-                <div class="card" style="margin-top: 16px;">
-                    <h3>Chat with {{ optional($booking->quote)->provider_name ?? 'your provider' }}</h3>
-                    <div class="row" style="margin-bottom: 12px;">
-                        <span class="av" style="width: 40px; height: 40px; font-size: 16px;">P</span>
-                        <div>
-                            <b>{{ optional($booking->quote)->provider_name ?? 'Your provider' }}</b>
-                            <div class="m sm">Booking BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
-                        <div style="background: #F5F8FA; padding: 10px 16px; border-radius: 8px; border-bottom-left-radius: 0; align-self: flex-start; max-width: 80%; border: 1px solid var(--l);">
-                            <div class="sm">Hi Lerato, I'm on my way. I should arrive around 08:25.</div>
-                        </div>
-                        <div style="background: #E3F1F2; padding: 10px 16px; border-radius: 8px; border-bottom-right-radius: 0; align-self: flex-end; max-width: 80%; border: 1px solid #D5DEE6;">
-                            <div class="sm">Great, the lift is booked for 08:30.</div>
-                        </div>
-                         <div style="background: #F5F8FA; padding: 10px 16px; border-radius: 8px; border-bottom-left-radius: 0; align-self: flex-start; max-width: 80%; border: 1px solid var(--l);">
-                            <div class="sm">Thanks. I'll ring the intercom.</div>
-                        </div>
-                    </div>
-
-                    <form method="POST" action="{{ route('customer.messages.store') }}">
-                        @csrf
-                        <div class="f" style="margin:0;">
-                            <label class="k">Write a message
-                                <input type="text" name="message" required style="margin-bottom: 8px;">
-                            </label>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button type="submit" class="btn">Send</button>
-                            <button type="button" class="btn g">Attach photo</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card" style="margin-top: 16px;">
-                    <h3>Extras on the day</h3>
-                    @if($booking->extras_status == 'Approved')
-                        <div style="margin-top: 12px;"><span class="chip ok">Approved and paid</span></div>
-                    @elseif($booking->extras_status == 'Declined')
-                        <div style="margin-top: 12px;"><span class="chip wn">Declined</span></div>
-                    @elseif($booking->extras_status == 'Proposed')
-                        <div style="display: flex; gap: 8px; margin-top: 12px;">
-                            <form method="POST" action="{{ route('customer.extras.approve', $booking->id) }}" style="margin:0;">
-                                @csrf
-                                <button type="submit" class="btn">Approve and pay</button>
-                            </form>
-                            <form method="POST" action="{{ route('customer.extras.decline', $booking->id) }}" style="margin:0;">
-                                @csrf
-                                <button type="submit" class="btn g">Decline</button>
-                            </form>
-                        </div>
-                    @else
-                        <p class="m sm">No extras have been proposed for this job.</p>
-                    @endif
-                </div>
-
-                <div class="card" style="margin-top: 16px;">
-                    <h3>When the job is done</h3>
-                    @if($booking->job_confirmed)
-                        <div style="margin-top: 12px;"><span class="chip ok">Job Confirmed</span></div>
-                    @else
-                        <div style="display: flex; gap: 8px; margin-top: 12px;">
-                            <form method="POST" action="{{ route('customer.bookings.confirm', $booking->id) }}" style="margin:0;">
-                                @csrf
-                                <button type="submit" class="btn">Confirm the job is done</button>
-                            </form>
-                            <a href="{{ route('customer.problems') }}" class="btn g" style="text-decoration:none;">Report a problem</a>
-                        </div>
-                    @endif
-                </div>
+                <div class="m sm" style="margin-top: 12px;">If someone else arrives, don't hand anything over. <a href="{{ route('customer.messages') }}" style="color:inherit;">Message MrRel</a>.</div>
             </div>
 
-            <!-- RIGHT COLUMN -->
-            <div>
-                <div class="card">
-                    <h3>Payment</h3>
-                    <div class="big">R{{ number_format($booking->total_price, 2) }}</div>
-                    <div style="margin-bottom: 12px;"><span class="chip ok">{{ $booking->status }}</span></div>
-                    <div class="m sm" style="margin-bottom: 12px;">Receipt BKG-{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}-R1</div>
-                    <button type="button" class="btn g w">Download receipt</button>
+            <div class="card" style="margin-top: 16px;">
+                <h3>Progress</h3>
+                @if(!$isPaid)
+                    <p class="m sm" style="margin-top: 8px;">Tracking starts once your booking has been paid.</p>
+                @elseif($booking->tracking_status === 'Not started' || !$booking->tracking_status)
+                    <p class="m sm" style="margin-top: 8px;">{{ $providerName }} has not started yet. You will see updates here on the day.</p>
+                @else
+                    <p class="sm" style="margin-top: 8px;"><b>{{ $providerName }}</b> · {{ $booking->tracking_status }}</p>
+                    <div class="pl" style="margin-top: 8px;">
+                        @foreach($steps as $step)
+                            <span class="chip {{ $booking->tracking_status === $step ? 'ok' : '' }}">{{ $step }}</span>
+                        @endforeach
+                    </div>
+                    <a href="{{ route('customer.tracking') }}" class="btn g" style="margin-top: 12px; text-decoration:none;">Open live map</a>
+                @endif
+            </div>
 
-                    <!-- PAY NOW BUTTON ADDED HERE -->
-                    <a href="{{ route('payment.checkout') }}" class="btn w" style="margin-top: 8px; text-align: center; text-decoration: none;">
-                        Pay Now
-                    </a>
+            <div class="card" style="margin-top: 16px;">
+                <h3>Questions about this booking?</h3>
+                <p class="m sm" style="margin-top: 8px;">Send MrRel a message and mention {{ $ref }}.</p>
+                <a href="{{ route('customer.messages') }}" class="btn g" style="text-decoration:none;">Go to messages</a>
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h3>Extras on the day</h3>
+                @if($booking->extras_status == 'Approved')
+                    <div style="margin-top: 12px;"><span class="chip ok">Approved</span></div>
+                @elseif($booking->extras_status == 'Declined')
+                    <div style="margin-top: 12px;"><span class="chip wn">Declined</span></div>
+                @elseif($booking->extras_status == 'Proposed')
+                    <p class="m sm" style="margin-top: 8px;">Your provider has proposed an extra charge.</p>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <form method="POST" action="{{ route('customer.extras.approve', $booking->id) }}" style="margin:0;">
+                            @csrf
+                            <button type="submit" class="btn">Approve extra</button>
+                        </form>
+                        <form method="POST" action="{{ route('customer.extras.decline', $booking->id) }}" style="margin:0;">
+                            @csrf
+                            <button type="submit" class="btn g">Decline</button>
+                        </form>
+                    </div>
+                @else
+                    <p class="m sm">No extras have been proposed for this job.</p>
+                @endif
+            </div>
+
+            <div class="card" style="margin-top: 16px;">
+                <h3>When the job is done</h3>
+                @if($booking->job_confirmed)
+                    <div style="margin-top: 12px;"><span class="chip ok">Job confirmed</span></div>
+                @elseif(!$isPaid)
+                    <p class="m sm" style="margin-top: 8px;">You can confirm the job after you have paid.</p>
+                @else
+                    <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+                        <form method="POST" action="{{ route('customer.bookings.confirm', $booking->id) }}" style="margin:0;">
+                            @csrf
+                            <button type="submit" class="btn">Confirm the job is done</button>
+                        </form>
+                        <a href="{{ route('customer.problems') }}" class="btn g" style="text-decoration:none;">Report a problem</a>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div>
+            <div class="card">
+                <h3>Payment</h3>
+                <div class="big">R{{ number_format($booking->total_price, 2) }}</div>
+                <div style="margin-bottom: 12px;">
+                    <span class="chip {{ $isPaid ? 'ok' : 'wn' }}">{{ $isPaid ? 'Paid' : 'Awaiting payment' }}</span>
                 </div>
+                @if($isPaid)
+                    <div class="m sm">Payment received. Thank you.</div>
+                @else
+                    <a href="{{ route('payment.checkout', ['booking' => $booking->id]) }}" class="btn w" style="text-align: center; text-decoration: none;">Pay now</a>
+                    <form method="POST" action="{{ route('customer.bookings.cancel', $booking->id) }}" style="margin:8px 0 0;" onsubmit="return confirm('Cancel this booking? You can then choose another quote.');">
+                        @csrf
+                        <button type="submit" class="btn g w">Cancel booking</button>
+                    </form>
+                @endif
+            </div>
 
+            @if($sr)
                 <div class="card" style="margin-top: 16px;">
-                    <h3>Documents</h3>
-                    <ul>
-                        <li>Accepted quote QTN-0001 Rev 01 (PDF)</li>
-                        <li>Receipt</li>
-                    </ul>
+                    <h3>The job</h3>
+                    <div class="m sm" style="margin-top: 8px;"><b>From:</b> {{ $sr->moving_from }}</div>
+                    @if($sr->moving_to)<div class="m sm"><b>To:</b> {{ $sr->moving_to }}</div>@endif
+                    <div class="m sm"><b>Date:</b> {{ \Carbon\Carbon::parse($sr->move_date)->format('D d M Y') }}</div>
+                    <div class="m sm"><b>Items:</b> {{ $sr->item_size }}</div>
+                    <div class="m sm"><b>Access:</b> {{ $sr->access_pickup }} at pickup, {{ $sr->access_delivery }} at delivery</div>
                 </div>
+            @endif
 
-                <div class="card" style="margin-top: 16px;">
-                    <h3>Review your provider</h3>
+            <div class="card" style="margin-top: 16px;">
+                <h3>Review your provider</h3>
+                @if(!$booking->job_confirmed)
+                    <p class="m sm" style="margin-top: 8px;">You can leave a review after you confirm the job is done.</p>
+                @elseif($reviewed)
+                    <div style="margin-top: 12px;"><span class="chip ok">Thanks, you have reviewed this provider</span></div>
+                @else
                     <form method="POST" action="{{ route('customer.review.store') }}">
                         @csrf
+                        <input type="hidden" name="booking_id" value="{{ $booking->id }}">
                         <div class="pl" style="margin-bottom: 12px;">
-                            <label><input type="radio" name="rating" value="5" required> 5</label>
-                            <label><input type="radio" name="rating" value="4"> 4</label>
-                            <label><input type="radio" name="rating" value="3"> 3</label>
-                            <label><input type="radio" name="rating" value="2"> 2</label>
-                            <label><input type="radio" name="rating" value="1"> 1</label>
+                            @foreach([5, 4, 3, 2, 1] as $star)
+                                <label><input type="radio" name="rating" value="{{ $star }}" {{ $star === 5 ? 'required' : '' }}> {{ $star }}</label>
+                            @endforeach
                         </div>
                         <div class="f">
-                            <label class="k">Comment<input type="text" name="comment" placeholder="How was the service?"></label>
+                            <label class="k">Comment<input type="text" name="comment" maxlength="1000" placeholder="How was the service?"></label>
                         </div>
                         <button type="submit" class="btn w">Submit review</button>
                     </form>
-                </div>
+                @endif
             </div>
         </div>
-    @else
-        <div class="card" style="margin-top: 20px;">
-            <h3>No active bookings</h3>
-            <p class="m">When you accept a quote, your booking details will appear here.</p>
-            <a href="{{ route('customer.quotes') }}" class="btn" style="text-decoration:none;">View Quotes</a>
-        </div>
-    @endif
+    </div>
+@else
+    <div class="card" style="margin-top: 20px;">
+        <h3>No bookings yet</h3>
+        <p class="m">When you accept a quote and pay, your booking appears here with its progress.</p>
+        <a href="{{ route('customer.quotes') }}" class="btn" style="text-decoration:none;">View quotes</a>
+    </div>
+@endif
 @endsection

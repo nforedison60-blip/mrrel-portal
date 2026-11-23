@@ -691,22 +691,66 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.pbook', ['bookings' => $bookings, 'problems' => $problems]);
     })->name('provider.pbook');
 
-    Route::get('/provider/messages', function () {
-        $messages = Message::where('user_id', auth()->id())->orWhere('receiver_id', auth()->id())->oldest()->get();
-        return view('provider.messages', ['messages' => $messages]);
+    // The customers this provider can chat with: anyone who messaged them, or who booked one of their quotes
+    $myCustomers = function () {
+        $me = auth()->id();
+        $ids = Message::where('receiver_id', $me)->pluck('user_id')
+            ->merge(Booking::forProvider($me)->pluck('user_id'))
+            ->filter()->unique()->values();
+        $users = User::whereIn('id', $ids)->get()->keyBy('id');
+        // most recent conversation first
+        $latest = Message::where(function ($q) use ($me) { $q->where('user_id', $me)->orWhere('receiver_id', $me); })
+            ->latest()->get()
+            ->map(fn ($m) => $m->user_id == $me ? $m->receiver_id : $m->user_id)->unique()->values();
+        return $ids->sortBy(fn ($id) => ($pos = $latest->search($id)) === false ? 9999 : $pos)->values()
+            ->map(fn ($id) => ['id' => $id, 'name' => optional($users->get($id))->name ?: 'Customer'])
+            ->filter(fn ($c) => $users->has($c['id']))->values();
+    };
+
+    Route::get('/provider/messages', function (Request $request) use ($myCustomers) {
+        $me = auth()->id();
+        $customers = $myCustomers();
+        $first = $customers->first();
+        $with = (int) $request->input('with', $first['id'] ?? 0);
+        if (!$customers->contains('id', $with)) {
+            $with = (int) ($first['id'] ?? 0);
+        }
+
+        $messages = collect();
+        if ($with) {
+            $messages = Message::where(function ($outer) use ($me, $with) {
+                $outer->where(function ($q) use ($me, $with) {
+                    $q->where('user_id', $me)->where('receiver_id', $with);
+                })->orWhere(function ($q) use ($me, $with) {
+                    $q->where('user_id', $with)->where('receiver_id', $me);
+                });
+            })->oldest()->get();
+        }
+
+        return view('provider.messages', [
+            'messages' => $messages,
+            'customers' => $customers,
+            'with' => $with,
+            'withName' => optional($customers->firstWhere('id', $with))['name'] ?? null,
+        ]);
     })->name('provider.messages');
 
-    Route::post('/provider/messages', function (Request $request) {
-        // Reply to the customer who last wrote to this provider
-        $customerId = Message::where('receiver_id', auth()->id())->latest()->value('user_id');
-
-        Message::create([
-            'sender_name' => auth()->user()->name, 
-            'message' => $request->message,
-            'user_id' => auth()->id(),
-            'receiver_id' => $customerId,
+    Route::post('/provider/messages', function (Request $request) use ($myCustomers) {
+        $data = $request->validate([
+            'message' => 'required|string|max:1000',
+            'with'    => 'required|integer',
         ]);
-        return redirect()->route('provider.messages')->with('success', 'Message sent!');
+        // A reply always goes to the customer whose chat is open
+        if (!$myCustomers()->contains('id', (int) $data['with'])) {
+            return redirect()->route('provider.messages')->with('error', 'You can only message customers who have written to you or booked you.');
+        }
+        Message::create([
+            'sender_name' => auth()->user()->name,
+            'message' => $data['message'],
+            'user_id' => auth()->id(),
+            'receiver_id' => (int) $data['with'],
+        ]);
+        return redirect()->route('provider.messages', ['with' => $data['with']]);
     })->name('provider.messages.store');
 
     Route::post('/provider/booking/{booking}/status', function (Request $request, Booking $booking) {

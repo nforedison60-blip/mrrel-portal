@@ -173,17 +173,28 @@
         </form>
     </div>
 
-    <script>
-        const chatContainer = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-
-        // Look for new messages every 20 seconds, but never while you are typing
+<script>
+    (function () {
+        var box = document.getElementById('chatMessages');
+        if (!box) return;
+        box.scrollTop = box.scrollHeight;
+        function nearBottom() { return box.scrollHeight - box.scrollTop - box.clientHeight < 80; }
+        // Quietly check for new messages every 5 seconds; no page reload, so typing is never interrupted
         setInterval(function () {
-            if (chatInput.value === '' && document.activeElement !== chatInput) {
-                window.location.reload();
-            }
-        }, 20000);
-    </script>
+            if (document.hidden) return;
+            fetch(window.location.href, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { return r.ok ? r.text() : null; })
+                .then(function (html) {
+                    if (!html) return;
+                    var fresh = new DOMParser().parseFromString(html, 'text/html').getElementById('chatMessages');
+                    if (!fresh || fresh.innerHTML.trim() === box.innerHTML.trim()) return;
+                    var stick = nearBottom();
+                    box.innerHTML = fresh.innerHTML;
+                    if (stick) box.scrollTop = box.scrollHeight;
+                })
+                .catch(function () {});
+        }, 5000);
+    })();
+</script>
 @endif
 @endsection

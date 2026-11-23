@@ -84,41 +84,76 @@
 </style>
 
 <h1>Messages</h1>
-<div class="m" style="margin-bottom: 20px;">Chat with your customers in real-time.</div>
+<div class="m" style="margin-bottom: 20px;">Chat with your customers. New messages appear by themselves.</div>
 
-<div class="card" style="padding: 0; border: none; background: transparent;">
-    <div class="chat-container">
-        <div class="chat-messages" id="chatMessages">
-            @forelse($messages as $msg)
-                @if($msg->user_id == auth()->id())
-                    <div class="msg-bubble msg-mine">
-                        <div>{{ $msg->message }}</div>
-                        <span class="msg-time">{{ $msg->created_at->format('H:i') }}</span>
-                    </div>
-                @else
-                    <div class="msg-bubble msg-theirs">
-                        <div class="msg-sender">{{ $msg->sender_name }}</div>
-                        <div>{{ $msg->message }}</div>
-                        <span class="msg-time">{{ $msg->created_at->format('H:i') }}</span>
-                    </div>
-                @endif
-            @empty
-                <div class="m sm" style="text-align: center; padding: 40px;">No messages yet. Say hello!</div>
-            @endforelse
-        </div>
-
-        <form method="POST" action="{{ route('provider.messages.store') }}" class="chat-input-area">
-            @csrf
-            <input type="text" name="message" required placeholder="Type a message..." autocomplete="off">
-            <button type="submit" class="btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </form>
+@if($customers->isEmpty())
+    <div class="card">
+        <h3>No chats yet</h3>
+        <p class="m">A chat opens when a customer messages you or books one of your quotes.</p>
     </div>
-</div>
+@else
+    @if($customers->count() > 1)
+        <nav class="stb" aria-label="Your customers" style="margin-bottom: 14px;">
+            @foreach($customers as $c)
+                <a href="{{ route('provider.messages', ['with' => $c['id']]) }}" class="{{ $c['id'] == $with ? 'on' : '' }}">{{ $c['name'] }}</a>
+            @endforeach
+        </nav>
+    @endif
+
+    <div class="card" style="padding: 0; border: none; background: transparent;">
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                @forelse($messages as $msg)
+                    @if($msg->user_id == auth()->id())
+                        <div class="msg-bubble msg-mine">
+                            <div>{{ $msg->message }}</div>
+                            <span class="msg-time">{{ $msg->created_at->format('H:i') }}</span>
+                        </div>
+                    @else
+                        <div class="msg-bubble msg-theirs">
+                            <div class="msg-sender">{{ $msg->sender_name }}</div>
+                            <div>{{ $msg->message }}</div>
+                            <span class="msg-time">{{ $msg->created_at->format('H:i') }}</span>
+                        </div>
+                    @endif
+                @empty
+                    <div class="m sm" style="text-align: center; padding: 40px;">No messages yet. Say hello to {{ $withName ?? 'your customer' }}!</div>
+                @endforelse
+            </div>
+
+            <form method="POST" action="{{ route('provider.messages.store') }}" class="chat-input-area">
+                @csrf
+                <input type="hidden" name="with" value="{{ $with }}">
+                <input type="text" name="message" id="chatInput" required maxlength="1000" placeholder="Type a message to {{ $withName ?? 'your customer' }}..." autocomplete="off">
+                <button type="submit" class="btn" aria-label="Send">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+@endif
 
 <script>
-    const chatContainer = document.getElementById('chatMessages');
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    (function () {
+        var box = document.getElementById('chatMessages');
+        if (!box) return;
+        box.scrollTop = box.scrollHeight;
+        function nearBottom() { return box.scrollHeight - box.scrollTop - box.clientHeight < 80; }
+        // Quietly check for new messages every 5 seconds; no page reload, so typing is never interrupted
+        setInterval(function () {
+            if (document.hidden) return;
+            fetch(window.location.href, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { return r.ok ? r.text() : null; })
+                .then(function (html) {
+                    if (!html) return;
+                    var fresh = new DOMParser().parseFromString(html, 'text/html').getElementById('chatMessages');
+                    if (!fresh || fresh.innerHTML.trim() === box.innerHTML.trim()) return;
+                    var stick = nearBottom();
+                    box.innerHTML = fresh.innerHTML;
+                    if (stick) box.scrollTop = box.scrollHeight;
+                })
+                .catch(function () {});
+        }, 5000);
+    })();
 </script>
 @endsection

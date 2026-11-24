@@ -46,8 +46,12 @@ class TrackingController extends Controller
 
     public function getLatestLocation(Request $request)
     {
-        // Find the customer's own booking (never someone else's)
-        $bookingQuery = Booking::where('user_id', auth()->id());
+        // The customer's own booking, and only while it is paid and the job is not yet finished
+        $bookingQuery = Booking::where('user_id', auth()->id())
+            ->where('status', 'Paid')
+            ->where(function ($q) {
+                $q->whereNull('job_confirmed')->orWhere('job_confirmed', false);
+            });
 
         if ($request->filled('booking_id') && $request->booking_id !== 'null') {
             $bookingQuery->where('id', $request->booking_id);

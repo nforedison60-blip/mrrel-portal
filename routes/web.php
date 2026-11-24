@@ -22,11 +22,28 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use App\Mail\NewQuoteReceived;
 use App\Support\Geo;
+use App\Support\Docs;
 
 require __DIR__.'/auth.php';
 
 // Ozow's server calls this: no login, no session, no CSRF token. The message is verified by its signature.
 Route::post('/payment/notify', [PaymentController::class, 'notify'])->name('payment.notify');
+
+// Opens a provider document through a short-lived link. Only the admin and the provider themselves may.
+Route::get('/documents/{provider}/{field}', function (Provider $provider, string $field) {
+    abort_unless(in_array($field, Docs::FIELDS, true), 404);
+    $user = auth()->user();
+    abort_unless($user->role === 'Admin' || (int) $provider->user_id === (int) $user->id, 403);
+
+    $path = $provider->{$field};
+    abort_unless($path, 404);
+
+    if (!Docs::isPrivate($path)) { // an older file that was saved before the private bucket existed
+        return redirect()->away(Storage::disk('s3')->url($path));
+    }
+    abort_unless(Docs::available(), 503);
+    return redirect()->away(Docs::temporaryUrl($path, 5));
+})->middleware('auth')->name('documents.show');
 
 // Public home page. Logged-in people go straight to their own dashboard.
 Route::get('/', function () {
@@ -878,9 +895,15 @@ Route::middleware(['auth'])->group(function () {
 
         if ($request->hasFile('image')) $data['image_path'] = $request->file('image')->store('providers', 's3');
         if ($request->hasFile('vehicle_image')) $data['vehicle_image_path'] = $request->file('vehicle_image')->store('providers', 's3');
-        if ($request->hasFile('id_image')) $data['id_image_path'] = $request->file('id_image')->store('providers', 's3');
-        if ($request->hasFile('id_document')) $data['id_document'] = $request->file('id_document')->store('providers', 's3');
-        if ($request->hasFile('vehicle_document')) $data['vehicle_document'] = $request->file('vehicle_document')->store('providers', 's3');
+        // ID and vehicle documents go to the PRIVATE bucket
+        foreach ([['id_image', 'id_image_path'], ['id_document', 'id_document'], ['vehicle_document', 'vehicle_document']] as [$input, $column]) {
+            if ($request->hasFile($input)) {
+                if (!Docs::available()) {
+                    return back()->withInput()->with('error', 'Secure document storage is not set up yet, so your documents could not be saved. Please try again later.');
+                }
+                $data[$column] = Docs::store($request->file($input));
+            }
+        }
         
         $provider->update($data);
         
@@ -944,7 +967,7 @@ Route::middleware(['auth'])->group(function () {
         // Uploaded documents go too (a failure here must not undo the removal)
         try {
             if ($files) {
-                Storage::disk('s3')->delete(array_values($files));
+                Docs::deleteAll(array_values($files));
             }
         } catch (\Throwable $e) {
             \Log::warning('Could not delete files of removed account: ' . $e->getMessage());
@@ -967,7 +990,7 @@ Route::middleware(['auth'])->group(function () {
             $files = array_filter([$provider->image_path, $provider->vehicle_image_path, $provider->id_image_path, $provider->id_document, $provider->vehicle_document]);
             $name = $provider->name;
             $provider->delete();
-            try { if ($files) { Storage::disk('s3')->delete(array_values($files)); } } catch (\Throwable $e) {}
+            try { if ($files) { Docs::deleteAll(array_values($files)); } } catch (\Throwable $e) {}
             [$ok, $message] = [true, 'Removed ' . $name . '.'];
         }
         return redirect()->route('admin.providers')->with($ok ? 'success' : 'error', $message);

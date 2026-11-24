@@ -54,10 +54,15 @@
                         @endif
                     </td>
                     <td>
-                        @if($provider->id_image_path && Storage::disk('s3')->exists($provider->id_image_path))
-                            <a href="{{ Storage::disk('s3')->url($provider->id_image_path) }}" target="_blank" style="color: var(--t); text-decoration: underline;">View ID Document</a>
-                        @else
-                            <span class="m sm">No ID uploaded</span>
+                        @php $any = false; @endphp
+                        @foreach(['id_image_path' => 'ID photo', 'id_document' => 'ID document', 'vehicle_document' => 'Vehicle papers'] as $field => $text)
+                            @if($provider->{$field})
+                                @php $any = true; @endphp
+                                <div><a href="{{ route('documents.show', [$provider->id, $field]) }}" target="_blank" style="color: var(--t); text-decoration: underline;">{{ $text }}</a></div>
+                            @endif
+                        @endforeach
+                        @if(!$any)
+                            <span class="m sm">No documents uploaded</span>
                         @endif
                     </td>
                     <td>

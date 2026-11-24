@@ -15,6 +15,9 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    // Private bucket for providers' ID and vehicle documents (set the disk name under the bucket in Laravel Cloud)
+    'docs_disk' => env('DOCS_DISK', 'private_docs'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks

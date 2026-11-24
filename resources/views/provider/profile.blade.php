@@ -169,13 +169,13 @@
                         <label class="k">ID Document (PDF/Image)
                             <input type="file" name="id_document" accept=".pdf,image/*">
                             @if($provider->id_document)
-                                <div class="m sm" style="margin-top: 4px;"><a href="{{ Storage::disk('s3')->url($provider->id_document) }}" target="_blank">View Uploaded ID</a></div>
+                                <div class="m sm" style="margin-top: 4px;"><a href="{{ route('documents.show', [$provider->id, 'id_document']) }}" target="_blank">View Uploaded ID</a></div>
                             @endif
                         </label>
                         <label class="k">Vehicle Document (PDF/Image)
                             <input type="file" name="vehicle_document" accept=".pdf,image/*">
                             @if($provider->vehicle_document)
-                                <div class="m sm" style="margin-top: 4px;"><a href="{{ Storage::disk('s3')->url($provider->vehicle_document) }}" target="_blank">View Uploaded Vehicle Docs</a></div>
+                                <div class="m sm" style="margin-top: 4px;"><a href="{{ route('documents.show', [$provider->id, 'vehicle_document']) }}" target="_blank">View Uploaded Vehicle Docs</a></div>
                             @endif
                         </label>
                     </div>

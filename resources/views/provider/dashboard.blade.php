@@ -16,6 +16,14 @@
         <div class="hc"><a class="btn" href="{{ route('provider.requests') }}">See open requests</a></div>
     </div>
 
+    @if($needsLocation)
+        <div class="card" style="margin-bottom: 16px;">
+            <h3>Set your service area</h3>
+            <p class="m">You only see requests near you. Add where you are based under My business so they can appear.</p>
+            <a href="{{ route('provider.profile') }}" class="btn" style="text-decoration: none;">Set my area</a>
+        </div>
+    @endif
+
     <!-- Stats Cards -->
     <div class="g4" style="margin-top: 20px;">
         <div class="card">

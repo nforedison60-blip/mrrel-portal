@@ -21,6 +21,7 @@ use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use App\Mail\NewQuoteReceived;
+use App\Support\Geo;
 
 require __DIR__.'/auth.php';
 
@@ -116,8 +117,21 @@ Route::middleware(['auth'])->group(function () {
             'access_pickup'    => 'required|string|max:100',
             'access_delivery'  => 'required|string|max:100',
             'details'          => 'nullable|string|max:2000',
+            'pickup_lat'       => 'nullable|numeric|between:-36,-21',
+            'pickup_lng'       => 'nullable|numeric|between:15,34',
         ]);
         $isDraft = $request->has('is_draft');
+
+        // Where the move starts: the phone's location if the customer used the button, otherwise the typed address
+        $coords = ($request->filled('pickup_lat') && $request->filled('pickup_lng'))
+            ? ['lat' => (float) $data['pickup_lat'], 'lng' => (float) $data['pickup_lng']]
+            : Geo::geocode($data['moving_from']);
+        if (!$coords && !$isDraft) {
+            return back()->withInput()->withErrors(['moving_from' => 'We could not find that address. Add the suburb and city (for example Claremont, Cape Town) or use the location button.']);
+        }
+        $data['pickup_lat'] = $coords['lat'] ?? null;
+        $data['pickup_lng'] = $coords['lng'] ?? null;
+
         $data['customer_name'] = auth()->user()->name;
         $data['user_id'] = auth()->id();
         $data['status'] = $isDraft ? 'Draft' : 'Active';
@@ -126,15 +140,25 @@ Route::middleware(['auth'])->group(function () {
         if ($isDraft) {
             return redirect()->route('customer.requests')->with('success', 'Draft saved. Send it to providers from here when you are ready.');
         }
-        return redirect()->route('customer.requests')->with('success', 'Request sent! Providers can now send you quotes.');
+        $near = Geo::providersCovering($coords['lat'], $coords['lng'])->count();
+        return redirect()->route('customer.requests')->with('success', $near > 0
+            ? 'Request sent! ' . $near . ' ' . \Illuminate\Support\Str::plural('mover', $near) . ' near you can now send quotes.'
+            : 'Request sent. No verified movers cover your area yet, but your request stays open for when they do.');
     })->name('customer.requests.store');
 
     Route::post('/requests/{serviceRequest}/publish', function (ServiceRequest $serviceRequest) {
         abort_unless($serviceRequest->user_id === auth()->id(), 403);
         if ($serviceRequest->status === 'Draft') {
+            if ($serviceRequest->pickup_lat === null) {
+                $coords = Geo::geocode($serviceRequest->moving_from);
+                if (!$coords) {
+                    return redirect()->route('customer.requests')->with('error', 'We could not find the pickup address. Delete this draft and start again with the suburb and city.');
+                }
+                $serviceRequest->update(['pickup_lat' => $coords['lat'], 'pickup_lng' => $coords['lng']]);
+            }
             $serviceRequest->update(['status' => 'Active']);
         }
-        return redirect()->route('customer.requests')->with('success', 'Request sent! Providers can now send you quotes.');
+        return redirect()->route('customer.requests')->with('success', 'Request sent! Movers near you can now send quotes.');
     })->name('customer.requests.publish');
 
     Route::post('/requests/{serviceRequest}/delete', function (ServiceRequest $serviceRequest) {
@@ -536,15 +560,18 @@ Route::middleware(['auth'])->group(function () {
             ]
         );
         
+        $nearby = Geo::openRequestsFor($provider, Quote::where('provider_user_id', $user->id)->pluck('service_request_id')->all());
+
         return view('provider.dashboard', [
             'provider' => $provider,
             'quotesCount' => Quote::where('provider_user_id', $user->id)->count(),
             'bookingsCount' => Booking::forProvider($user->id)->where('status', 'Paid')->count(),
             'totalRevenue' => Booking::forProvider($user->id)->where('status', 'Paid')->sum('total_price'),
             'nextJobs' => Booking::forProvider($user->id)->where('status', 'Paid')->with('quote.serviceRequest')->latest()->take(3)->get(),
-            // Open requests this provider has not quoted yet
-            'requests' => ServiceRequest::where('status', 'Active')->whereNotIn('id', Quote::where('provider_user_id', $user->id)->pluck('service_request_id'))->latest()->take(5)->get(),
-            'openRequestsCount' => ServiceRequest::where('status', 'Active')->whereNotIn('id', Quote::where('provider_user_id', $user->id)->pluck('service_request_id'))->count(),
+            // Open requests inside this provider's service area that they have not quoted yet
+            'requests' => $nearby->take(5),
+            'openRequestsCount' => $nearby->count(),
+            'needsLocation' => !Geo::hasLocation($provider),
             'commissionRate' => config('services.mrrel.commission_rate'),
             'paidOutTotal' => Booking::forProvider($user->id)->where('status', 'Paid')->whereNotNull('paid_out_at')->sum('total_price'),
         ]);
@@ -572,6 +599,11 @@ Route::middleware(['auth'])->group(function () {
         $provider = $providerFor();
         return ($provider && $provider->verification_status === 'Verified') ? $provider : null;
     };
+    $outsideAreaMessage = function () use ($providerFor) {
+        return Geo::hasLocation($providerFor())
+            ? 'That request is outside your service area. You can change your area under My business.'
+            : 'Set your service area under My business first, so you only get requests near you.';
+    };
     // Says exactly why quoting is blocked, so a mismatch is easy to spot
     $notVerifiedMessage = function () use ($providerFor) {
         $provider = $providerFor();
@@ -582,7 +614,7 @@ Route::middleware(['auth'])->group(function () {
         return 'Your account (' . $email . ') is not verified yet. Its status is "' . ($provider->verification_status ?: 'Pending') . '". Ask MrRel to verify this exact account.';
     };
 
-    Route::get('/provider/send-quote/{serviceRequest}', function (ServiceRequest $serviceRequest) use ($verifiedProvider, $notVerifiedMessage) {
+    Route::get('/provider/send-quote/{serviceRequest}', function (ServiceRequest $serviceRequest) use ($verifiedProvider, $notVerifiedMessage, $outsideAreaMessage) {
         if (!$verifiedProvider()) {
             return redirect()->route('provider.profile')
                 ->with('error', $notVerifiedMessage());
@@ -592,6 +624,9 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('provider.requests')
                 ->with('error', 'This request is no longer open for quotes.');
         }
+        if (!Geo::requestInArea($verifiedProvider(), $serviceRequest)) {
+            return redirect()->route('provider.requests')->with('error', $outsideAreaMessage());
+        }
         if (Quote::where('provider_user_id', auth()->id())->where('service_request_id', $serviceRequest->id)->exists()) {
             return redirect()->route('provider.quotes')
                 ->with('error', 'You have already sent a quote for this request.');
@@ -599,7 +634,7 @@ Route::middleware(['auth'])->group(function () {
         return view('provider.send-quote', ['serviceRequest' => $serviceRequest]);
     })->whereNumber('serviceRequest')->name('provider.send');
 
-    Route::post('/provider/send-quote', function (Request $request) use ($verifiedProvider, $notVerifiedMessage) {
+    Route::post('/provider/send-quote', function (Request $request) use ($verifiedProvider, $notVerifiedMessage, $outsideAreaMessage) {
         $data = $request->validate([
             'service_request_id' => 'required|integer|exists:service_requests,id',
             'total_price'        => 'required|numeric|gt:0|max:999999.99',
@@ -621,6 +656,10 @@ Route::middleware(['auth'])->group(function () {
         if ($serviceRequest->status !== 'Active') {
             return redirect()->route('provider.requests')
                 ->with('error', 'This request is no longer open for quotes.');
+        }
+
+        if (!Geo::requestInArea($verifiedProvider(), $serviceRequest)) {
+            return redirect()->route('provider.requests')->with('error', $outsideAreaMessage());
         }
 
         // One quote per provider per request
@@ -654,9 +693,15 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('provider.dashboard')->with('success', 'Quote sent to the customer.');
     })->name('provider.send.store');
 
-    Route::get('/provider/requests', function () {
-        $requests = ServiceRequest::where('status', 'Active')->latest()->get();
-        return view('provider.requests', ['requests' => $requests]);
+    Route::get('/provider/requests', function () use ($providerFor) {
+        $provider = $providerFor();
+        $quoted = Quote::where('provider_user_id', auth()->id())->pluck('service_request_id')->all();
+        return view('provider.requests', [
+            'requests' => Geo::openRequestsFor($provider, $quoted),
+            'needsLocation' => !Geo::hasLocation($provider),
+            'radius' => $provider ? Geo::radiusOf($provider) : 50,
+            'areaLabel' => optional($provider)->base_label,
+        ]);
     })->name('provider.requests');
 
     Route::get('/provider/quotes', function () {
@@ -787,6 +832,10 @@ Route::middleware(['auth'])->group(function () {
             'bank_account_holder' => 'nullable|string|max:150',
             'bank_account_number' => ['nullable', 'regex:/^[0-9 ]{6,20}$/'],
             'bank_branch_code' => ['nullable', 'regex:/^[0-9]{6}$/'],
+            'base_label' => 'nullable|string|max:150',
+            'base_lat' => 'nullable|numeric|between:-36,-21',
+            'base_lng' => 'nullable|numeric|between:15,34',
+            'service_radius_km' => 'nullable|in:10,25,50,100,200',
         ], [
             'bank_account_number.regex' => 'The account number must be digits only.',
             'bank_branch_code.regex' => 'The branch code must be 6 digits.',
@@ -805,6 +854,23 @@ Route::middleware(['auth'])->group(function () {
             'bank_account_holder' => $request->bank_account_holder,
             'bank_branch_code' => $request->bank_branch_code,
         ];
+        // Service area: the phone's location if the button was used, otherwise look the typed place up
+        $label = trim((string) $request->base_label);
+        $data['base_label'] = $label !== '' ? $label : $provider->base_label;
+        $data['service_radius_km'] = (int) ($request->service_radius_km ?: ($provider->service_radius_km ?: 50));
+        if ($request->filled('base_lat') && $request->filled('base_lng')) {
+            $data['base_lat'] = (float) $request->base_lat;
+            $data['base_lng'] = (float) $request->base_lng;
+            $data['base_label'] = $label !== '' ? $label : 'My current location';
+        } elseif ($label !== '' && ($label !== (string) $provider->base_label || $provider->base_lat === null)) {
+            $found = Geo::geocode($label);
+            if (!$found) {
+                return back()->withInput()->withErrors(['base_label' => 'We could not find "' . $label . '". Add the suburb and city, for example Sandton, Johannesburg.']);
+            }
+            $data['base_lat'] = $found['lat'];
+            $data['base_lng'] = $found['lng'];
+        }
+
         // Only replace the stored account number when a new one is typed in
         if (filled($request->bank_account_number)) {
             $data['bank_account_number'] = preg_replace('/\s+/', '', $request->bank_account_number);

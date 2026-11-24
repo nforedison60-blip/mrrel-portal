@@ -24,6 +24,8 @@ class ServiceRequest extends Model
         'access_delivery',
         'details',
         'status',
+        'pickup_lat',
+        'pickup_lng',
     ];
 
     public function quotes()

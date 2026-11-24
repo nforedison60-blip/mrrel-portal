@@ -79,6 +79,53 @@
                 </div>
 
                 <div class="card" style="margin-top: 16px;">
+                    <h3>Service area</h3>
+                    <div class="m sm">You only see and quote on moves that start near you. Customers only deal with movers close to them.</div>
+                    <input type="hidden" name="base_lat" id="baseLat">
+                    <input type="hidden" name="base_lng" id="baseLng">
+                    <div class="f">
+                        <label class="k">Where are you based? (suburb and city)
+                            <input type="text" name="base_label" id="baseLabel" value="{{ old('base_label', $provider->base_label) }}" maxlength="150" placeholder="e.g. Sandton, Johannesburg">
+                        </label>
+                        <label>How far will you travel?
+                            <select name="service_radius_km">
+                                @foreach([10 => '10 km', 25 => '25 km', 50 => '50 km', 100 => '100 km', 200 => '200 km'] as $km => $text)
+                                    <option value="{{ $km }}" {{ (int) old('service_radius_km', $provider->service_radius_km ?: 50) === $km ? 'selected' : '' }}>{{ $text }} from my base</option>
+                                @endforeach
+                            </select>
+                        </label>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <button type="button" class="btn g" id="useBaseLocation" style="padding: 6px 14px; font-size: 13px;">Use my current location</button>
+                        <span class="m sm" id="baseNote">Or type your suburb above.</span>
+                    </div>
+                    @if($provider->base_lat !== null)
+                        <div class="chip ok" style="margin-top: 8px;">Area saved: {{ $provider->base_label }} · {{ $provider->service_radius_km }} km</div>
+                    @else
+                        <div class="chip wn" style="margin-top: 8px;">Set your area to see requests near you</div>
+                    @endif
+                    <div class="m sm" style="margin-top: 6px;">Address search by OpenStreetMap.</div>
+                    <script>
+                        (function () {
+                            var btn = document.getElementById('useBaseLocation'), note = document.getElementById('baseNote');
+                            var lat = document.getElementById('baseLat'), lng = document.getElementById('baseLng'), label = document.getElementById('baseLabel');
+                            btn.addEventListener('click', function () {
+                                if (!navigator.geolocation) { note.textContent = 'Your browser cannot share its location. Type your suburb instead.'; return; }
+                                note.textContent = 'Finding your location...';
+                                navigator.geolocation.getCurrentPosition(function (pos) {
+                                    lat.value = pos.coords.latitude.toFixed(7); lng.value = pos.coords.longitude.toFixed(7);
+                                    note.textContent = 'Location captured. Press Save to keep it.';
+                                }, function () {
+                                    note.textContent = 'We could not get your location. Please type your suburb instead.';
+                                }, { enableHighAccuracy: true, timeout: 10000 });
+                            });
+                            // Typing a different place cancels the captured location
+                            label.addEventListener('input', function () { lat.value = ''; lng.value = ''; });
+                        })();
+                    </script>
+                </div>
+
+                <div class="card" style="margin-top: 16px;">
                     <h3>Payout details</h3>
                     <div class="m sm">Where MrRel pays you for your jobs. Only you and the MrRel team can see these. The account must be in your own name or your business name.</div>
                     <div class="f">

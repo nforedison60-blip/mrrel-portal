@@ -21,8 +21,33 @@
                         <input type="text" name="services_needed" value="{{ old('services_needed') }}" required>
                     </label>
                     <label>Moving from or service address (city and suburb)
-                        <input type="text" name="moving_from" value="{{ old('moving_from') }}" required>
+                        <input type="text" name="moving_from" id="movingFrom" value="{{ old('moving_from') }}" required>
                     </label>
+                    <input type="hidden" name="pickup_lat" id="pickupLat" value="{{ old('pickup_lat') }}">
+                    <input type="hidden" name="pickup_lng" id="pickupLng" value="{{ old('pickup_lng') }}">
+                    <div class="k" style="margin: -4px 0 8px;">
+                        <button type="button" class="btn g" id="useLocation" style="padding: 6px 14px; font-size: 13px;">Use my current location</button>
+                        <span class="m sm" id="locationNote">Only movers near this address will see your request.</span>
+                    </div>
+                    <script>
+                        (function () {
+                            var btn = document.getElementById('useLocation'), note = document.getElementById('locationNote');
+                            var lat = document.getElementById('pickupLat'), lng = document.getElementById('pickupLng'), addr = document.getElementById('movingFrom');
+                            var normal = note.textContent;
+                            btn.addEventListener('click', function () {
+                                if (!navigator.geolocation) { note.textContent = 'Your browser cannot share its location. Type the address instead.'; return; }
+                                note.textContent = 'Finding your location...';
+                                navigator.geolocation.getCurrentPosition(function (pos) {
+                                    lat.value = pos.coords.latitude.toFixed(7); lng.value = pos.coords.longitude.toFixed(7);
+                                    note.textContent = 'Location captured. Movers near where you are now will see your request.';
+                                }, function () {
+                                    note.textContent = 'We could not get your location. Please type the address instead.';
+                                }, { enableHighAccuracy: true, timeout: 10000 });
+                            });
+                            // Typing a different address cancels the captured location
+                            addr.addEventListener('input', function () { lat.value = ''; lng.value = ''; note.textContent = normal; });
+                        })();
+                    </script>
                     <label>Moving to (if moving)
                         <input type="text" name="moving_to" value="{{ old('moving_to') }}">
                     </label>

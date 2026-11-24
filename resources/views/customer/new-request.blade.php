@@ -14,7 +14,7 @@
         <div class="card">
             <h3>Request details</h3>
 
-            <form method="POST" action="{{ route('customer.requests.store') }}">
+            <form method="POST" action="{{ route('customer.requests.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="f">
                     <label class="k">Services needed (Packing, Movers, Cleaning, Storage, Assembly, Handyman, Painting, Gardening, Other)
@@ -88,6 +88,41 @@
                             @endforeach
                         </select>
                     </label>
+                    <label class="k">Photos of your items (optional, up to 5 images)
+                        <input type="file" name="photos[]" id="photos" accept="image/jpeg,image/png,image/webp" multiple>
+                    </label>
+                    <div class="m sm" id="photosNote" style="margin:-4px 0 8px;">JPG, PNG or WebP, up to 5 MB each. Providers use them to quote more accurately.</div>
+                    @foreach(collect($errors->get('photos'))->merge(collect($errors->get('photos.*'))->flatten())->unique() as $photoError)
+                        <div class="m sm" style="color:#C0392B; margin:-4px 0 8px;">{{ $photoError }}</div>
+                    @endforeach
+                    <div id="photosPreview" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;"></div>
+                    <script>
+                        (function () {
+                            var input = document.getElementById('photos'), note = document.getElementById('photosNote'), box = document.getElementById('photosPreview');
+                            var normal = note.textContent;
+                            input.addEventListener('change', function () {
+                                box.innerHTML = '';
+                                var files = Array.prototype.slice.call(input.files);
+                                var tooMany = files.length > 5;
+                                var tooBig = files.some(function (f) { return f.size > 5 * 1024 * 1024; });
+                                if (tooMany || tooBig) {
+                                    note.textContent = tooMany ? 'Please choose at most 5 photos.' : 'Each photo must be smaller than 5 MB.';
+                                    note.style.color = '#C0392B';
+                                    input.value = '';
+                                    return;
+                                }
+                                note.textContent = files.length ? files.length + (files.length === 1 ? ' photo selected.' : ' photos selected.') : normal;
+                                note.style.color = '';
+                                files.forEach(function (f) {
+                                    var img = document.createElement('img');
+                                    img.src = URL.createObjectURL(f);
+                                    img.alt = 'Selected photo';
+                                    img.style.cssText = 'width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #D5DEE6';
+                                    box.appendChild(img);
+                                });
+                            });
+                        })();
+                    </script>
                     <label class="k">Details (large items, packing, anything else)
                         <input type="text" name="details" value="{{ old('details') }}">
                     </label>

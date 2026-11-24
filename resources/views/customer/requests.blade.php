@@ -56,6 +56,14 @@
                         <div class="m sm"><b>Items:</b> {{ $req->item_size }}@if($req->items_count), {{ $req->items_count }} {{ \Illuminate\Support\Str::plural('item', $req->items_count) }}@endif</div>
                     </div>
 
+                    @php $photoUrls = $req->photoUrls(); @endphp
+                    @if($photoUrls)
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+                            @foreach($photoUrls as $photoUrl)
+                                <a href="{{ $photoUrl }}" target="_blank" rel="noopener"><img src="{{ $photoUrl }}" alt="Photo of items" loading="lazy" style="width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid #D5DEE6;"></a>
+                            @endforeach
+                        </div>
+                    @endif
                     <div style="border-top:1px solid #EEF2F5; padding-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         @if($isDraft)
                             <form method="POST" action="{{ route('customer.requests.publish', $req->id) }}" style="margin:0;">

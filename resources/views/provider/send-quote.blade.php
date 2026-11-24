@@ -64,6 +64,15 @@
                 <p class="sm"><b>To:</b> {{ $serviceRequest->moving_to }}</p>
                 <p class="sm"><b>Date:</b> {{ $serviceRequest->move_date }}</p>
                 <p class="sm"><b>Size:</b> {{ $serviceRequest->item_size }}</p>
+                @php $photoUrls = $serviceRequest->photoUrls(); @endphp
+                @if($photoUrls)
+                    <p class="sm"><b>Photos from the customer:</b></p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        @foreach($photoUrls as $photoUrl)
+                            <a href="{{ $photoUrl }}" target="_blank" rel="noopener"><img src="{{ $photoUrl }}" alt="Customer photo of items" loading="lazy" style="width:88px; height:88px; object-fit:cover; border-radius:8px; border:1px solid #D5DEE6;"></a>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
     </div>

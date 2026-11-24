@@ -137,6 +137,16 @@ Route::middleware(['auth'])->group(function () {
             'pickup_lat'       => 'nullable|numeric|between:-36,-21',
             'pickup_lng'       => 'nullable|numeric|between:15,34',
         ]);
+        $request->validate([
+            'photos'   => 'nullable|array|max:5',
+            'photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+        ], [
+            'photos.max'        => 'You can attach up to 5 photos.',
+            'photos.*.image'    => 'Each photo must be an image (JPG, PNG or WebP).',
+            'photos.*.mimes'    => 'Each photo must be a JPG, PNG or WebP image.',
+            'photos.*.max'      => 'Each photo must be smaller than 5 MB.',
+            'photos.*.uploaded' => 'A photo could not be uploaded. Try smaller photos (under 5 MB each).',
+        ]);
         $isDraft = $request->has('is_draft');
 
         // Where the move starts: the phone's location if the customer used the button, otherwise the typed address
@@ -152,6 +162,17 @@ Route::middleware(['auth'])->group(function () {
         $data['customer_name'] = auth()->user()->name;
         $data['user_id'] = auth()->id();
         $data['status'] = $isDraft ? 'Draft' : 'Active';
+        // Photos of the items (optional, up to 5)
+        $photoPaths = [];
+        foreach ((array) $request->file('photos', []) as $photo) {
+            try { $stored = $photo->store('service-requests', 's3'); } catch (\Throwable $e) { $stored = false; }
+            if (!$stored) {
+                if ($photoPaths) { \Illuminate\Support\Facades\Storage::disk('s3')->delete($photoPaths); }
+                return back()->withInput()->withErrors(['photos' => 'We could not save your photos right now. Remove them and try again, or send the request without photos.']);
+            }
+            $photoPaths[] = $stored;
+        }
+        $data['photo_paths'] = $photoPaths ?: null;
         ServiceRequest::create($data);
 
         if ($isDraft) {

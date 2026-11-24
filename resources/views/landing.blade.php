@@ -119,19 +119,19 @@
                     <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6"/></svg></div>
                     <h3>Customers</h3>
                     <ul><li>Request a move and get quotes</li><li>Pay by instant EFT</li><li>Follow your truck live</li><li>Search places to rent</li></ul>
-                    <a class="btn" href="{{ route('register') }}">Start a move</a>
+                    <a class="btn" href="{{ route('register', ['role' => 'Customer']) }}">Start a move</a>
                 </div>
                 <div class="card rvl">
                     <div class="ic t"><svg viewBox="0 0 24 24"><path d="M2 6h11v10H2z"/><path d="M13 9h4.5L21 12.5V16h-8"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></div>
                     <h3>Movers</h3>
                     <ul><li>See open move requests</li><li>Send quotes to customers</li><li>Get a verified badge</li><li>Share your location on the job</li></ul>
-                    <a class="btn g" href="{{ route('register') }}">Join as a mover</a>
+                    <a class="btn g" href="{{ route('register', ['role' => 'Provider']) }}">Join as a mover</a>
                 </div>
                 <div class="card rvl">
                     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 21V4h9v17"/><path d="M14 9h5v12"/><path d="M8 8h3M8 12h3M8 16h3"/></svg></div>
                     <h3>Landlords</h3>
                     <ul><li>List your properties</li><li>MrRel reviews each listing</li><li>Receive viewing requests</li><li>Match with tenants</li></ul>
-                    <a class="btn g" href="{{ route('register') }}">List a property</a>
+                    <a class="btn g" href="{{ route('register', ['role' => 'Landlord']) }}">List a property</a>
                 </div>
             </div>
         </div>

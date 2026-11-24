@@ -24,13 +24,19 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9][0-9\s\-()]{7,}$/'],
+            'password' => ['required', 'confirmed', Rules\Password::min(8)->numbers()],
             'role' => ['required', 'string', 'in:Customer,Provider,Landlord'],
+            'terms' => ['accepted'],
+        ], [
+            'phone.regex' => 'Enter a valid mobile number, for example 082 123 4567.',
+            'terms.accepted' => 'Please agree to the Terms of Use and Privacy Policy to continue.',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => trim($request->phone),
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
@@ -43,8 +49,8 @@ class RegisteredUserController extends Controller
             return redirect()->route('provider.dashboard');
         } elseif ($user->role === 'Landlord') {
             return redirect()->route('landlord.properties');
-        } else {
-            return redirect()->route('customer.dashboard');
         }
+
+        return redirect()->route('customer.dashboard');
     }
 }

@@ -15,6 +15,15 @@ function customer(): User
     ]);
 }
 
+// A real 1x1 PNG, so the tests do not need the GD extension
+function tinyPhoto(string $name = 'photo.png'): UploadedFile
+{
+    return UploadedFile::fake()->createWithContent(
+        $name,
+        base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
+    );
+}
+
 function requestPayload(array $overrides = []): array
 {
     return array_merge([
@@ -34,7 +43,7 @@ test('a request can be sent with photos', function () {
     Storage::fake('s3');
 
     $this->actingAs(customer())->post('/requests/new', requestPayload([
-        'photos' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.png')],
+        'photos' => [tinyPhoto('a.png'), tinyPhoto('b.png')],
     ]))->assertRedirect(route('customer.requests'));
 
     $saved = ServiceRequest::firstOrFail();
@@ -55,7 +64,7 @@ test('a request still works without photos', function () {
 
 test('more than 5 photos is refused', function () {
     Storage::fake('s3');
-    $photos = array_map(fn ($i) => UploadedFile::fake()->image("p$i.jpg"), range(1, 6));
+    $photos = array_map(fn ($i) => tinyPhoto("p$i.png"), range(1, 6));
 
     $this->actingAs(customer())->post('/requests/new', requestPayload(['photos' => $photos]))
         ->assertSessionHasErrors('photos');

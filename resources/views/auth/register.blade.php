@@ -9,7 +9,7 @@
         .logo{display:none}
         .card{max-width:480px;padding:28px 28px 24px}
         .rg-head{text-align:center;margin-bottom:22px}
-        .rg-head .mark{width:34px;height:34px;fill:none;stroke:var(--t);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:10px}
+        .rg-head .mark{width:34px;height:34px;fill:none;stroke:var(--n);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:10px}
         .rg-head h1{font:800 24px 'Bricolage Grotesque',Figtree,sans-serif;margin:0 0 4px}
         .rg-head p{color:var(--m);font-size:14px;margin:0}
         .rg-label{font:600 14px Figtree,sans-serif;margin:0 0 8px;display:block}
@@ -18,18 +18,18 @@
         .role-opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
         .ro-box{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--l);border-radius:12px;background:#fff;transition:border-color .2s,background .2s}
         .ro-ico{flex:none;width:40px;height:40px;border-radius:10px;background:var(--bg);display:grid;place-items:center;transition:background .2s}
-        .ro-ico svg{width:22px;height:22px;fill:none;stroke:var(--t);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+        .ro-ico svg{width:22px;height:22px;fill:none;stroke:var(--n);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
         .ro-txt{flex:1;line-height:1.3}
         .ro-txt b{display:block;font-size:15px}
         .ro-txt small{color:var(--m);font-size:13px}
         .ro-tick{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--l);display:grid;place-items:center;transition:background .2s,border-color .2s}
-        .ro-tick svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
-        .role-opt:hover .ro-box{border-color:#9CC9CD}
-        .role-opt input:focus-visible + .ro-box{outline:3px solid rgba(14,124,134,.35);outline-offset:2px}
-        .role-opt input:checked + .ro-box{border-color:var(--t);background:var(--tl)}
-        .role-opt input:checked + .ro-box .ro-ico{background:var(--t)}
-        .role-opt input:checked + .ro-box .ro-ico svg{stroke:#fff}
-        .role-opt input:checked + .ro-box .ro-tick{background:var(--t);border-color:var(--t)}
+        .ro-tick svg{width:14px;height:14px;fill:none;stroke:var(--n);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+        .role-opt:hover .ro-box{border-color:#EBCB78}
+        .role-opt input:focus-visible + .ro-box{outline:3px solid rgba(244,183,49,.5);outline-offset:2px}
+        .role-opt input:checked + .ro-box{border-color:var(--a);background:#FEF6DD}
+        .role-opt input:checked + .ro-box .ro-ico{background:var(--a)}
+        .role-opt input:checked + .ro-box .ro-ico svg{stroke:var(--n)}
+        .role-opt input:checked + .ro-box .ro-tick{background:var(--a);border-color:var(--a)}
         .role-opt input:checked + .ro-box .ro-tick svg{opacity:1}
         .rg-field{margin-bottom:14px}
         .rg-field label{display:block;font:600 14px Figtree,sans-serif;margin:0}
@@ -45,11 +45,9 @@
         .pw.show .on{display:none}
         .pw.show .off{display:block}
         .terms{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0 0;cursor:pointer}
-        .terms input[type=checkbox]{display:inline-block;width:18px;height:18px;margin:0;padding:0;accent-color:var(--t);flex:none}
+        .terms input[type=checkbox]{display:inline-block;width:18px;height:18px;margin:0;padding:0;accent-color:var(--a);flex:none}
         .terms a{color:var(--t);font-weight:600;text-decoration:none}
         .terms a:hover{text-decoration:underline}
-        .rg-btn{display:block;width:100%;margin-top:18px;padding:12px;border-radius:10px;border:1.5px solid var(--l);background:#fff;color:var(--n);font:700 15px Figtree,sans-serif;cursor:pointer;transition:.2s}
-        .rg-btn:hover{border-color:var(--t);background:var(--tl)}
         .rg-foot{text-align:center;margin-top:16px;font-size:14px;color:var(--m)}
         .rg-foot a{color:var(--t);font-weight:600;text-decoration:none}
     </style>
@@ -143,7 +141,7 @@
         </label>
         @error('terms') <div class="rg-err">{{ $message }}</div> @enderror
 
-        <button type="submit" class="rg-btn">Create account</button>
+        <button type="submit" class="btn">Create account</button>
 
         <div class="rg-foot">Already have an account? <a href="{{ route('login') }}">Log in</a></div>
     </form>

@@ -133,6 +133,11 @@ class PaymentController extends Controller
         }
 
         $reference = $data['TransactionReference'] ?? '';
+        // A landlord invoice (INV-0001)? Same signed message, different record.
+        if (preg_match('/^INV-(\d+)$/', $reference, $invoiceMatch)) {
+            return $this->confirmInvoice((int) $invoiceMatch[1], $data);
+        }
+
         if (!preg_match('/^BKG-(\d+)$/', $reference, $m)) {
             return response('Unknown reference', 400);
         }
@@ -162,6 +167,29 @@ class PaymentController extends Controller
         if ($justPaid) {
             $this->sendPaidEmails($justPaid);
         }
+        return response('OK', 200);
+    }
+
+    // Marks a landlord invoice paid. Only reached after the signature, site code and test-mode checks.
+    private function confirmInvoice(int $id, array $data)
+    {
+        if (strtolower($data['Status'] ?? '') !== 'complete') {
+            return response('OK', 200); // cancelled / error / abandoned: nothing to do
+        }
+        DB::transaction(function () use ($id, $data) {
+            $invoice = \App\Models\Invoice::lockForUpdate()->find($id);
+            if (!$invoice) {
+                Log::warning('Ozow notify: invoice not found', ['id' => $id]);
+                return;
+            }
+            if (abs((float) ($data['Amount'] ?? 0) - (float) $invoice->amount) > 0.009) {
+                Log::warning('Ozow notify rejected: invoice amount mismatch', ['invoice' => $invoice->id, 'amount' => $data['Amount'] ?? null]);
+                return;
+            }
+            if ($invoice->status === 'Unpaid') { // safe if Ozow sends the same message twice
+                $invoice->markPaid('Ozow', $data['TransactionId'] ?? null);
+            }
+        });
         return response('OK', 200);
     }
 

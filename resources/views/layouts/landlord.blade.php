@@ -98,6 +98,13 @@
                 $pendingViewings = 0;
             }
 
+            // Red badge: invoices this landlord still has to pay
+            try {
+                $unpaidInvoices = \App\Models\Invoice::where('user_id', auth()->id())->where('status', 'Unpaid')->count();
+            } catch (\Throwable $e) {
+                $unpaidInvoices = 0;
+            }
+
             // 5 main tabs. Tabs with "subs" show a row of sub-tabs at the top of each page.
             // Each sub is: [label, route name, route patterns that count as "on"]
             $tabs = [
@@ -106,6 +113,7 @@
                     ['Add property', 'landlord.add-property', ['landlord.add-property', 'landlord.properties.store']],
                 ]],
                 ['label' => 'Viewing requests', 'short' => 'Viewings', 'route' => 'landlord.viewing-requests', 'match' => ['landlord.viewing*'], 'subs' => [], 'badge' => $pendingViewings],
+                ['label' => 'Invoices', 'short' => 'Invoices', 'route' => 'landlord.invoices', 'match' => ['landlord.invoice*', 'landlord.payment*'], 'subs' => [], 'badge' => $unpaidInvoices],
                 ['label' => 'Profile', 'short' => 'Profile', 'route' => 'landlord.profile', 'match' => ['landlord.profile*'], 'subs' => []],
             ];
 

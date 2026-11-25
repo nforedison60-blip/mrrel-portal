@@ -114,6 +114,7 @@
                 ]],
                 ['label' => 'Finance', 'short' => 'Finance', 'route' => 'admin.payments', 'match' => [], 'subs' => [
                     ['Payments', 'admin.payments', ['admin.payments*']],
+                    ['Invoices', 'admin.invoices', ['admin.invoices*']],
                     ['Subscriptions', 'admin.subscriptions', ['admin.subscriptions*']],
                 ]],
                 ['label' => 'Support & settings', 'short' => 'Support', 'route' => 'admin.disputes', 'match' => [], 'subs' => [

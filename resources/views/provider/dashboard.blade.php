@@ -4,14 +4,48 @@
     <!-- Profile Header -->
     <div class="hero">
         <i class="hs a"></i><i class="hs b"></i><i class="hs c"></i>
-        <div class="av hc" style="width: 80px; height: 80px; font-size: 32px;">{{ strtoupper(substr($provider->name, 0, 1)) }}</div>
+        @php
+            // Profile photo from the provider's profile (falls back to the first letter)
+            $bannerPhoto = null;
+            if ($provider->image_path) {
+                try { $bannerPhoto = \Illuminate\Support\Facades\Storage::disk('s3')->url($provider->image_path); } catch (\Throwable $e) { $bannerPhoto = null; }
+            }
+        @endphp
+        <a href="{{ route('provider.profile') }}" class="hc" title="Edit your profile" style="text-decoration:none; display:block; line-height:0;">
+            @if($bannerPhoto)
+                <img src="{{ $bannerPhoto }}" alt="Your profile photo" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,.9); box-shadow:0 6px 14px rgba(0,0,0,.25);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            @endif
+            <div class="av" style="width:80px; height:80px; font-size:32px; color:#10243A; line-height:1; {{ $bannerPhoto ? 'display:none;' : '' }}">{{ strtoupper(substr($provider->name, 0, 1)) }}</div>
+        </a>
         <div class="hc" style="flex:1;min-width:220px;">
             @php
                 // First visit = no quotes sent yet, so say "Welcome" rather than "Welcome back"
                 $isNewProvider = !\App\Models\Quote::where('provider_user_id', auth()->id())->exists();
             @endphp
             <h1>{{ $isNewProvider ? 'Welcome' : 'Welcome back' }}, {{ $provider->name }}</h1>
-            <div class="m">{{ $provider->company_name ?: 'Add your business name under Profile and verification' }}</div>
+            <div class="m">
+                @if($provider->company_name)
+                    {{ $provider->company_name }}
+                @else
+                    <a href="{{ route('provider.profile') }}" style="color:#fff; text-decoration:underline;">Add your business name</a> so customers know who you are
+                @endif
+            </div>
+            <div style="margin-top:10px;">
+                @if($provider->verification_status === 'Verified')
+                    <span class="chip ok">&#10003; Verified</span>
+                @else
+                    <span class="chip wn">Verification: {{ $provider->verification_status ?: 'Pending' }}</span>
+                @endif
+                @if($provider->base_label)
+                    <span class="chip">Based in {{ $provider->base_label }}@if($provider->service_radius_km) &middot; {{ $provider->service_radius_km }} km @endif</span>
+                @endif
+                @if($provider->vehicle || $provider->plate_number)
+                    <span class="chip">{{ trim($provider->vehicle . ' ' . $provider->plate_number) }}</span>
+                @endif
+                @if((float) $provider->rating > 0)
+                    <span class="chip">&#9733; {{ number_format((float) $provider->rating, 1) }}</span>
+                @endif
+            </div>
         </div>
         <div class="hc"><a class="btn" href="{{ route('provider.requests') }}">See open requests</a></div>
     </div>

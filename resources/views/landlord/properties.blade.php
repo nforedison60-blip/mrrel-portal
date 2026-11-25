@@ -40,6 +40,7 @@
                     <th>Rent</th>
                     <th>Status</th>
                     <th>Updated</th>
+                    <th>Action</th>
                 </tr>
                 @foreach($properties as $property)
                     @php $label = $labels[$property->status] ?? [$property->status, 'wn']; @endphp
@@ -51,6 +52,13 @@
                         <td>R{{ number_format($property->rent, 0) }}</td>
                         <td><span class="chip {{ $label[1] }}">{{ $label[0] }}</span></td>
                         <td class="m sm">{{ $property->updated_at->format('d M Y') }}</td>
+                        <td>
+                            @if($property->status === 'Under Offer')
+                                <span class="m sm">Locked</span>
+                            @else
+                                <a href="{{ route('landlord.properties.edit', $property) }}" class="btn g" style="padding:6px 14px;font-size:13px;margin:0;text-decoration:none;">Edit</a>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </table>

@@ -28,6 +28,7 @@
                     <th>ID</th>
                     <th>Vehicle and plate</th>
                     <th>Documents</th>
+                    <th>Agreements</th>
                     <th>Action</th>
                 </tr>
                 @foreach($pendingProviders as $p)
@@ -46,6 +47,7 @@
                             @endif
                         </td>
                         <td>{!! $p->vehicle_document ? $yes : $missing !!}</td>
+                        <td>{!! ($p->consent_display_at && $p->consent_verification_at && $p->consent_terms_at) ? $yes : $missing !!}</td>
                         <td>
                             <a href="{{ route('admin.providers') }}" class="btn g" style="padding:6px 14px;font-size:13px;margin:0 6px 6px 0;text-decoration:none;">Review documents</a>
                             <form method="POST" action="{{ route('admin.providers.verify', $p->id) }}" style="display:inline;">

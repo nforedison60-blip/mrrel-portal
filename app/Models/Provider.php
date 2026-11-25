@@ -32,11 +32,17 @@ class Provider extends Model
         'bank_account_number',
         'bank_account_type',
         'bank_branch_code',
+        'consent_display_at',
+        'consent_verification_at',
+        'consent_terms_at',
     ];
 
     // The account number is encrypted in the database
     protected $casts = [
         'bank_account_number' => 'encrypted',
+        'consent_display_at' => 'datetime',
+        'consent_verification_at' => 'datetime',
+        'consent_terms_at' => 'datetime',
     ];
 
     public function hasBankDetails(): bool

@@ -181,6 +181,32 @@
                     </div>
                 </div>
 
+                <div class="card" style="margin-top: 16px;">
+                    <h3>Your agreements</h3>
+                    @php
+                        $termsUrl = \Illuminate\Support\Facades\Route::has('terms') ? route('terms') : '#';
+                        $privacyUrl = \Illuminate\Support\Facades\Route::has('privacy') ? route('privacy') : '#';
+                    @endphp
+                    <label style="display:flex; gap:10px; align-items:flex-start; font-weight:500; margin-top:14px; cursor:pointer;">
+                        <input type="checkbox" name="consent_display" value="1" style="width:18px; height:18px; margin:2px 0 0; flex:none; accent-color:var(--a);" @checked($provider->consent_display_at || old('consent_display')) @disabled($provider->consent_display_at)>
+                        <span>I agree to MrRel showing my profile photo, first name and vehicle details to customers.</span>
+                    </label>
+                    @error('consent_display') <div class="sm" style="color:#C0392B; margin-left:28px;">{{ $message }}</div> @enderror
+                    <label style="display:flex; gap:10px; align-items:flex-start; font-weight:500; margin-top:12px; cursor:pointer;">
+                        <input type="checkbox" name="consent_accuracy" value="1" style="width:18px; height:18px; margin:2px 0 0; flex:none; accent-color:var(--a);" @checked($provider->consent_verification_at || old('consent_accuracy')) @disabled($provider->consent_verification_at)>
+                        <span>The information above is accurate. I agree to MrRel verifying my business.</span>
+                    </label>
+                    @error('consent_accuracy') <div class="sm" style="color:#C0392B; margin-left:28px;">{{ $message }}</div> @enderror
+                    <label style="display:flex; gap:10px; align-items:flex-start; font-weight:500; margin-top:12px; cursor:pointer;">
+                        <input type="checkbox" name="consent_terms" value="1" style="width:18px; height:18px; margin:2px 0 0; flex:none; accent-color:var(--a);" @checked($provider->consent_terms_at || old('consent_terms')) @disabled($provider->consent_terms_at)>
+                        <span>I agree to the <a href="{{ $termsUrl }}" target="_blank" rel="noopener" style="color:var(--t); font-weight:600;">Terms</a> and <a href="{{ $privacyUrl }}" target="_blank" rel="noopener" style="color:var(--t); font-weight:600;">Privacy Policy</a>.</span>
+                    </label>
+                    @error('consent_terms') <div class="sm" style="color:#C0392B; margin-left:28px;">{{ $message }}</div> @enderror
+                    @if($provider->consent_display_at && $provider->consent_verification_at && $provider->consent_terms_at)
+                        <div class="m sm" style="margin-top:12px;">You agreed to these on {{ $provider->consent_terms_at->format('d M Y') }}.</div>
+                    @endif
+                </div>
+
                 <div style="margin-top: 20px;">
                     <button type="submit" class="btn" style="width: 100%; font-size: 16px; padding: 15px;">Save Profile & Upload</button>
                 </div>

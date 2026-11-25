@@ -882,6 +882,18 @@ Route::middleware(['auth'])->group(function () {
         $user = auth()->user();
         $provider = Provider::firstOrCreate(['email' => $user->email], ['name' => $user->name, 'user_id' => $user->id]);
         
+        // The three agreements from the application form: asked once, then remembered
+        $consentData = [];
+        $consentErrors = [];
+        foreach (['consent_display_at' => 'consent_display', 'consent_verification_at' => 'consent_accuracy', 'consent_terms_at' => 'consent_terms'] as $column => $input) {
+            if ($provider->{$column}) { continue; }
+            if ($request->boolean($input)) { $consentData[$column] = now(); }
+            else { $consentErrors[$input] = 'Please tick this box to continue.'; }
+        }
+        if ($consentErrors) {
+            return back()->withInput()->withErrors($consentErrors);
+        }
+
         $data = [
             'name' => $request->name,
             'company_name' => $request->company_name,
@@ -926,7 +938,7 @@ Route::middleware(['auth'])->group(function () {
             }
         }
         
-        $provider->update($data);
+        $provider->update($data + $consentData);
         
         return redirect()->route('provider.profile')->with('success', 'Profile updated successfully!');
     })->name('provider.profile.update');

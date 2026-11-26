@@ -25,7 +25,6 @@ use App\Support\Geo;
 use App\Support\Docs;
 
 require __DIR__.'/auth.php';
-require __DIR__.'/tenant.php';
 require __DIR__.'/landlord-intro.php';
 require __DIR__.'/landlord-edit.php';
 require __DIR__.'/invoices.php';
@@ -1132,3 +1131,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/tracking/locations', [TrackingController::class, 'adminLocations'])->name('admin.tracking.locations');
     }); // end Admin
 });
+
+// The tenant process. Loaded LAST on purpose: where an address is used twice, the last route wins.
+require __DIR__.'/tenant.php';

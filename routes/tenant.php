@@ -9,8 +9,8 @@ use App\Http\Controllers\Tenant\TenantViewingController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| The tenant process (finding a home). This file is loaded from routes/web.php BEFORE the older routes,
-| so the two routes marked "takes over" use the same web address as an older route and win.
+| The tenant process (finding a home). This file is loaded from the END of routes/web.php. When two routes have the same address, the one registered LAST wins,
+| so the routes marked "takes over" replace the older routes that use the same address.
 */
 
 Route::middleware(['auth', 'role:Customer'])->group(function () {

@@ -65,6 +65,7 @@ class TenantMatchingController extends Controller
             return back()->with('error', 'None of those places are live, so nothing was sent.');
         }
         $need->update(['status' => 'Matched']);
+        \App\Support\Notifications::matchesSent($need, $count);
 
         return back()->with('success', 'Sent ' . $count . ' ' . \Illuminate\Support\Str::plural('match', $count) . ' to ' . optional($need->user)->name . '.');
     }

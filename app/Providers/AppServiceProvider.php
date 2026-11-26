@@ -14,6 +14,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        \App\Support\Notifications::register(); // emails that tell people something happened
+
         // If we are on local (testing), and don't have AWS keys, 
         // force it to use the public disk so it doesn't crash.
         if (app()->environment('local') && !env('AWS_BUCKET')) {

@@ -35,7 +35,7 @@
         display: flex;
         flex-direction: column;
         gap: 15px;
-        background-image: radial-gradient(#E3F1F2 1px, transparent 1px);
+        background-image: radial-gradient(#E6EEF8 1px, transparent 1px);
         background-size: 20px 20px; /* Creative dotted background */
     }
     .msg-row {
@@ -82,7 +82,7 @@
         opacity: 0.8;
     }
     .msg-bubble.mine .msg-sender-name { color: var(--n); }
-    .msg-bubble.theirs .msg-sender-name { color: #E3F1F2; }
+    .msg-bubble.theirs .msg-sender-name { color: #E6EEF8; }
     
     .msg-time {
         font-size: 10px;

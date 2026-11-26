@@ -10,9 +10,9 @@
         .card{max-width:480px;padding:28px 28px 24px}
         .rg-head{text-align:center;margin-bottom:22px}
         .rg-head .mark{width:34px;height:34px;fill:none;stroke:var(--n);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:10px}
-        .rg-head h1{font:800 24px 'Bricolage Grotesque',Figtree,sans-serif;margin:0 0 4px}
+        .rg-head h1{font:800 24px 'Montserrat',Open Sans,sans-serif;margin:0 0 4px}
         .rg-head p{color:var(--m);font-size:14px;margin:0}
-        .rg-label{font:600 14px Figtree,sans-serif;margin:0 0 8px;display:block}
+        .rg-label{font:600 14px Open Sans,sans-serif;margin:0 0 8px;display:block}
         .roles{display:grid;gap:10px;margin:0 0 18px}
         .role-opt{position:relative;display:block;cursor:pointer;margin:0}
         .role-opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
@@ -25,14 +25,14 @@
         .ro-tick{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--l);display:grid;place-items:center;transition:background .2s,border-color .2s}
         .ro-tick svg{width:14px;height:14px;fill:none;stroke:var(--n);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
         .role-opt:hover .ro-box{border-color:#EBCB78}
-        .role-opt input:focus-visible + .ro-box{outline:3px solid rgba(244,183,49,.5);outline-offset:2px}
+        .role-opt input:focus-visible + .ro-box{outline:3px solid rgba(255,122,26,.5);outline-offset:2px}
         .role-opt input:checked + .ro-box{border-color:var(--a);background:#FEF6DD}
         .role-opt input:checked + .ro-box .ro-ico{background:var(--a)}
         .role-opt input:checked + .ro-box .ro-ico svg{stroke:var(--n)}
         .role-opt input:checked + .ro-box .ro-tick{background:var(--a);border-color:var(--a)}
         .role-opt input:checked + .ro-box .ro-tick svg{opacity:1}
         .rg-field{margin-bottom:14px}
-        .rg-field label{display:block;font:600 14px Figtree,sans-serif;margin:0}
+        .rg-field label{display:block;font:600 14px Open Sans,sans-serif;margin:0}
         .rg-field input{padding:11px 12px;margin-top:6px}
         .rg-hint{color:var(--m);font-size:12.5px;margin-top:5px}
         .rg-err{color:#C0392B;font-size:13px;margin-top:5px}

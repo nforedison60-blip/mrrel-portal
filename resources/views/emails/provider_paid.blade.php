@@ -2,9 +2,9 @@
 <html>
 <head>
     <style>
-        body { font-family: sans-serif; color: #10243A; line-height: 1.6; }
+        body { font-family: sans-serif; color: #003068; line-height: 1.6; }
         .card { border: 1px solid #D5DEE6; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
-        .btn { background: #F4B731; color: #10243A; padding: 10px 20px; text-decoration: none; border-radius: 99px; font-weight: bold; display: inline-block; margin-top: 15px; }
+        .btn { background: #FF7A1A; color: #003068; padding: 10px 20px; text-decoration: none; border-radius: 99px; font-weight: bold; display: inline-block; margin-top: 15px; }
     </style>
 </head>
 <body>

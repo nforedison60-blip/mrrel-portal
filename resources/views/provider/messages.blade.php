@@ -54,7 +54,7 @@
     .msg-sender {
         font-size: 12px;
         font-weight: bold;
-        color: #0E7C86;
+        color: #0A4C9A;
         margin-bottom: 2px;
     }
     .chat-input-area {

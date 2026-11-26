@@ -102,7 +102,7 @@
                 var img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
                 img.alt = 'Selected photo ' + (i + 1);
-                img.style.cssText = 'width:100%;height:80px;object-fit:cover;border-radius:8px;' + (i === 0 ? 'outline:3px solid #F4B731;' : '');
+                img.style.cssText = 'width:100%;height:80px;object-fit:cover;border-radius:8px;' + (i === 0 ? 'outline:3px solid #FF7A1A;' : '');
                 grid.appendChild(img);
             });
         });

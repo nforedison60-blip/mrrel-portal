@@ -58,12 +58,12 @@
         <h3>Live jobs today</h3>
         <div class="sp" style="margin-top: 16px;">
             <!-- Map Placeholder -->
-            <div style="width: 100%; height: 200px; background-color: #E3F1F2; border-radius: 8px; position: relative; overflow: hidden;">
+            <div style="width: 100%; height: 200px; background-color: #E6EEF8; border-radius: 8px; position: relative; overflow: hidden;">
                 <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
                      <svg width="400" height="150" viewBox="0 0 400 150">
-                        <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0E7C86" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
-                        <circle cx="50" cy="100" r="8" fill="#F4B731" stroke="#10243A" stroke-width="2"/>
-                        <circle cx="350" cy="50" r="8" fill="#0E7C86"/>
+                        <path d="M 50 100 Q 150 50 250 100 T 350 50" stroke="#0A4C9A" stroke-width="4" stroke-dasharray="8 8" fill="none"/>
+                        <circle cx="50" cy="100" r="8" fill="#FF7A1A" stroke="#003068" stroke-width="2"/>
+                        <circle cx="350" cy="50" r="8" fill="#0A4C9A"/>
                      </svg>
                 </div>
             </div>

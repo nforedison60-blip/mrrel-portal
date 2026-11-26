@@ -6,7 +6,7 @@
     $matched = \App\Support\TenantAccess::isMatched($uid, $property->id);
     $paid = \App\Support\TenantAccess::hasPaidMatchingFee($uid);
     $attendOk = \App\Support\TenantFees::attendanceAvailable();
-    $boxStyle = 'width:100%; height:200px; background:#E3F1F2; border-radius:8px; align-items:center; justify-content:center; color:var(--m); font-size:14px; margin-bottom:10px; text-align:center; padding:0 12px;';
+    $boxStyle = 'width:100%; height:200px; background:#E6EEF8; border-radius:8px; align-items:center; justify-content:center; color:var(--m); font-size:14px; margin-bottom:10px; text-align:center; padding:0 12px;';
 @endphp
 <div class="card">
     <div style="min-height:30px;">

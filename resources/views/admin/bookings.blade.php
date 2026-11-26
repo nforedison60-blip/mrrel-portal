@@ -37,7 +37,7 @@
             <tr>
                 <td>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="width: 32px; height: 32px; background: #E3F1F2; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 100 100"><path d="M10 50L50 10L90 50V90H10V50Z" fill="#D5DEE6" stroke="#51657A" stroke-width="4"/></svg></div>
+                        <div style="width: 32px; height: 32px; background: #E6EEF8; border-radius: 4px; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 100 100"><path d="M10 50L50 10L90 50V90H10V50Z" fill="#D5DEE6" stroke="#51657A" stroke-width="4"/></svg></div>
                         {{ $property->title }}
                     </div>
                 </td>

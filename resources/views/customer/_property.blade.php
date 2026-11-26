@@ -1,7 +1,7 @@
 @php
     $accepted = (int) $property->accepted_by === (int) auth()->id();
     $viewing = $viewings[$property->id] ?? null;
-    $boxStyle = 'width:100%; height:200px; background:#E3F1F2; border-radius:8px; align-items:center; justify-content:center; color:var(--m); font-size:14px; margin-bottom:10px;';
+    $boxStyle = 'width:100%; height:200px; background:#E6EEF8; border-radius:8px; align-items:center; justify-content:center; color:var(--m); font-size:14px; margin-bottom:10px;';
 @endphp
 <div class="card">
     <div style="min-height:30px;">

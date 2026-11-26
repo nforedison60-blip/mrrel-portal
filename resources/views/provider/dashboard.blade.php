@@ -15,7 +15,7 @@
             @if($bannerPhoto)
                 <img src="{{ $bannerPhoto }}" alt="Your profile photo" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,.9); box-shadow:0 6px 14px rgba(0,0,0,.25);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             @endif
-            <div class="av" style="width:80px; height:80px; font-size:32px; color:#10243A; line-height:1; {{ $bannerPhoto ? 'display:none;' : '' }}">{{ strtoupper(substr($provider->name, 0, 1)) }}</div>
+            <div class="av" style="width:80px; height:80px; font-size:32px; color:#003068; line-height:1; {{ $bannerPhoto ? 'display:none;' : '' }}">{{ strtoupper(substr($provider->name, 0, 1)) }}</div>
         </a>
         <div class="hc" style="flex:1;min-width:220px;">
             @php

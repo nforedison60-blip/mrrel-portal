@@ -1,0 +1,15 @@
+/* MrRel brand layer: logo colours (navy and orange) and website fonts. Loaded after mrrel-ui.css. */
+:root{--n:#003068;--t:#0A4C9A;--tl:#E6EEF8;--td:#003068;--a:#FF7A1A;--m:#51657A;--l:#D5DEE6;--bg:#F5F8FA;--wn:#FFF0E5}
+body{font-family:'Open Sans',system-ui,sans-serif}
+h1,h2,h3,.big{font-family:'Montserrat','Open Sans',sans-serif}
+.top{background:#fff !important;color:var(--n) !important;border-bottom:1px solid var(--l) !important;border-top:4px solid var(--a);box-shadow:0 2px 12px rgba(0,48,104,.08) !important}
+.top .logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--n)}
+.top .logo img{height:44px;width:auto;display:block}
+.top .role{margin-right:auto;margin-left:12px;display:inline-block;background:var(--n);color:#fff;font:700 12px 'Montserrat',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;border-radius:99px}
+.top form button{background:#fff !important;color:var(--n) !important;border:1px solid var(--l) !important;font:600 13px 'Open Sans',sans-serif !important}
+.top form button:hover{background:var(--tl) !important}
+.btn{color:var(--n)}
+body>.card .logo{display:block;text-align:center}
+body>.card .logo img{height:64px;width:auto;margin:0 auto}
+.sd a.on{border-left-color:var(--a) !important}
+@media(max-width:860px){.top{padding:6px 14px !important}.top .logo img{height:36px}.top .role{margin-right:auto;margin-left:12px;font-size:11px;padding:5px 10px}}

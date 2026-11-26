@@ -5,7 +5,7 @@
     <div class="m" style="margin-bottom: 20px;">Update your details and upload your documents to get verified.</div>
 
     @if($errors->any())
-        <div style="background:#FDF1CC; color:#5C4300; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #F4B731;">
+        <div style="background:#FFF0E5; color:#5C4300; padding:12px 18px; border-radius:12px; margin-bottom:16px; font-weight:600; border:1px solid #FF7A1A;">
             Please check the form for errors.
         </div>
     @endif
@@ -39,7 +39,7 @@
                             @if($provider->vehicle_image_path)
                                 <img src="{{ Storage::disk('s3')->url($provider->vehicle_image_path) }}" alt="Your vehicle photo" style="width: 160px; height: 120px; border-radius: 8px; object-fit: cover; display: block; margin: 0 auto;">
                             @else
-                            <div style="width: 160px; height: 120px; background-color: #E3F1F2; border: 1px solid var(--l); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <div style="width: 160px; height: 120px; background-color: #E6EEF8; border: 1px solid var(--l); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                                 <svg width="100" height="50" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect x="5" y="10" width="45" height="20" rx="2" fill="#D5DEE6"/>
                                     <path d="M50 15H65L75 25V30H50V15Z" fill="#D5DEE6"/>

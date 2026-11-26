@@ -992,6 +992,14 @@ Route::middleware(['auth'])->group(function () {
             return [false, $user->name . ' has paid bookings, so the account was kept for your records.'];
         }
 
+        // Paid tenant fees, paid invoices and paid introductions are real money: keep the account for the records
+        $ownPropertyIds = Property::where('user_id', $id)->pluck('id');
+        if (\App\Models\TenantPayment::where('user_id', $id)->where('status', 'Paid')->exists()
+            || \App\Models\Invoice::where('user_id', $id)->where('status', 'Paid')->exists()
+            || \App\Models\PropertyMatch::where('intro_status', 'Paid')->where(fn ($q) => $q->where('user_id', $id)->orWhereIn('property_id', $ownPropertyIds))->exists()) {
+            return [false, $user->name . ' has paid fees, so the account was kept for your records.'];
+        }
+
         $bookingIds = $bookings->pluck('id');
         $provider = Provider::where('email', $user->email)->first();
         $files = $provider ? array_filter([
@@ -1011,6 +1019,11 @@ Route::middleware(['auth'])->group(function () {
             ViewingRequest::where('user_id', $id)->delete();
             Property::where('accepted_by', $id)->where('status', 'Under Offer')->update(['accepted_by' => null, 'status' => 'Approved']);
             Property::where('accepted_by', $id)->update(['accepted_by' => null]);
+            // Tenant and landlord records that belong to this account (nothing paid gets this far)
+            \App\Models\RentalNeed::where('user_id', $id)->delete();
+            \App\Models\TenantPayment::where('user_id', $id)->delete();
+            \App\Models\Invoice::where('user_id', $id)->delete();
+            \App\Models\PropertyMatch::where('user_id', $id)->orWhereIn('property_id', Property::where('user_id', $id)->pluck('id'))->delete();
             Property::where('user_id', $id)->delete();
             Customer::where('user_id', $id)->delete();
             Provider::where('email', $user->email)->delete();
@@ -1151,3 +1164,4 @@ Route::middleware(['auth'])->group(function () {
 
 // The tenant process. Loaded LAST on purpose: where an address is used twice, the last route wins.
 require __DIR__.'/tenant.php';
+require __DIR__.'/admin-cleanup.php';

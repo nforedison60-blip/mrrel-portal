@@ -15,6 +15,7 @@
                     <th>Service</th>
                     <th>Route / Location</th>
                     <th>Date</th>
+                    <th>Action</th>
                 </tr>
                 @foreach($requests as $req)
                 <tr>
@@ -22,6 +23,12 @@
                     <td><b>{{ $req->services_needed }}</b></td>
                     <td>{{ $req->moving_from }} to {{ $req->moving_to }}</td>
                     <td>{{ $req->move_date }}</td>
+                    <td>
+                        <form method="POST" action="{{ route('admin.requests.delete', $req->id) }}" style="margin:0;" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Remove this request and its quotes?') }});">
+                            @csrf
+                            <button type="submit" class="btn g" style="padding:4px 12px;font-size:12px;margin:0;color:#8A1C1C;">Remove</button>
+                        </form>
+                    </td>
                 </tr>
                 @endforeach
             </table>

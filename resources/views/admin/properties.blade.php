@@ -34,7 +34,10 @@
                         </span>
                     </td>
                     <td>
-                        <button type="button" class="btn g" style="padding: 6px 14px; font-size: 13px;">View Details</button>
+                        <form method="POST" action="{{ route('admin.properties.delete', $property->id) }}" style="margin:0;" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Remove ' . $property->title . '? Its photos, matches, viewing requests and unpaid invoices are removed too.') }});">
+                            @csrf
+                            <button type="submit" class="btn g" style="padding:4px 12px;font-size:12px;margin:0;color:#8A1C1C;">Remove</button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach

@@ -16,7 +16,7 @@
         @else
             <div style="overflow-x:auto;">
             <table class="tb">
-                <tr><th>Property</th><th>Landlord</th><th>Tenant</th><th>Answer</th><th>Fee</th><th>Contacts to coordinate</th></tr>
+                <tr><th>Property</th><th>Landlord</th><th>Tenant</th><th>Answer</th><th>Fee</th><th>Contacts to coordinate</th><th>Action</th></tr>
                 @foreach($matches as $m)
                     @php($landlord = $landlords[optional($m->property)->user_id] ?? null)
                     <tr>
@@ -28,6 +28,8 @@
                             @if($m->introPaid())
                                 <span class="chip ok">Paid R{{ number_format((float) $m->intro_amount, 2) }}</span>
                                 <div class="m sm">{{ optional($m->intro_paid_at)->format('d M Y H:i') }}</div>
+                            @elseif($m->intro_status === 'Refunded')
+                                <span class="chip gr">Refunded</span>
                             @elseif($m->landlord_status === 'Interested')
                                 <span class="chip wn">Waiting</span>
                             @else
@@ -40,6 +42,16 @@
                                 <strong>Tenant:</strong> {{ optional($m->user)->phone ?: 'no phone' }} / {{ optional($m->user)->email }}
                             @else
                                 <span class="m">Shown after payment</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($m->introPaid())
+                                <form method="POST" action="{{ route('admin.introductions.refund', $m->id) }}" style="margin:0;" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Mark this introduction as refunded? Return the money in your Ozow dashboard first. The landlord will no longer see the tenant details.') }});">
+                                    @csrf
+                                    <button type="submit" class="btn g" style="padding:4px 12px;font-size:12px;margin:0;">Mark refunded</button>
+                                </form>
+                            @else
+                                <span class="m sm">-</span>
                             @endif
                         </td>
                     </tr>

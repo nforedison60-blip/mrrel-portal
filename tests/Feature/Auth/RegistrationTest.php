@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
 
 function validRegistration(array $overrides = []): array
 {
@@ -19,17 +21,24 @@ test('registration screen can be rendered', function () {
     $this->get('/register')->assertStatus(200)->assertSee('I offer moving services');
 });
 
-test('new customers can register', function () {
+test('new customers can register and are asked to verify their email', function () {
+    Notification::fake();
+
     $response = $this->post('/register', validRegistration());
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('customer.dashboard', absolute: false));
-    expect(User::where('email', 'test@example.com')->value('phone'))->toBe('082 123 4567');
+    $response->assertRedirect(route('verification.notice'));
+    $user = User::where('email', 'test@example.com')->first();
+    expect($user->phone)->toBe('082 123 4567');
+    expect($user->hasVerifiedEmail())->toBeFalse();
+    Notification::assertSentTo($user, VerifyEmail::class);
 });
 
-test('providers land on the provider dashboard', function () {
+test('providers and landlords also have to verify first', function () {
+    Notification::fake();
+
     $this->post('/register', validRegistration(['role' => 'Provider']))
-        ->assertRedirect(route('provider.dashboard', absolute: false));
+        ->assertRedirect(route('verification.notice'));
 });
 
 test('registration needs the terms ticked', function () {

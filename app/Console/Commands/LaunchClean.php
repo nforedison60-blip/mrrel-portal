@@ -81,6 +81,7 @@ class LaunchClean extends Command
 
             foreach ($kept as $u) {
                 $u->role = 'Admin';
+                $u->email_verified_at ??= now();
                 $u->save();
             }
 

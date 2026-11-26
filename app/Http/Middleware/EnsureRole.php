@@ -15,6 +15,10 @@ class EnsureRole
             abort(403, 'You do not have access to this area.');
         }
 
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         if (! in_array($user->role, $roles, true)) {
             // Someone opened a page that belongs to another kind of account (an old bookmark,
             // for example). Take them to their own area instead of showing an error page.

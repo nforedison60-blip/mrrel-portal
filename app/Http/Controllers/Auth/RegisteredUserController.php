@@ -45,12 +45,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        if ($user->role === 'Provider') {
-            return redirect()->route('provider.dashboard');
-        } elseif ($user->role === 'Landlord') {
-            return redirect()->route('landlord.properties');
-        }
-
-        return redirect()->route('customer.dashboard');
+        return redirect()->route('verification.notice');
     }
 }

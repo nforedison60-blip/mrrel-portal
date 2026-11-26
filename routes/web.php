@@ -46,7 +46,7 @@ Route::get('/documents/{provider}/{field}', function (Provider $provider, string
     }
     abort_unless(Docs::available(), 503);
     return redirect()->away(Docs::temporaryUrl($path, 5));
-})->middleware('auth')->name('documents.show');
+})->middleware(['auth', 'verified'])->name('documents.show');
 
 // Public home page. Logged-in people go straight to their own dashboard.
 Route::get('/', function () {
@@ -59,7 +59,7 @@ Route::get('/dashboard', function () {
     if ($role == 'Provider') return redirect()->route('provider.dashboard');
     if ($role == 'Landlord') return redirect()->route('landlord.properties');
     return redirect()->route('customer.dashboard');
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -67,7 +67,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     
     // PAYMENT ROUTES
     Route::get('/payment/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');

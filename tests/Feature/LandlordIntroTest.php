@@ -79,11 +79,14 @@ it('does not show another landlord\'s matches', function () {
     $this->actingAs($other)->get(route('landlord.introductions'))->assertOk()->assertDontSee('Thandi');
 });
 
-it('only lets customers and admins see what belongs to them', function () {
-    [, $tenant] = introSetup();
+it('sends a customer away from the landlord and admin pages', function () {
+    [, $tenant, , $match] = introSetup();
 
-    $this->actingAs($tenant)->get(route('landlord.introductions'))->assertForbidden();
-    $this->actingAs($tenant)->get(route('admin.introductions'))->assertForbidden();
+    // A customer opening these pages is taken to their own area, and cannot act on them
+    $this->actingAs($tenant)->get(route('landlord.introductions'))->assertRedirect(route('customer.dashboard'));
+    $this->actingAs($tenant)->get(route('admin.introductions'))->assertRedirect(route('customer.dashboard'));
+    $this->actingAs($tenant)->post(route('landlord.introductions.pay', $match->id))->assertForbidden();
+    expect($match->fresh()->intro_status)->toBeNull();
 });
 
 it('stores the fee on the server when the landlord starts paying', function () {

@@ -9,6 +9,15 @@ beforeEach(function () {
     Storage::fake('s3');
 });
 
+// A real 1x1 PNG, so these tests do not need the GD extension
+function landlordPhoto(string $name = 'photo.png'): UploadedFile
+{
+    return UploadedFile::fake()->createWithContent(
+        $name,
+        base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
+    );
+}
+
 function photoLandlord(): User
 {
     return User::factory()->create(['role' => 'Landlord']);
@@ -34,7 +43,7 @@ it('saves several photos when a landlord adds a property, the first as cover', f
     $landlord = photoLandlord();
 
     $this->actingAs($landlord)->post(route('landlord.properties.store'), photoPayload([
-        'photos' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.jpg'), UploadedFile::fake()->image('c.png')],
+        'photos' => [landlordPhoto('a.jpg'), landlordPhoto('b.jpg'), landlordPhoto('c.png')],
     ]))->assertRedirect(route('landlord.properties'));
 
     $property = Property::where('user_id', $landlord->id)->first();
@@ -56,7 +65,7 @@ it('still works with no photos at all', function () {
 
 it('refuses more than 6 photos and files that are not images', function () {
     $landlord = photoLandlord();
-    $seven = array_map(fn ($i) => UploadedFile::fake()->image("p{$i}.jpg"), range(1, 7));
+    $seven = array_map(fn ($i) => landlordPhoto("p{$i}.jpg"), range(1, 7));
 
     $this->actingAs($landlord)->post(route('landlord.properties.store'), photoPayload(['photos' => $seven]))->assertSessionHasErrors('photos');
     $this->actingAs($landlord)->post(route('landlord.properties.store'), photoPayload(['photos' => [UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf')]]))->assertSessionHasErrors('photos.0');
@@ -72,7 +81,7 @@ it('lets a landlord add and remove photos on an existing property', function () 
     // Remove the cover and add a new photo: the second photo becomes the cover
     $this->actingAs($landlord)->post("/landlord/properties/{$property->id}", photoPayload([
         'remove_photos' => ['properties/cover.jpg'],
-        'photos' => [UploadedFile::fake()->image('new.jpg')],
+        'photos' => [landlordPhoto('new.jpg')],
     ]))->assertRedirect(route('landlord.properties'));
 
     $property->refresh();
@@ -112,7 +121,7 @@ it('rejects going over 6 photos in total when editing', function () {
     $property = photoProperty($landlord, ['image_path' => $paths[0], 'photo_paths' => array_slice($paths, 1)]);
 
     $this->actingAs($landlord)->post("/landlord/properties/{$property->id}", photoPayload([
-        'photos' => [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.jpg')],
+        'photos' => [landlordPhoto('a.jpg'), landlordPhoto('b.jpg')],
     ]))->assertSessionHasErrors('photos');
 
     expect($property->fresh()->photo_paths)->toHaveCount(4);

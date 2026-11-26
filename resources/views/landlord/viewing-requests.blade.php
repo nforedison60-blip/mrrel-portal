@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Viewing requests</h1>
-    <div class="m">Tenant details are shared only after a tenant asks for a viewing.</div>
+    <div class="m">A tenant's full name and contact details are released once you accept the introduction and pay the introduction fee under Tenant matches.</div>
 
     <div class="card" style="margin-top: 20px;">
         <h3>Requests for your properties</h3>
@@ -25,7 +25,7 @@
                 </tr>
                 @foreach($viewingRequests as $req)
                     <tr>
-                        <td>{{ $req->customer_name }}</td>
+                        <td>{{ \App\Support\LandlordIntro::viewerName($req) }}</td>
                         <td>{{ optional($req->property)->title ?? 'Property no longer available' }}</td>
                         <td>{{ $req->message ?: 'No message' }}</td>
                         <td class="m sm">{{ $req->created_at->format('d M Y') }}</td>

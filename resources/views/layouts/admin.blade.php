@@ -117,6 +117,7 @@
                     ['Invoices', 'admin.invoices', ['admin.invoices*']],
                     ['Subscriptions', 'admin.subscriptions', ['admin.subscriptions*']],
                     ['Tenant payments', 'admin.tenant-payments', ['admin.tenant-payments*']],
+                    ['Landlord introductions', 'admin.introductions', ['admin.introductions*']],
                 ]],
                 ['label' => 'Support & settings', 'short' => 'Support', 'route' => 'admin.disputes', 'match' => [], 'subs' => [
                     ['Disputes', 'admin.disputes', ['admin.disputes*']],

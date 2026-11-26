@@ -105,6 +105,13 @@
                 $unpaidInvoices = 0;
             }
 
+            // Red badge: tenant matches waiting for this landlord's decision
+            try {
+                $newIntros = \App\Support\LandlordIntro::visibleFor(auth()->id())->filter(fn($m) => !$m->introPaid())->count();
+            } catch (\Throwable $e) {
+                $newIntros = 0;
+            }
+
             // 5 main tabs. Tabs with "subs" show a row of sub-tabs at the top of each page.
             // Each sub is: [label, route name, route patterns that count as "on"]
             $tabs = [
@@ -112,6 +119,7 @@
                     ['My properties', 'landlord.properties', ['landlord.properties']],
                     ['Add property', 'landlord.add-property', ['landlord.add-property', 'landlord.properties.store']],
                 ]],
+                ['label' => 'Tenant matches', 'short' => 'Matches', 'route' => 'landlord.introductions', 'match' => ['landlord.introductions*'], 'subs' => [], 'badge' => $newIntros],
                 ['label' => 'Viewing requests', 'short' => 'Viewings', 'route' => 'landlord.viewing-requests', 'match' => ['landlord.viewing*'], 'subs' => [], 'badge' => $pendingViewings],
                 ['label' => 'Invoices', 'short' => 'Invoices', 'route' => 'landlord.invoices', 'match' => ['landlord.invoice*', 'landlord.payment*'], 'subs' => [], 'badge' => $unpaidInvoices],
                 ['label' => 'Profile', 'short' => 'Profile', 'route' => 'landlord.profile', 'match' => ['landlord.profile*'], 'subs' => []],

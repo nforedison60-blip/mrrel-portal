@@ -133,6 +133,9 @@ class PaymentController extends Controller
         }
 
         $reference = $data['TransactionReference'] ?? '';
+        if (preg_match('/^LIN-(\d+)$/', (string) $reference, $lin)) {
+            return $this->confirmIntroduction($data, (int) $lin[1]);
+        }
         if (preg_match('/^TPY-(\d+)$/', (string) $reference, $tpy)) {
             return $this->confirmTenantPayment($data, (int) $tpy[1]);
         }
@@ -228,6 +231,38 @@ class PaymentController extends Controller
                     $viewing->forceFill(['mrrel_attends' => true])->save();
                 }
             }
+        });
+
+        return response('OK', 200);
+    }
+
+    // A landlord introduction fee. Only reached after the signature, site code and test-mode checks.
+    private function confirmIntroduction(array $data, int $id)
+    {
+        if (strtolower($data['Status'] ?? '') !== 'complete') {
+            return response('OK', 200); // cancelled or failed: it stays unpaid so the landlord can try again
+        }
+
+        DB::transaction(function () use ($data, $id) {
+            $match = \App\Models\PropertyMatch::lockForUpdate()->find($id);
+            if (!$match || $match->intro_status === null) {
+                Log::warning('Ozow notify: introduction not found or never started', ['id' => $id]);
+                return;
+            }
+            // The amount paid must match the fee we stored when the landlord started paying
+            if (abs((float) ($data['Amount'] ?? 0) - (float) $match->intro_amount) > 0.009) {
+                Log::warning('Ozow notify rejected: introduction amount mismatch', ['match' => $match->id, 'amount' => $data['Amount'] ?? null]);
+                return;
+            }
+            if ($match->intro_status === 'Paid') {
+                return; // the same message twice does nothing
+            }
+            $match->forceFill([
+                'intro_status' => 'Paid',
+                'intro_paid_at' => now(),
+                'intro_ozow_id' => $data['TransactionId'] ?? null,
+                'landlord_status' => 'Interested',
+            ])->save();
         });
 
         return response('OK', 200);

@@ -25,6 +25,7 @@ use App\Support\Geo;
 use App\Support\Docs;
 
 require __DIR__.'/auth.php';
+require __DIR__.'/tenant.php';
 require __DIR__.'/landlord-edit.php';
 require __DIR__.'/invoices.php';
 

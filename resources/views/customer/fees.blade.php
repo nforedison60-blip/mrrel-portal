@@ -27,7 +27,9 @@
 
         <div class="card" style="margin-top: 20px;">
             <h3>How you pay</h3>
-            <p class="sm">Rent and deposit are paid directly to the landlord. MrRel will tell you how and when once the lease is finalised. Nothing is charged here.</p>
+            <p class="sm">You finalise the lease directly with the landlord. Rent and deposit are paid directly to the landlord, not to MrRel. The only MrRel fees are the matching fee and, if you chose it, viewing attendance. They are listed below.</p>
         </div>
     @endif
+
+    @include('customer._tenant_fees_paid')
 @endsection

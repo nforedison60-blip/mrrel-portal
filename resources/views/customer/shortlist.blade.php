@@ -13,13 +13,13 @@
     @else
         <div class="g3" style="margin-top: 20px;">
             @foreach($properties as $property)
-                @include('customer._property', ['property' => $property, 'viewings' => $viewings])
+                @include('customer._property_tenant', ['property' => $property, 'viewings' => $viewings])
             @endforeach
         </div>
     @endif
 
     <div class="card" style="margin-top: 20px;">
         <h3>Good to know</h3>
-        <p class="sm">Accepting a place tells MrRel you want it. MrRel then contacts you to finalise the lease. Rent and deposit are paid directly to the landlord. Viewings can be video or in person.</p>
+        <p class="sm">Accepting a place tells MrRel you want it. You then finalise the lease directly with the landlord. Rent and deposit are paid directly to the landlord. Viewings can be video or in person.</p>
     </div>
 @endsection

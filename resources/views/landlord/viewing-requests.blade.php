@@ -29,7 +29,8 @@
                         <td>{{ optional($req->property)->title ?? 'Property no longer available' }}</td>
                         <td>{{ $req->message ?: 'No message' }}</td>
                         <td class="m sm">{{ $req->created_at->format('d M Y') }}</td>
-                        <td><span class="chip {{ $req->status === 'Completed' ? 'ok' : 'wn' }}">{{ $req->status === 'Completed' ? 'Done' : 'Waiting' }}</span></td>
+                        <td><span class="chip {{ $req->status === 'Completed' ? 'ok' : 'wn' }}">{{ $req->status === 'Completed' ? 'Done' : 'Waiting' }}</span>
+                            @if($req->mrrel_attends)<span class="chip ok">MrRel will attend</span>@endif</td>
                         <td>
                             @if($req->status !== 'Completed')
                                 <form method="POST" action="{{ route('landlord.viewing.resolve', $req->id) }}" style="margin:0;">

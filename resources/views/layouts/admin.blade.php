@@ -108,7 +108,7 @@
                 ]],
                 ['label' => 'Operations', 'short' => 'Work', 'route' => 'admin.requests', 'match' => [], 'subs' => [
                     ['Requests', 'admin.requests', ['admin.requests*']],
-                    ['Matching', 'admin.matching', ['admin.matching*']],
+                    ['Matching', 'admin.matching', ['admin.matching*', 'admin.tenant-matching*']],
                     ['Bookings', 'admin.bookings', ['admin.bookings*']],
                     ['Properties', 'admin.properties', ['admin.properties*']],
                 ]],
@@ -116,6 +116,7 @@
                     ['Payments', 'admin.payments', ['admin.payments*']],
                     ['Invoices', 'admin.invoices', ['admin.invoices*']],
                     ['Subscriptions', 'admin.subscriptions', ['admin.subscriptions*']],
+                    ['Tenant payments', 'admin.tenant-payments', ['admin.tenant-payments*']],
                 ]],
                 ['label' => 'Support & settings', 'short' => 'Support', 'route' => 'admin.disputes', 'match' => [], 'subs' => [
                     ['Disputes', 'admin.disputes', ['admin.disputes*']],

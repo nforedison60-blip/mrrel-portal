@@ -39,7 +39,7 @@
         <div class="m sm" style="margin-top: 16px;">{{ $properties->count() }} {{ \Illuminate\Support\Str::plural('place', $properties->count()) }} available</div>
         <div class="g3" style="margin-top: 8px;">
             @foreach($properties as $property)
-                @include('customer._property', ['property' => $property, 'viewings' => $viewings])
+                @include('customer._property_tenant', ['property' => $property, 'viewings' => $viewings])
             @endforeach
         </div>
     @endif

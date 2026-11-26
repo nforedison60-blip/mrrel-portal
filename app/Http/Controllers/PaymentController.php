@@ -133,6 +133,9 @@ class PaymentController extends Controller
         }
 
         $reference = $data['TransactionReference'] ?? '';
+        if (preg_match('/^TPY-(\d+)$/', (string) $reference, $tpy)) {
+            return $this->confirmTenantPayment($data, (int) $tpy[1]);
+        }
         // A landlord invoice (INV-0001)? Same signed message, different record.
         if (preg_match('/^INV-(\d+)$/', $reference, $invoiceMatch)) {
             return $this->confirmInvoice((int) $invoiceMatch[1], $data);
@@ -190,6 +193,43 @@ class PaymentController extends Controller
                 $invoice->markPaid('Ozow', $data['TransactionId'] ?? null);
             }
         });
+        return response('OK', 200);
+    }
+
+    // A tenant fee (matching fee or viewing attendance). Only reached after the signature, site code and test-mode checks.
+    private function confirmTenantPayment(array $data, int $id)
+    {
+        if (strtolower($data['Status'] ?? '') !== 'complete') {
+            return response('OK', 200); // cancelled or failed: the payment stays Pending so the tenant can try again
+        }
+
+        DB::transaction(function () use ($data, $id) {
+            $payment = \App\Models\TenantPayment::lockForUpdate()->find($id);
+            if (!$payment) {
+                Log::warning('Ozow notify: tenant payment not found', ['id' => $id]);
+                return;
+            }
+            // The amount paid must match the amount we stored
+            if (abs((float) ($data['Amount'] ?? 0) - (float) $payment->amount) > 0.009) {
+                Log::warning('Ozow notify rejected: tenant payment amount mismatch', ['payment' => $payment->id, 'amount' => $data['Amount'] ?? null]);
+                return;
+            }
+            if ($payment->status === 'Paid') {
+                return; // the same message twice does nothing
+            }
+            $payment->update([
+                'status' => 'Paid',
+                'paid_at' => now(),
+                'ozow_transaction_id' => $data['TransactionId'] ?? null,
+            ]);
+            if ($payment->type === 'viewing_attendance' && $payment->viewing_request_id) {
+                $viewing = \App\Models\ViewingRequest::find($payment->viewing_request_id);
+                if ($viewing) {
+                    $viewing->forceFill(['mrrel_attends' => true])->save();
+                }
+            }
+        });
+
         return response('OK', 200);
     }
 

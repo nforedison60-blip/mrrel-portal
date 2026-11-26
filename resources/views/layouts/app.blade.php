@@ -93,7 +93,7 @@
                     ['Tell us what you need', 'customer.needs.create', ['customer.needs.*']],
                     ['My matches', 'customer.matches', ['customer.matches']],
                 ]],
-                ['label' => 'Find a place', 'short' => 'Places', 'route' => 'customer.search', 'match' => [], 'subs' => [
+                ['label' => 'Browse homes', 'short' => 'Browse', 'route' => 'customer.search', 'match' => [], 'subs' => [
                     ['Search', 'customer.search', ['customer.search', 'customer.viewing.*']],
                     ['Shortlist', 'customer.shortlist', ['customer.shortlist*']],
                 ]],

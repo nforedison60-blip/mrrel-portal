@@ -67,7 +67,7 @@
             <!-- LIVE TRACKING LINK -->
             <a href="{{ route('customer.tracking') }}" class="{{ request()->routeIs('customer.tracking') ? 'on' : '' }}">Live Tracking</a>
             
-            <a href="{{ route('customer.search') }}" class="{{ request()->routeIs('customer.search') ? 'on' : '' }}">Find a place</a>
+            <a href="{{ route('customer.search') }}" class="{{ request()->routeIs('customer.search') ? 'on' : '' }}">Browse homes</a>
             <a href="{{ route('customer.requests') }}" class="{{ request()->routeIs('customer.requests') ? 'on' : '' }}">My requests</a>
             <a href="{{ route('customer.quotes') }}" class="{{ request()->routeIs('customer.quotes') ? 'on' : '' }}">Quotes</a>
             <a href="{{ route('customer.bookings') }}" class="{{ request()->routeIs('customer.bookings') ? 'on' : '' }}">Bookings</a>

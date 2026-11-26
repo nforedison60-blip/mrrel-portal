@@ -8,7 +8,7 @@
         <div class="card empty" style="margin-top: 20px;">
             <h3>Your shortlist is empty</h3>
             <p class="m" style="margin-bottom: 12px;">When you request a viewing or accept a place, it shows up here.</p>
-            <a href="{{ route('customer.search') }}" class="btn">Find a place</a>
+            <a href="{{ route('customer.search') }}" class="btn">Browse homes</a>
         </div>
     @else
         <div class="g3" style="margin-top: 20px;">

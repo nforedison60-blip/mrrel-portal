@@ -8,7 +8,7 @@
         <div class="card empty" style="margin-top: 20px;">
             <h3>No accepted places yet</h3>
             <p class="m" style="margin-bottom: 12px;">When you accept a place, the rent and deposit show here.</p>
-            <a href="{{ route('customer.search') }}" class="btn">Find a place</a>
+            <a href="{{ route('customer.search') }}" class="btn">Browse homes</a>
         </div>
     @else
         <div class="g2" style="margin-top: 20px;">

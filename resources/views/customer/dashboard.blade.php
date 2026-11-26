@@ -60,7 +60,7 @@
         </div>
         <div class="hc">
             <a class="btn" href="{{ route('customer.new-request') }}">{{ $isNew ? 'Get moving quotes' : 'New move request' }}</a>
-            <a class="btn g" href="{{ route('customer.search') }}">Find a place</a>
+            <a class="btn g" href="{{ route('customer.search') }}">Browse homes</a>
         </div>
     </div>
 
@@ -113,7 +113,7 @@
             <h3>Start something new</h3>
             <p class="m">Choose what you need.</p>
             <a href="{{ route('customer.new-request') }}" class="btn" style="text-decoration:none;">New move request</a>
-            <a href="{{ route('customer.search') }}" class="btn g" style="text-decoration:none;">Find a place</a>
+            <a href="{{ route('customer.search') }}" class="btn g" style="text-decoration:none;">Browse homes</a>
         </div>
     </div>
 

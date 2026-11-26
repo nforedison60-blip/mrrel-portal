@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Find me a place</h1>
-    <div class="m">Search for available properties to rent.</div>
+    <h1>Browse homes</h1>
+    <div class="m">A quick look at homes available now. To get matched with homes that fit you, go to Find a home.</div>
 
     <div class="card" style="margin-top: 20px;">
         <form method="GET" action="{{ route('customer.search') }}" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">

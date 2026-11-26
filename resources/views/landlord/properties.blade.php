@@ -46,7 +46,7 @@
                     @php $label = $labels[$property->status] ?? [$property->status, 'wn']; @endphp
                     <tr>
                         <td>
-                            <b>{{ $property->title }}</b><br>
+                            @php($thumb = $property->photoUrls()[0] ?? null)@if($thumb)<img src="{{ $thumb }}" alt="" style="width:56px;height:44px;object-fit:cover;border-radius:6px;float:left;margin-right:10px;">@endif<b>{{ $property->title }}</b><br>
                             <span class="m sm">{{ collect([$property->suburb, $property->city])->filter()->implode(', ') }} · {{ $property->property_type }}</span>
                         </td>
                         <td>R{{ number_format($property->rent, 0) }}</td>

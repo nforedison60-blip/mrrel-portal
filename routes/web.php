@@ -523,14 +523,30 @@ Route::middleware(['auth'])->group(function () {
             'deposit'       => 'required|numeric|min:0',
             'own'           => 'accepted',
             'image'         => 'nullable|image|max:5120',
+            'photos'        => 'nullable|array|max:6',
+            'photos.*'      => 'image|mimes:jpg,jpeg,png,webp|max:5120',
         ], [
             'own.accepted' => 'Please confirm that you own this property or are authorised to let it.',
+            'photos.max'        => 'You can add up to 6 photos.',
+            'photos.*.image'    => 'Each photo must be an image (JPG, PNG or WebP).',
+            'photos.*.mimes'    => 'Each photo must be a JPG, PNG or WebP image.',
+            'photos.*.max'      => 'Each photo must be smaller than 5 MB.',
+            'photos.*.uploaded' => 'A photo could not be uploaded. Try smaller photos (under 5 MB each).',
         ]);
 
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('properties', 's3');
+        // Photos: the first is the cover, the rest are extra (up to 6 in all)
+        $files = array_values(array_filter(array_merge([$request->file('image')], (array) $request->file('photos', []))));
+        $stored = [];
+        foreach ($files as $file) {
+            try { $path = $file->store('properties', 's3'); } catch (\Throwable $e) { $path = false; }
+            if (!$path) {
+                foreach ($stored as $done) { try { \Illuminate\Support\Facades\Storage::disk('s3')->delete($done); } catch (\Throwable $e) {} }
+                return back()->withInput()->withErrors(['photos' => 'We could not save your photos right now. Try again, or submit without photos.']);
+            }
+            $stored[] = $path;
         }
+        $imagePath = $stored[0] ?? null;
+        $extraPaths = array_slice($stored, 1) ?: null;
 
         // Status "Draft" means: sent to MrRel, waiting for review
         Property::create([
@@ -545,6 +561,7 @@ Route::middleware(['auth'])->group(function () {
             'deposit' => $data['deposit'],
             'status' => 'Draft',
             'image_path' => $imagePath,
+            'photo_paths' => $extraPaths,
             'user_id' => auth()->id(),
         ]);
         return redirect()->route('landlord.properties')->with('success', 'Property sent to MrRel for review. It goes live for tenants once MrRel approves it.');

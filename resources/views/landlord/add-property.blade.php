@@ -63,14 +63,14 @@
             <!-- RIGHT COLUMN -->
             <div>
                 <div class="card">
-                    <h3>Photo</h3>
-                    <p class="m sm">One cover photo. JPG, PNG or WebP, up to 5 MB.</p>
+                    <h3>Photos</h3>
+                    <p class="m sm">Up to 6 photos (JPG, PNG or WebP, up to 5 MB each). The first one is the cover photo.</p>
 
-                    <img id="photoPreview" alt="Selected photo" style="display:none; width:100%; max-height:220px; object-fit:cover; border-radius:8px; margin-top:12px;">
-                    <input type="file" name="image" id="imageInput" accept="image/*" style="display:none;">
-                    <div id="fileName" class="m sm" style="margin-top: 8px;">No photo chosen yet.</div>
+                    <div id="photoGrid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px;"></div>
+                    <input type="file" name="photos[]" id="photosInput" accept="image/*" multiple style="display:none;">
+                    <div id="fileName" class="m sm" style="margin-top: 8px;">No photos chosen yet.</div>
 
-                    <button type="button" class="btn g" style="margin-top: 12px;" onclick="document.getElementById('imageInput').click()">Choose photo</button>
+                    <button type="button" class="btn g" style="margin-top: 12px;" onclick="document.getElementById('photosInput').click()">Choose photos</button>
                 </div>
 
                 <div class="card" style="margin-top: 16px;">
@@ -88,16 +88,23 @@
     </form>
 
     <script>
-        document.getElementById('imageInput').addEventListener('change', function () {
-            var file = this.files[0];
-            var preview = document.getElementById('photoPreview');
-            document.getElementById('fileName').textContent = file ? file.name : 'No photo chosen yet.';
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-                preview.style.display = 'block';
-            } else {
-                preview.style.display = 'none';
+        document.getElementById('photosInput').addEventListener('change', function () {
+            var files = Array.prototype.slice.call(this.files || []);
+            var grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            if (files.length > 6) {
+                document.getElementById('fileName').textContent = 'Please choose at most 6 photos.';
+                this.value = '';
+                return;
             }
+            document.getElementById('fileName').textContent = files.length ? files.length + (files.length === 1 ? ' photo chosen' : ' photos chosen') : 'No photos chosen yet.';
+            files.forEach(function (file, i) {
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.alt = 'Selected photo ' + (i + 1);
+                img.style.cssText = 'width:100%;height:80px;object-fit:cover;border-radius:8px;' + (i === 0 ? 'outline:3px solid #F4B731;' : '');
+                grid.appendChild(img);
+            });
         });
     </script>
 @endsection

@@ -78,7 +78,7 @@
                 </tr>
                 @foreach($properties as $property)
                     <tr>
-                        <td><b>{{ $property->title }}</b></td>
+                        <td><b>{{ $property->title }}</b>@php($shots = $property->photoUrls())@if($shots)<div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">@foreach($shots as $url)<a href="{{ $url }}" target="_blank"><img src="{{ $url }}" alt="Photo of {{ $property->title }}" style="width:64px;height:48px;object-fit:cover;border-radius:6px;"></a>@endforeach</div>@else<div class="m sm">No photos</div>@endif</td>
                         <td>{{ collect([$property->suburb, $property->city])->filter()->implode(', ') }}</td>
                         <td>{{ $property->property_type }}</td>
                         <td>R{{ number_format($property->rent, 2) }}</td>

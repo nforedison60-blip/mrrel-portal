@@ -33,6 +33,8 @@
         @else
             <div style="display:flex; {{ $boxStyle }}">No photo uploaded</div>
         @endif
+        @php($morePhotos = array_slice($property->photoUrls(), 1))
+        @if($morePhotos)<div style="display:flex; gap:6px; margin-bottom:10px; overflow-x:auto;">@foreach($morePhotos as $url)<a href="{{ $url }}" target="_blank"><img src="{{ $url }}" alt="More photos of {{ $property->title }}" style="width:70px;height:56px;object-fit:cover;border-radius:6px;"></a>@endforeach</div>@endif
         <h3 style="margin-bottom:4px;">{{ $property->title }}</h3>
         <div class="m sm">R{{ number_format($property->rent, 0) }} a month · Deposit R{{ number_format($property->deposit, 0) }}</div>
     @else

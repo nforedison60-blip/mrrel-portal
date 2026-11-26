@@ -9,10 +9,10 @@
     $beds = $withSaved(['Studio', '1', '2', '3', '4+'], $property->bedrooms);
     $baths = $withSaved(['1', '2', '3+'], $property->bathrooms);
 
-    $photoUrl = null;
-    if ($property->image_path) {
-        try { $photoUrl = \Illuminate\Support\Facades\Storage::disk('s3')->url($property->image_path); } catch (\Throwable $e) { $photoUrl = null; }
-    }
+    // Every photo the property has: the cover first, then the others
+    $photos = collect([$property->image_path])->merge($property->photo_paths ?? [])->filter()->values()->map(function ($path) {
+        try { return ['path' => $path, 'url' => \Illuminate\Support\Facades\Storage::disk('s3')->url($path)]; } catch (\Throwable $e) { return null; }
+    })->filter()->values();
 @endphp
 
     <h1>Edit property</h1>
@@ -71,14 +71,27 @@
 
             <div>
                 <div class="card">
-                    <h3>Photo</h3>
-                    <p class="m sm">One cover photo. JPG, PNG or WebP, up to 5 MB. Leave it alone to keep the current photo.</p>
+                    <h3>Photos</h3>
+                    <p class="m sm">Up to {{ $maxPhotos }} photos (JPG, PNG or WebP, up to 5 MB each). The first one is the cover photo.</p>
 
-                    <img id="photoPreview" alt="Property photo" src="{{ $photoUrl }}" style="{{ $photoUrl ? '' : 'display:none;' }} width:100%; max-height:220px; object-fit:cover; border-radius:8px; margin-top:12px;">
-                    <input type="file" name="image" id="imageInput" accept="image/*" style="display:none;">
-                    <div id="fileName" class="m sm" style="margin-top: 8px;">{{ $property->image_path ? 'Current photo shown. Choose a new one to replace it.' : 'No photo yet.' }}</div>
+                    @if($photos->isNotEmpty())
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px;">
+                            @foreach($photos as $i => $photo)
+                                <label style="font-weight:500; font-size:12px; cursor:pointer;">
+                                    <img src="{{ $photo['url'] }}" alt="Photo {{ $i + 1 }}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;{{ $i === 0 ? 'outline:3px solid #F4B731;' : '' }}">
+                                    <span style="display:block; margin-top:4px;"><input type="checkbox" name="remove_photos[]" value="{{ $photo['path'] }}"> Remove{{ $i === 0 ? ' (cover)' : '' }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="m sm" style="margin-top:12px;">No photos yet.</div>
+                    @endif
 
-                    <button type="button" class="btn g" style="margin-top: 12px;" onclick="document.getElementById('imageInput').click()">{{ $property->image_path ? 'Change photo' : 'Choose photo' }}</button>
+                    <div id="photoGrid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px;"></div>
+                    <input type="file" name="photos[]" id="photosInput" accept="image/*" multiple style="display:none;">
+                    <div id="fileName" class="m sm" style="margin-top: 8px;">Tick Remove under a photo to delete it, or add more below. You have {{ $photos->count() }} of {{ $maxPhotos }}.</div>
+
+                    <button type="button" class="btn g" style="margin-top: 12px;" onclick="document.getElementById('photosInput').click()">Add photos</button>
                 </div>
 
                 <div class="card" style="margin-top: 16px;">
@@ -94,14 +107,18 @@
     </form>
 
     <script>
-        document.getElementById('imageInput').addEventListener('change', function () {
-            var file = this.files[0];
-            var preview = document.getElementById('photoPreview');
-            if (file) {
-                document.getElementById('fileName').textContent = file.name;
-                preview.src = URL.createObjectURL(file);
-                preview.style.display = 'block';
-            }
+        document.getElementById('photosInput').addEventListener('change', function () {
+            var files = Array.prototype.slice.call(this.files || []);
+            var grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            document.getElementById('fileName').textContent = files.length ? files.length + (files.length === 1 ? ' new photo chosen' : ' new photos chosen') : 'No new photos chosen.';
+            files.forEach(function (file, i) {
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.alt = 'New photo ' + (i + 1);
+                img.style.cssText = 'width:100%;height:80px;object-fit:cover;border-radius:8px;';
+                grid.appendChild(img);
+            });
         });
     </script>
 @endsection

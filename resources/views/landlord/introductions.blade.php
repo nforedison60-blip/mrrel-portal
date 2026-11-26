@@ -4,6 +4,8 @@
     <h1>Tenant matches</h1>
     <div class="m">MrRel finds tenants whose needs match your property. You see a short profile first. If you would like to proceed, pay the once-off R{{ number_format($fee, 0) }} introduction and coordination fee and we release the tenant's contact details and arrange the viewing.</div>
 
+    @include('landlord._process')
+
     <h2 style="margin-top: 24px; font-size: 20px;">Waiting for your decision</h2>
     @if($waiting->isEmpty())
         <div class="card empty" style="margin-top: 12px;">

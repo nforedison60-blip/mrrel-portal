@@ -82,7 +82,7 @@
                             @if($bank['branch'])<tr><td>Branch code</td><td style="text-align:right;">{{ $bank['branch'] }}</td></tr>@endif
                             <tr><td><b>Reference</b></td><td style="text-align:right;"><b>{{ $invoice->number }}</b></td></tr>
                         </table>
-                        <p class="m sm" style="margin-top:10px;">Use the reference exactly as shown. MrRel marks the invoice as paid when the money reaches the account, and your receipt appears here.</p>
+                        <p class="m sm" style="margin-top:10px;">Use the reference exactly as shown, then email your proof of payment to {{ config('mrrel.pop_email') }} with {{ $invoice->number }} in the subject. MrRel marks the invoice as paid when the money reaches the account, and your receipt appears here.</p>
                     @else
                         <p class="m sm">MrRel's bank details are not set up yet. Please pay online, or contact {{ $biz['email'] }}.</p>
                     @endif

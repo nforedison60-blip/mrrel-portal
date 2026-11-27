@@ -19,6 +19,7 @@
         <form method="POST" action="{{ route('tenant.attendance.pay', $viewing->id) }}" style="margin-top: 12px;">
             @csrf
             <button type="submit" class="btn">Pay R{{ number_format($estimate['fee'], 2) }}</button>
+            <button type="submit" name="method" value="bank" class="btn g">Pay by bank transfer</button>
             <a href="{{ route('customer.shortlist') }}" class="btn g" style="text-decoration: none;">No thanks, I will attend myself</a>
         </form>
     </div>

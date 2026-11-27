@@ -25,6 +25,7 @@
         <h3>Waiting for payment</h3>
         <p class="m" style="margin-bottom: 12px;">Your provider starts work, and sharing their location, once your booking is paid.</p>
         <a href="{{ route('payment.checkout', ['booking' => $booking->id]) }}" class="btn">Pay now</a>
+        <a href="{{ route('bank.show', 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT)) }}" class="btn g" style="text-decoration:none;">Pay by bank transfer</a>
     </div>
 @else
     <div class="card">

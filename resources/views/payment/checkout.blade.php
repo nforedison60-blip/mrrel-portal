@@ -41,6 +41,7 @@
                 </span>
             </button>
         </form>
+        <a href="{{ route('bank.show', 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT)) }}" class="btn g" style="display:block; text-align:center; text-decoration:none; margin-top:10px;">Pay by bank transfer</a>
         <p class="m sm" style="margin-top: 12px;"><a href="{{ route('customer.bookings', ['booking' => $booking->id]) }}" style="color:inherit;">Back to my booking</a></p>
     </div>
 

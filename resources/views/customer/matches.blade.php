@@ -23,6 +23,7 @@
                 <form method="POST" action="{{ route('tenant.pay.matching') }}" style="margin:0;">
                     @csrf
                     <button type="submit" class="btn">Pay R{{ number_format($fee, 0) }}</button>
+                    <button type="submit" name="method" value="bank" class="btn g">Pay by bank transfer</button>
                 </form>
             </div>
         @endif

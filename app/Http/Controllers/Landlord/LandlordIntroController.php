@@ -62,6 +62,10 @@ class LandlordIntroController extends Controller
             'intro_amount' => LandlordIntro::fee(),
         ])->save();
 
+        if (request('method') === 'bank') {
+            return redirect()->route('bank.show', $match->introReference());
+        }
+
         return $this->ozowForm($match);
     }
 

@@ -84,6 +84,7 @@
             <form method="POST" action="{{ route('tenant.pay.matching') }}" style="margin:8px 0 0;">
                 @csrf
                 <button type="submit" class="btn" style="width:100%; margin:0;">Pay R99</button>
+                <button type="submit" name="method" value="bank" class="btn g" style="width:100%; margin:8px 0 0;">Pay by bank transfer</button>
             </form>
         @else
             <p class="m sm">MrRel shows the full details of homes matched to you.</p>

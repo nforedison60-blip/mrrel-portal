@@ -113,6 +113,7 @@
                 ]],
                 ['label' => 'Finance', 'short' => 'Finance', 'route' => 'admin.payments', 'match' => [], 'subs' => [
                     ['Payments', 'admin.payments', ['admin.payments*']],
+                    ['Bank payments', 'admin.bank-payments', ['admin.bank-payments*']],
                     ['Invoices', 'admin.invoices', ['admin.invoices*']],
                     ['Subscriptions', 'admin.subscriptions', ['admin.subscriptions*']],
                     ['Tenant payments', 'admin.tenant-payments', ['admin.tenant-payments*']],

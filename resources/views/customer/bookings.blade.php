@@ -131,6 +131,7 @@
                     <div class="m sm">Payment received. Thank you.</div>
                 @else
                     <a href="{{ route('payment.checkout', ['booking' => $booking->id]) }}" class="btn w" style="text-align: center; text-decoration: none;">Pay now</a>
+                    <a href="{{ route('bank.show', 'BKG-' . str_pad($booking->id, 4, '0', STR_PAD_LEFT)) }}" class="btn g w" style="text-align: center; text-decoration: none; margin-top: 8px;">Pay by bank transfer</a>
                     <form method="POST" action="{{ route('customer.bookings.cancel', $booking->id) }}" style="margin:8px 0 0;" onsubmit="return confirm('Cancel this booking? You can then choose another quote.');">
                         @csrf
                         <button type="submit" class="btn g w">Cancel booking</button>

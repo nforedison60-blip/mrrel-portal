@@ -47,6 +47,10 @@ class TenantPaymentController extends Controller
             ]);
         }
 
+        if (request('method') === 'bank') {
+            return redirect()->route('bank.show', $payment->reference());
+        }
+
         return $this->ozowForm($payment, route('customer.matches'));
     }
 
@@ -123,6 +127,10 @@ class TenantPaymentController extends Controller
                     'estimate'      => true,
                 ],
             ]);
+        }
+
+        if (request('method') === 'bank') {
+            return redirect()->route('bank.show', $payment->reference());
         }
 
         return $this->ozowForm($payment, route('customer.shortlist'));

@@ -26,6 +26,7 @@ use App\Support\Docs;
 
 require __DIR__.'/auth.php';
 require __DIR__.'/landlord-intro.php';
+require __DIR__.'/bank.php';
 require __DIR__.'/landlord-edit.php';
 require __DIR__.'/invoices.php';
 

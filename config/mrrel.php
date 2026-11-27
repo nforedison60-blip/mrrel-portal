@@ -19,10 +19,14 @@ return [
 
     // Where landlords can pay by EFT. Leave empty until you have set these in .env
     'bank' => [
-        'name'    => env('MRREL_BANK_NAME'),
-        'holder'  => env('MRREL_BANK_HOLDER', 'MrRel'),
-        'account' => env('MRREL_BANK_ACCOUNT'),
-        'type'    => env('MRREL_BANK_TYPE', 'Cheque / Current'),
-        'branch'  => env('MRREL_BANK_BRANCH'),
+        'name'    => env('MRREL_BANK_NAME', 'FNB (First National Bank)'),
+        'holder'  => env('MRREL_BANK_HOLDER', 'MRREL (PTY) LTD'),
+        'account' => env('MRREL_BANK_ACCOUNT', '63236576625'),
+        'type'    => env('MRREL_BANK_TYPE', 'Gold Business Account'),
+        'branch'  => env('MRREL_BANK_BRANCH', '203809'),
+        'swift'   => env('MRREL_BANK_SWIFT', 'FIRNZAJJ'),
     ],
+
+    // Where people email their proof of payment after paying by bank transfer
+    'pop_email' => env('MRREL_POP_EMAIL', 'relocations@mrrel.co.za'),
 ];

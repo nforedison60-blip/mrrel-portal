@@ -34,6 +34,7 @@
                         <form method="POST" action="{{ route('landlord.introductions.pay', $m->id) }}" style="margin:0;">
                             @csrf
                             <button type="submit" class="btn" style="margin:0;">Proceed and pay R{{ number_format($fee, 0) }}</button>
+                            <button type="submit" name="method" value="bank" class="btn g" style="margin:0;">Pay by bank transfer</button>
                         </form>
                         <form method="POST" action="{{ route('landlord.introductions.decline', $m->id) }}" style="margin:0;">
                             @csrf

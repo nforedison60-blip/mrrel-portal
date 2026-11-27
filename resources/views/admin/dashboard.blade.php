@@ -23,7 +23,7 @@
         </div>
         <div class="card">
             <div class="m sm">Tenants to match</div>
-            <div class="big">5</div>
+            <div class="big">{{ $tenantsToMatch }}</div>
             <div class="m sm">new requirements</div>
         </div>
         <div class="card">
@@ -38,8 +38,8 @@
             <h3>To do today</h3>
             <ul>
                 <li>Verify {{ $providerApplications }} providers</li>
-                <li>Build 3 shortlists</li>
-                <li>Record 4 payouts</li>
+                <li>Match {{ $tenantsToMatch }} tenants</li>
+                <li>Record {{ $payoutsToRecord }} payouts</li>
                 <li>Resolve {{ $openDisputes }} disputes</li>
             </ul>
         </div>

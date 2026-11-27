@@ -1067,6 +1067,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'providerApplications' => Provider::where('verification_status', 'Pending')->count(),
             'propertiesToReview' => Property::where('status', 'Draft')->count(),
             'openDisputes' => Problem::where('status', 'In progress')->count(),
+            'tenantsToMatch' => \App\Models\RentalNeed::where('status', 'Open')->count(),
+            'payoutsToRecord' => \App\Models\Booking::where('status', 'Paid')->whereNull('paid_out_at')->count(),
         ]);
     })->name('admin.dashboard');
 

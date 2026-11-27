@@ -19,3 +19,10 @@ body{background:radial-gradient(1100px 620px at 88% -12%,rgba(10,76,154,.16),tra
 .sd a.on{background:linear-gradient(135deg,#0A4C9A,#2F7FD1) !important;color:#fff !important;box-shadow:0 10px 22px rgba(10,76,154,.38),inset 0 1px 0 rgba(255,255,255,.25) !important}
 .hero{background:radial-gradient(600px 300px at 100% 0%,rgba(255,122,26,.38),transparent 60%),linear-gradient(135deg,#0A4C9A 0%,#0A3A7A 55%,#003068 100%) !important;box-shadow:0 22px 46px rgba(0,48,104,.28),inset 0 1px 0 rgba(255,255,255,.2) !important}
 .top .logo i{display:none}
+
+/* mobile bottom bar */
+/* every item has an icon and the labels line up */
+@media (max-width:860px){
+  .mb a{justify-content:flex-start !important;padding:9px 2px 8px !important;font-size:12px !important;line-height:1.2;white-space:nowrap;min-height:58px}
+  .mb a .mi{flex:none}
+}

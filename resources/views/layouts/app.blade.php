@@ -89,7 +89,7 @@
             // Each sub is: [label, route name, route patterns that count as "on"]
             $tabs = [
                 ['label' => 'Home', 'short' => 'Home', 'route' => 'customer.dashboard', 'match' => ['customer.dashboard'], 'subs' => []],
-                ['label' => 'Find a home', 'short' => 'Homes', 'route' => 'customer.needs.create', 'match' => [], 'subs' => [
+                ['label' => 'Find a home', 'short' => 'Find', 'route' => 'customer.needs.create', 'match' => [], 'subs' => [
                     ['Tell us what you need', 'customer.needs.create', ['customer.needs.*']],
                     ['My matches', 'customer.matches', ['customer.matches']],
                 ]],

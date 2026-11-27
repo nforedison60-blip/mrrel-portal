@@ -30,7 +30,7 @@
             <div class="row" style="justify-content: space-between; align-items: flex-start;">
                 <div>
                     <div class="row" style="margin-bottom: 8px;">
-                        <div class="av">{{ strtoupper(substr($quote->provider_name, 0, 1)) }}</div>
+                        <x-provider-avatar :user-id="$quote->provider_user_id" :name="$quote->provider_name" :size="44" />
                         <div>
                             <b>{{ $quote->provider_name }}</b>
                             <div class="m sm">Provider</div>

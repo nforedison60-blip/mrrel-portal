@@ -42,7 +42,7 @@
             <div class="card">
                 <h3>Your provider</h3>
                 <div class="row" style="margin-top: 12px;">
-                    <div class="av" style="width: 64px; height: 64px; font-size: 24px;">{{ strtoupper(substr($providerName, 0, 1)) }}</div>
+                    <x-provider-avatar :user-id="$providerUserId" :name="$providerName" :size="64" />
                     <div>
                         <b>{{ $providerName }}</b>
                         @if($isPaid && $provider && ($provider->vehicle || $provider->plate_number))

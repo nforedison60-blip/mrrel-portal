@@ -28,7 +28,7 @@
             <div class="card">
                 <h3>Your provider</h3>
                 <div class="row" style="margin-top: 12px;">
-                    <div class="av" style="width: 64px; height: 64px; font-size: 24px;">{{ $initial }}</div>
+                    <x-provider-avatar :user-id="$quote->provider_user_id" :name="$quote->provider_name" :size="64" />
                     <div>
                         <b>{{ $quote->provider_name }}</b>
                         <div class="m sm">Contact and vehicle details are shared once you book and pay.</div>

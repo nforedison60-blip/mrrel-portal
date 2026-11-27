@@ -121,7 +121,7 @@
     <div class="card" style="margin-top:16px;">
         <h3>Your next provider</h3>
         <div class="row" style="margin-top:12px;">
-            <div class="av" style="width:60px;height:60px;font-size:24px;">{{ strtoupper(substr($providerName, 0, 1)) }}</div>
+            <x-provider-avatar :user-id="optional($bookedQuote)->provider_user_id" :name="$providerName" :size="60" />
             <div>
                 <b>{{ $providerName }}</b>
                 <div class="m sm">{{ $moveDate ? 'Move date: ' . $moveDate->format('D d M Y') : 'Booked ' . $nextBooking->created_at->format('D d M, H:i') }}</div>

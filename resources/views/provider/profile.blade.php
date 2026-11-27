@@ -20,7 +20,7 @@
                     <div class="row" style="margin-top: 16px; gap: 20px; align-items: flex-start;">
                         <div style="text-align: center; flex: 1;">
                             @if($provider->image_path)
-                                <img src="{{ Storage::disk('s3')->url($provider->image_path) }}" alt="Your profile photo" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto;">
+                                <img src="{{ route('provider.photo', [$provider->id, 'profile']) }}" alt="Your profile photo" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto;">
                             @else
                                 <div class="av" style="width: 120px; height: 120px; font-size: 48px; border-radius: 50%; margin: 0 auto; background: var(--a); color: var(--n); display: flex; align-items: center; justify-content: center;">
                                     {{ substr($provider->name, 0, 1) }}
@@ -37,7 +37,7 @@
                         </div>
                         <div style="text-align: center; flex: 1;">
                             @if($provider->vehicle_image_path)
-                                <img src="{{ Storage::disk('s3')->url($provider->vehicle_image_path) }}" alt="Your vehicle photo" style="width: 160px; height: 120px; border-radius: 8px; object-fit: cover; display: block; margin: 0 auto;">
+                                <img src="{{ route('provider.photo', [$provider->id, 'vehicle']) }}" alt="Your vehicle photo" style="width: 160px; height: 120px; border-radius: 8px; object-fit: cover; display: block; margin: 0 auto;">
                             @else
                             <div style="width: 160px; height: 120px; background-color: #E6EEF8; border: 1px solid var(--l); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                                 <svg width="100" height="50" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">

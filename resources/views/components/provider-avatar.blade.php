@@ -5,7 +5,7 @@
         $u = $userId ? \App\Models\User::find($userId) : null;
         $p = $u ? \App\Models\Provider::where('email', $u->email)->first() : null;
         if ($p && $p->image_path) {
-            $photo = \Illuminate\Support\Facades\Storage::disk('s3')->url($p->image_path);
+            $photo = route('provider.photo', [$p->id, 'profile']);
         }
     } catch (\Throwable $e) {
         $photo = null; // no photo available: the letter shows instead

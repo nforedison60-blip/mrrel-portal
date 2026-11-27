@@ -8,7 +8,7 @@
             // Profile photo from the provider's profile (falls back to the first letter)
             $bannerPhoto = null;
             if ($provider->image_path) {
-                try { $bannerPhoto = \Illuminate\Support\Facades\Storage::disk('s3')->url($provider->image_path); } catch (\Throwable $e) { $bannerPhoto = null; }
+                try { $bannerPhoto = route('provider.photo', [$provider->id, 'profile']); } catch (\Throwable $e) { $bannerPhoto = null; }
             }
         @endphp
         <a href="{{ route('provider.profile') }}" class="hc" title="Edit your profile" style="text-decoration:none; display:block; line-height:0;">

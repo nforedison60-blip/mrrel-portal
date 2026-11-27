@@ -32,6 +32,22 @@ require __DIR__.'/invoices.php';
 // Ozow's server calls this: no login, no session, no CSRF token. The message is verified by its signature.
 Route::post('/payment/notify', [PaymentController::class, 'notify'])->name('payment.notify');
 
+// Provider profile and vehicle photos, served by the app itself so they show even when the bucket link is not public.
+Route::get('/provider-photo/{provider}/{kind}', function (Provider $provider, string $kind) {
+    $path = $kind === 'vehicle' ? $provider->vehicle_image_path : ($kind === 'profile' ? $provider->image_path : null);
+    abort_unless($path, 404);
+    try {
+        $disk = Storage::disk('s3');
+        abort_unless($disk->exists($path), 404);
+        return response($disk->get($path), 200, [
+            'Content-Type'  => $disk->mimeType($path) ?: 'image/jpeg',
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
+    } catch (\Throwable $e) {
+        abort(404);
+    }
+})->middleware(['auth'])->name('provider.photo');
+
 // Opens a provider document through a short-lived link. Only the admin and the provider themselves may.
 Route::get('/documents/{provider}/{field}', function (Provider $provider, string $field) {
     abort_unless(in_array($field, Docs::FIELDS, true), 404);

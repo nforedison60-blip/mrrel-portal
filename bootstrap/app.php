@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // THIS IS THE FIX: Use the EnsureRole middleware you created
+        $middleware->trustProxies(at: '*');
         $middleware->validateCsrfTokens(except: ['payment/notify']);
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,

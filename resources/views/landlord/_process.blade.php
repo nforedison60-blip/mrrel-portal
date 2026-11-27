@@ -1,13 +1,15 @@
 @php $introFee = number_format(\App\Support\LandlordIntro::fee(), 0, '.', ' '); @endphp
 <x-process-card
     title="How it works"
-    sub="Find the right tenant with MrRel."
+    sub="Four quick steps to the right tenant."
     :steps="[
-        ['icon' => 'camera', 'title' => 'Register your property', 'text' => 'Add the details and photographs. We review it before matching.'],
-        ['icon' => 'search', 'title' => 'We find a tenant', 'text' => 'We match tenants to your property and send a limited profile.'],
-        ['icon' => 'card', 'title' => 'Confirm and pay', 'text' => 'Accept the introduction to release the contact details.', 'chip' => 'R'.$introFee.' once-off'],
-        ['icon' => 'handshake', 'title' => 'Meet and finalise', 'text' => 'We coordinate the viewing. You and the tenant agree the lease.'],
-    ]">
+        ['icon' => 'homeplus', 'title' => 'Add your property', 'text' => 'Create an account and add details and photos.'],
+        ['icon' => 'search', 'title' => 'We review and match', 'text' => 'We check your listing, then find tenants who fit.'],
+        ['icon' => 'user', 'title' => 'Choose to proceed', 'text' => 'See a short tenant profile. Happy with them? Confirm.', 'chip' => 'R'.$introFee.' once-off introduction fee'],
+        ['icon' => 'key', 'title' => 'Meet and rent', 'text' => 'We share contact details and arrange the viewing. You agree the lease with the tenant.'],
+    ]"
+    :optional="['tag' => 'Private', 'title' => 'Your property is matched privately.', 'text' => 'Tenant contact details are released only after payment is confirmed.']"
+    footer="Your property. The right connection. A simpler rental experience with MrRel.">
     <ol class="pfull">
         <li><b>Register your property:</b> Create an account and submit your property details and photographs.</li>
         <li><b>Property review:</b> We review your submission before making it available for private matching.</li>

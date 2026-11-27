@@ -1,4 +1,4 @@
-@props(['title', 'sub' => null, 'steps' => [], 'optional' => null, 'summary' => 'See the full details'])
+@props(['title', 'sub' => null, 'steps' => [], 'optional' => null, 'footer' => null, 'summary' => 'See the full details'])
 @php
     $icons = [
         'pencil' => '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
@@ -8,6 +8,8 @@
         'user'   => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
         'card'   => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
         'camera' => '<path d="M4 8h3l2-3h6l2 3h3v11H4Z"/><circle cx="12" cy="13" r="3.5"/>',
+        'homeplus' => '<path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M12 13v5M9.5 15.5h5"/>',
+        'key'    => '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M15 12v2"/>',
         'handshake' => '<path d="m11 17 2 2a1 1 0 0 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 0 0 3-3L16 9.5"/><path d="M3 11l5-5 5 1 3-2 5 5"/>',
     ];
 @endphp
@@ -29,6 +31,7 @@
     .proc .popt strong{color:var(--n)}
     .proc details{margin-top:14px}
     .proc summary{cursor:pointer;font-weight:700;color:var(--n);padding:6px 0}
+    .proc .pfoot{margin:14px 0 0;font-weight:700;color:var(--n)}
     .proc .pfull{margin:10px 0 0 20px;line-height:1.7}
     @media(max-width:760px){
         .proc{padding:18px 16px;border-radius:18px}
@@ -54,7 +57,7 @@
         @endforeach
     </ol>
     @if($optional)
-        <div class="popt"><span class="tag">Optional</span><strong>{{ $optional['title'] }}</strong><span>{{ $optional['text'] }}</span></div>
+        <div class="popt"><span class="tag">{{ $optional['tag'] ?? 'Optional' }}</span><strong>{{ $optional['title'] }}</strong><span>{{ $optional['text'] }}</span></div>
     @endif
     @if(trim((string) $slot) !== '')
         <details>
@@ -62,4 +65,5 @@
             {{ $slot }}
         </details>
     @endif
+    @if($footer)<p class="pfoot">{{ $footer }}</p>@endif
 </div>

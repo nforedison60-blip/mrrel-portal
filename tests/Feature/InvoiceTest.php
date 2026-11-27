@@ -6,7 +6,7 @@ use App\Models\User;
 
 function makeUser(string $role, string $email): User
 {
-    return User::create(['name' => ucfirst($role), 'email' => $email, 'password' => 'password1', 'role' => $role]);
+    return User::factory()->create(['name' => ucfirst($role), 'email' => $email, 'password' => 'password1', 'role' => $role]);
 }
 
 function makeProperty(User $landlord, string $status = 'Under Offer'): Property

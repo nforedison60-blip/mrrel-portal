@@ -5,7 +5,7 @@ use App\Models\User;
 
 function editLandlord(string $email = 'edit-landlord@example.com'): User
 {
-    return User::create(['name' => 'Landlord', 'email' => $email, 'password' => 'password1', 'role' => 'Landlord']);
+    return User::factory()->create(['name' => 'Landlord', 'email' => $email, 'password' => 'password1', 'role' => 'Landlord']);
 }
 
 function editProperty(User $landlord, string $status): Property

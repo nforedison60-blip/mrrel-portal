@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 function customer(): User
 {
-    return User::create([
+    return User::factory()->create([
         'name' => 'Photo Customer',
         'email' => 'photos@example.com',
         'password' => 'password1',

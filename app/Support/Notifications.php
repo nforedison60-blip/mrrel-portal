@@ -9,6 +9,7 @@ use App\Models\Provider;
 use App\Models\RentalNeed;
 use App\Models\TenantPayment;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -20,29 +21,35 @@ class Notifications
 {
     public static function register(): void
     {
+        // Register once per application, and through the event system itself so it works at any point of start-up
+        if (app()->bound('mrrel.notifications')) {
+            return;
+        }
+        app()->instance('mrrel.notifications', true);
+
         // A tenant payment was confirmed (matching fee or viewing attendance)
-        TenantPayment::updated(function (TenantPayment $payment) {
+        Event::listen('eloquent.updated: ' . TenantPayment::class, function (TenantPayment $payment) {
             if ($payment->wasChanged('status') && $payment->status === 'Paid') {
                 self::tenantPaid($payment);
             }
         });
 
         // A landlord paid the introduction fee
-        PropertyMatch::updated(function (PropertyMatch $match) {
+        Event::listen('eloquent.updated: ' . PropertyMatch::class, function (PropertyMatch $match) {
             if ($match->wasChanged('intro_status') && $match->intro_status === 'Paid') {
                 self::introductionPaid($match);
             }
         });
 
         // MrRel approved a property
-        Property::updated(function (Property $property) {
+        Event::listen('eloquent.updated: ' . Property::class, function (Property $property) {
             if ($property->wasChanged('status') && $property->status === 'Approved' && $property->getOriginal('status') === 'Draft') {
                 self::propertyApproved($property);
             }
         });
 
         // MrRel verified a mover
-        Provider::updated(function (Provider $provider) {
+        Event::listen('eloquent.updated: ' . Provider::class, function (Provider $provider) {
             if ($provider->wasChanged('verification_status') && $provider->verification_status === 'Verified') {
                 self::providerVerified($provider);
             }

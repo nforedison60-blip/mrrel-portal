@@ -55,7 +55,7 @@
                     </td>
                     <td>
                         @php $any = false; @endphp
-                        @foreach(['id_image_path' => 'ID photo', 'id_document' => 'ID document', 'vehicle_document' => 'Vehicle papers'] as $field => $text)
+                        @foreach(['id_image_path' => 'ID photo', 'id_document' => 'ID or passport', 'vehicle_document' => 'Vehicle papers'] as $field => $text)
                             @if($provider->{$field})
                                 @php $any = true; @endphp
                                 <div><a href="{{ route('documents.show', [$provider->id, $field]) }}" target="_blank" style="color: var(--t); text-decoration: underline;">{{ $text }}</a></div>

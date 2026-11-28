@@ -166,10 +166,10 @@
                 <div class="card" style="margin-top: 16px;">
                     <h3>Documents</h3>
                     <div class="f" style="margin-top: 16px;">
-                        <label class="k">ID Document (PDF/Image)
+                        <label class="k">ID or passport (PDF/Image)
                             <input type="file" name="id_document" accept=".pdf,image/*">
                             @if($provider->id_document)
-                                <div class="m sm" style="margin-top: 4px;"><a href="{{ route('documents.show', [$provider->id, 'id_document']) }}" target="_blank">View Uploaded ID</a></div>
+                                <div class="m sm" style="margin-top: 4px;"><a href="{{ route('documents.show', [$provider->id, 'id_document']) }}" target="_blank">View uploaded ID or passport</a></div>
                             @endif
                         </label>
                         <label class="k">Vehicle Document (PDF/Image)
@@ -222,8 +222,8 @@
                             $isVerified = $provider->verification_status === 'Verified';
                             $hasId = $provider->id_document || $provider->id_image_path;
                             $checks = [
-                                'Photo matches ID' => $provider->image_path && $hasId,
-                                'ID' => $hasId,
+                                'Photo matches ID or passport' => $provider->image_path && $hasId,
+                                'ID or passport' => $hasId,
                                 'Vehicle and plate' => $provider->vehicle_image_path && $provider->plate_number,
                             ];
                         @endphp

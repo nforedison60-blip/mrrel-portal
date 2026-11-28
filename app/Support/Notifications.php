@@ -83,6 +83,33 @@ class Notifications
         }
     }
 
+    // Every admin hears about a new account the moment someone registers
+    public static function newAccount(User $user): void
+    {
+        try {
+            $role = match ($user->role) {
+                'Provider' => 'Mover (provider)',
+                'Landlord' => 'Landlord',
+                default    => 'Customer',
+            };
+            $lines = [
+                ($user->name ?: 'Someone') . ' just created a MrRel account.',
+                'Role: ' . $role,
+                'Email: ' . $user->email,
+                'Phone: ' . ($user->phone ?: 'not given'),
+                'They still need to confirm their email before they can use the portal.',
+            ];
+            if ($user->role === 'Provider') {
+                $lines[] = 'They will apply as a mover next. You will see the application under Approvals.';
+            }
+            foreach (User::where('role', 'Admin')->whereNotNull('email')->pluck('email')->unique() as $to) {
+                self::send($to, 'New ' . strtolower($role) . ' account: ' . $user->name, 'New account on MrRel', $lines, 'Open users', self::link('admin.users'));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('New account notice failed', ['error' => $e->getMessage()]);
+        }
+    }
+
     // MrRel sent a tenant their matches (called from the admin matching screen)
     public static function matchesSent(RentalNeed $need, int $count): void
     {

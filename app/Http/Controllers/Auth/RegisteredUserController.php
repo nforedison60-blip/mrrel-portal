@@ -43,6 +43,8 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+        \App\Support\Notifications::newAccount($user);
+
         Auth::login($user);
 
         return redirect()->route('verification.notice');

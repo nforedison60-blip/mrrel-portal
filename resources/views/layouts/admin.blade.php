@@ -123,6 +123,7 @@
                     ['Disputes', 'admin.disputes', ['admin.disputes*']],
                     ['Messages', 'admin.messages', ['admin.messages*']],
                     ['Settings', 'admin.settings', ['admin.settings*']],
+                    ['Backup', 'admin.backup', ['admin.backup*']],
                 ], 'badge' => $disputes],
             ];
 
